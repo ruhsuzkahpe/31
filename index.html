@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evet-Hayır Oyunu</title>
     <style>
         body {
@@ -14,7 +14,7 @@
             padding: 10px 20px;
             font-size: 16px;
             margin: 10px;
-            border: none
+            border: none;
             border-radius: 5px;
             cursor: pointer;
         }
@@ -31,10 +31,11 @@
         function evetBasildi() {
             alert("Harika! Doğru kararı verdiniz!");
         }
+
         function hayirBasildi() {
-            const hayirButonu = document.getElementById>
-            const x = Math.floor(Math.random() * (windo>
-            const y = Math.floor(Math.random() * (windo>
+            const hayirButonu = document.getElementById("hayir");
+            const x = Math.floor(Math.random() * (window.innerWidth - hayirButonu.offsetWidth));
+            const y = Math.floor(Math.random() * (window.innerHeight - hayirButonu.offsetHeight));
             hayirButonu.style.position = "absolute";
             hayirButonu.style.left = x + "px";
             hayirButonu.style.top = y + "px";
@@ -43,7 +44,7 @@
 </head>
 <body>
     <h1>Çorum dünyanın merkezidir?</h1>
-    <button id="evet" onclick="evetBasildi()">Evet</but>
-    <button id="hayir" onclick="hayirBasildi()">Hayır</>
+    <button id="evet" onclick="evetBasildi()">Evet</button>
+    <button id="hayir" onclick="hayirBasildi()">Hayır</button>
 </body>
 </html>
