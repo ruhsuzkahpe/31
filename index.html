@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, >
+    <title>Evet-Hayır Oyunu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border: none
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #evet {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #hayir {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+    <script>
+        function evetBasildi() {
+            alert("Harika! Doğru kararı verdiniz!");
+        }
+        function hayirBasildi() {
+            const hayirButonu = document.getElementById>
+            const x = Math.floor(Math.random() * (windo>
+            const y = Math.floor(Math.random() * (windo>
+            hayirButonu.style.position = "absolute";
+            hayirButonu.style.left = x + "px";
+            hayirButonu.style.top = y + "px";
+        }
+    </script>
+</head>
+<body>
+    <h1>Çorum dünyanın merkezidir?</h1>
+    <button id="evet" onclick="evetBasildi()">Evet</but>
+    <button id="hayir" onclick="hayirBasildi()">Hayır</>
+</body>
+</html>
