@@ -141,6 +141,11 @@
             // Kutlama müziği
             const audio = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
             audio.play();
+
+            // Bir süre sonra WhatsApp linkine yönlendirme
+            setTimeout(() => {
+                window.location.href = "https://wa.me/905462927898"; // Telefon numaranızı buraya ekleyin
+            }, 5000);
         }
 
         function hayirBasildi() {
