@@ -18,6 +18,7 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            overflow: hidden;
         }
 
         @keyframes romantikAnimasyon {
@@ -27,7 +28,7 @@
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 20px;
         }
 
@@ -55,10 +56,91 @@
             background-color: #757575;
             color: white;
         }
+
+        #kutlama {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .kalp {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            transform: rotate(45deg);
+            animation: yukselme 5s infinite;
+        }
+
+        .kalp::before, .kalp::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        .kalp::before {
+            top: -25px;
+            left: 0;
+        }
+
+        .kalp::after {
+            left: -25px;
+            top: 0;
+        }
+
+        @keyframes yukselme {
+            0% {
+                bottom: -50px;
+                opacity: 1;
+                transform: scale(0.5) rotate(45deg);
+            }
+            100% {
+                bottom: 100vh;
+                opacity: 0;
+                transform: scale(1) rotate(45deg);
+            }
+        }
     </style>
     <script>
         function evetBasildi() {
-            alert("Harika bir karar verdin! Seni sonsuza dek mutlu edeceğim ❤️");
+            document.body.innerHTML += '<div id="kutlama">' +
+                '<h1>Harika bir karar verdin! 💕</h1>' +
+                '<p>Sonsuza dek mutlu olacağız!</p>' +
+                '</div>';
+            const kutlama = document.getElementById('kutlama');
+            kutlama.style.display = 'flex';
+
+            // Kalp animasyonları
+            for (let i = 0; i < 50; i++) {
+                const kalp = document.createElement('div');
+                kalp.className = 'kalp';
+                kalp.style.left = Math.random() * 100 + 'vw';
+                kalp.style.animationDelay = Math.random() * 3 + 's';
+                document.body.appendChild(kalp);
+            }
+
+            // Kutlama müziği
+            const audio = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
+            audio.play();
         }
 
         function hayirBasildi() {
