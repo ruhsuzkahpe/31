@@ -3,43 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evet-Hayır Oyunu</title>
+    <title>Benimle Evlenir Misin?</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', Courier, monospace;
             text-align: center;
-            margin-top: 100px;
-            background: linear-gradient(45deg, #ff0000, #0000ff);
+            margin: 0;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fbc2eb);
             background-size: 200% 200%;
-            animation: yanipSonme 3s infinite;
+            animation: romantikAnimasyon 6s infinite;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
-        @keyframes yanipSonme {
+        @keyframes romantikAnimasyon {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 15px 30px;
+            font-size: 18px;
             margin: 10px;
             border: none;
-            border-radius: 5px;
+            border-radius: 30px;
             cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
         #evet {
-            background-color: #4CAF50;
+            background-color: #ff6f61;
             color: white;
         }
+
         #hayir {
-            background-color: #f44336;
+            background-color: #757575;
             color: white;
         }
     </style>
     <script>
         function evetBasildi() {
-            alert("Harika! Doğru kararı verdiniz!");
+            alert("Harika bir karar verdin! Seni sonsuza dek mutlu edeceğim ❤️");
         }
 
         function hayirBasildi() {
@@ -53,7 +72,7 @@
     </script>
 </head>
 <body>
-    <h1>Çorum dünyanın merkezidir?</h1>
+    <h1>Benimle Evlenir Misin? 💍</h1>
     <button id="evet" onclick="evetBasildi()">Evet</button>
     <button id="hayir" onclick="hayirBasildi()">Hayır</button>
 </body>
