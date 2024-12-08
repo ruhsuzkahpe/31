@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benimle Çıkar Misin?</title>
+    <title>Benimle Çıkar Mısın?</title>
     <style>
         body {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Arial', sans-serif;
             text-align: center;
             margin: 0;
             background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fbc2eb);
             background-size: 200% 200%;
-            animation: romantikAnimasyon 6s infinite;
-            color: #333;
+            animation: romantikAnimasyon 8s infinite;
+            color: white;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -30,6 +30,7 @@
         h1 {
             font-size: 3em;
             margin-bottom: 20px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
         }
 
         button {
@@ -139,7 +140,7 @@
             }
 
             // Kutlama müziği
-            const audio = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
+            const audio = new Audio('https://www.bensound.com/bensound-music/bensound-sweet.mp3');
             audio.play();
 
             // Bir süre sonra WhatsApp linkine yönlendirme
@@ -159,7 +160,7 @@
     </script>
 </head>
 <body>
-    <h1>Benimle Çıkar Misin? 💍</h1>
+    <h1>Benimle Çıkar Mısın? 💍</h1>
     <button id="evet" onclick="evetBasildi()">Evet</button>
     <button id="hayir" onclick="hayirBasildi()">Hayır</button>
 </body>
