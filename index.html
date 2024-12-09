@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Halloween Şans Çarkı</title>
+  <title>Şans Çarkı</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -52,35 +52,107 @@
       background-color: #ff6348;
       color: white;
     }
+
+    #result {
+      margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      display: none;
+      color: #ff4757;
+      animation: fade-in 2s ease-in-out;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .celebration.active {
+      display: flex;
+    }
+
+    .celebration-text {
+      font-size: 36px;
+      color: #ff4757;
+      text-align: center;
+      animation: zoom-in 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes zoom-in {
+      from {
+        transform: scale(1);
+      }
+      to {
+        transform: scale(1.2);
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Halloween Şans Çarkı</h1>
+    <h1>Şans Çarkı</h1>
     <div class="wheel-container">
       <canvas id="wheel" width="300" height="300"></canvas>
     </div>
     <button id="spin-button">Çarkı Çevir</button>
+    <div id="result"></div>
+    <div class="celebration" id="celebration">
+      <div class="celebration-text">Tebrikler! Emine tarafından katledildiniz!</div>
+    </div>
   </div>
 
   <script>
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
     const spinButton = document.getElementById('spin-button');
+    const resultDiv = document.getElementById('result');
+    const celebrationDiv = document.getElementById('celebration');
     let isSpinning = false;
     let rotation = 0;
     let spinSpeed = 0;
 
-    // Çarkın Halloween temalı görsel çizimi
+    // Çark segmentleri ve karakter isimleri
+    const segments = [
+      'Freddy Krueger',
+      'Jason Voorhees',
+      'Michael Myers',
+      'Pennywise',
+      'Ghostface',
+      'Chucky',
+      'Leatherface',
+      'Jigsaw',
+      'Terrifier',
+      'Samara Morgan'
+    ];
+
+    const colors = ['#ffa502', '#ff6348', '#ff4757', '#ff7f50', '#ffa502', '#ff6348', '#ff4757', '#ff7f50', '#ff6f61', '#ffa502'];
+    const radius = canvas.width / 2;
+
+    // Çark çizim fonksiyonu
     function drawWheel() {
-      const segments = 8;
-      const colors = ['#ffa502', '#ff6348', '#ff4757', '#ff7f50', '#ffa502', '#ff6348', '#ff4757', '#ff7f50'];
-      const radius = canvas.width / 2;
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const angleStep = (2 * Math.PI) / segments;
+      const angleStep = (2 * Math.PI) / segments.length;
 
-      for (let i = 0; i < segments; i++) {
+      for (let i = 0; i < segments.length; i++) {
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, i * angleStep, (i + 1) * angleStep);
@@ -93,8 +165,8 @@
         ctx.rotate(i * angleStep + angleStep / 2);
         ctx.textAlign = 'center';
         ctx.fillStyle = '#2c2c54';
-        ctx.font = '16px Arial';
-        ctx.fillText('Boş', radius / 1.5, 0);
+        ctx.font = '14px Arial';
+        ctx.fillText(segments[i], radius / 1.5, 0);
         ctx.restore();
       }
     }
@@ -114,6 +186,7 @@
           clearInterval(spinAnimation);
           isSpinning = false;
           spinSpeed = 0;
+          showResult();
         }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -124,6 +197,22 @@
         drawWheel();
         ctx.restore();
       }, 16);
+    }
+
+    // Sonucu gösterme fonksiyonu
+    function showResult() {
+      const index = Math.floor(((rotation / 360) % segments.length) * segments.length);
+      const selected = segments[index % segments.length];
+      
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = `Kazanan: ${selected}`;
+
+      if (selected === 'Terrifier') {
+        celebrationDiv.classList.add('active');
+        setTimeout(() => {
+          celebrationDiv.classList.remove('active');
+        }, 4000);
+      }
     }
 
     spinButton.addEventListener('click', spinWheel);
