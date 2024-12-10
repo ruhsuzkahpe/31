@@ -123,18 +123,43 @@
         document.getElementById('login-btn').addEventListener('click', function() {
             username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
+
+            // Eğer kullanıcı adı ve şifre boşsa, uyarı mesajı göster
+            if (!username || !password) {
+                document.getElementById('login-msg').textContent = 'Kullanıcı adı ve şifre gerekli!';
+                return;
+            }
+
             const user = JSON.parse(localStorage.getItem(username));
 
-            if (user && user.password === password) {
-                currentUser = { username: user.username, gold: user.gold };
+            if (user) {
+                // Kullanıcı adı zaten varsa, giriş yap
+                if (user.password === password) {
+                    currentUser = { username: user.username, gold: user.gold };
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    document.getElementById('login-msg').textContent = `${username} hoş geldiniz!`;
+                    document.querySelector('.profile-section').style.display = 'none';
+                    document.querySelector('.game-section').style.display = 'block';
+                    updateLeaderboard();
+                    loadUserData();
+                } else {
+                    document.getElementById('login-msg').textContent = 'Yanlış şifre!';
+                }
+            } else {
+                // Kullanıcı adı yoksa, yeni kullanıcı kaydı oluştur
+                const newUser = {
+                    username: username,
+                    password: password,
+                    gold: 0
+                };
+                localStorage.setItem(username, JSON.stringify(newUser));
+                currentUser = newUser;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                document.getElementById('login-msg').textContent = `${username} hoş geldiniz!`;
+                document.getElementById('login-msg').textContent = `${username} kaydınız oluşturuldu! Hoş geldiniz.`;
                 document.querySelector('.profile-section').style.display = 'none';
                 document.querySelector('.game-section').style.display = 'block';
                 updateLeaderboard();
                 loadUserData();
-            } else {
-                document.getElementById('login-msg').textContent = 'Yanlış kullanıcı adı veya şifre!';
             }
         });
 
