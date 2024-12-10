@@ -29,10 +29,27 @@
         }
 
         #wheel {
-            border: 5px solid #fff;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #3a3a3a, #1f1f1f);
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            border: 5px solid #fff;
             margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+            transform-origin: center;
+            transition: transform 4s ease-out;
+        }
+
+        .wheel-segment {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            transform-origin: 100% 100%;
+            clip-path: polygon(100% 100%, 0% 100%, 50% 0%);
         }
 
         button {
@@ -77,6 +94,10 @@
             margin-top: 20px;
         }
 
+        .hidden {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
@@ -92,8 +113,8 @@
         </div>
 
         <!-- Oyun Bölümü -->
-        <div class="game-section" style="display: none;">
-            <canvas id="wheel" width="500" height="500"></canvas>
+        <div class="game-section hidden">
+            <div id="wheel"></div>
             <button id="spin-button">Çevir!</button>
             <button id="risk-button" disabled>Risk Al!</button>
             <p>Altın: <span id="gold-balance">0</span></p>
@@ -119,7 +140,7 @@
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
-        // Giriş yapma ve kontrol etme
+        // Yeni Kullanıcı Girişi
         document.getElementById('login-btn').addEventListener('click', function() {
             username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
@@ -138,10 +159,10 @@
                     currentUser = { username: user.username, gold: user.gold };
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     document.getElementById('login-msg').textContent = `${username} hoş geldiniz!`;
-                    document.querySelector('.profile-section').style.display = 'none';
-                    document.querySelector('.game-section').style.display = 'block';
-                    updateLeaderboard();
+                    document.querySelector('.profile-section').classList.add('hidden');
+                    document.querySelector('.game-section').classList.remove('hidden');
                     loadUserData();
+                    updateLeaderboard();
                 } else {
                     document.getElementById('login-msg').textContent = 'Yanlış şifre!';
                 }
@@ -156,10 +177,10 @@
                 currentUser = newUser;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 document.getElementById('login-msg').textContent = `${username} kaydınız oluşturuldu! Hoş geldiniz.`;
-                document.querySelector('.profile-section').style.display = 'none';
-                document.querySelector('.game-section').style.display = 'block';
-                updateLeaderboard();
+                document.querySelector('.profile-section').classList.add('hidden');
+                document.querySelector('.game-section').classList.remove('hidden');
                 loadUserData();
+                updateLeaderboard();
             }
         });
 
@@ -173,7 +194,7 @@
             }
         }
 
-        // Çarkı döndürme işlemi
+        // Çarkı Döndürme İşlemi
         document.getElementById('spin-button').addEventListener('click', function() {
             if (spinCount <= 0) {
                 alert('Çevirme hakkınız kalmadı!');
@@ -197,12 +218,13 @@
             });
         });
 
-        // Çark animasyonu
+        // Çark Animasyonu
         function animateWheel(callback) {
+            const wheel = document.getElementById('wheel');
             let currentDegree = 0;
             const interval = setInterval(() => {
                 currentDegree += 10;
-                document.getElementById('wheel').style.transform = `rotate(${currentDegree}deg)`;
+                wheel.style.transform = `rotate(${currentDegree}deg)`;
                 if (currentDegree >= 360 * 3) {
                     clearInterval(interval);
                     callback();
@@ -210,14 +232,14 @@
             }, 10);
         }
 
-        // Çarkın dönüşü
+        // Çarkın Dönüşü
         function spinWheel() {
             const segments = ['+2 Hak', '0 Bakiye', '10', '20', '30', '40', '50', '500', '+2 Hak', '0 Bakiye'];
             let randomIndex = Math.floor(Math.random() * segments.length);
             return segments[randomIndex];
         }
 
-        // Risk al butonu
+        // Risk Al Butonu
         document.getElementById('risk-button').addEventListener('click', function() {
             if (riskUsed) {
                 alert('Risk al hakkınızı zaten kullandınız!');
@@ -237,13 +259,13 @@
             });
         });
 
-        // Riskli çark
+        // Riskli Çark
         function riskSpin() {
             let result = Math.random() < 0.5 ? -1000 : 2; // %50 -1000, %50 2x
             return result;
         }
 
-        // Altın güncelleme
+        // Altın Güncelleme
         function updateGold(result) {
             if (result === '+2 Hak') {
                 spinCount += 2;
@@ -260,12 +282,12 @@
             document.getElementById('gold-balance').textContent = gold;
         }
 
-        // Sonuç mesajını gösterme
+        // Sonuç Mesajını Gösterme
         function showResultMessage(result) {
             document.getElementById('result-message').textContent = `Sonuç: ${result} altın kazandınız!`;
         }
 
-        // Kullanıcı verilerini kaydetme
+        // Kullanıcı Verilerini Kaydetme
         function saveUserData() {
             if (currentUser) {
                 currentUser.gold = gold;
@@ -277,16 +299,19 @@
             }
         }
 
-        // Liderboard'u güncelleme
+        // Liderboard'u Güncelleme
         function updateLeaderboard() {
             if (!currentUser || gold <= 0) return;
 
             leaderboard.push({ username: currentUser.username, gold: gold });
-            leaderboard.sort((a, b) => b.gold - a.gold);
+            leaderboard = leaderboard.filter((value, index, self) =>
+                index === self.findIndex((t) => (
+                    t.username === value.username
+                ))
+            );
 
-            if (leaderboard.length > 10) {
-                leaderboard = leaderboard.slice(0, 10);  // En iyi 10 kişiyi göster
-            }
+            leaderboard.sort((a, b) => b.gold - a.gold);
+            leaderboard = leaderboard.slice(0, 5); // Max 5 kullanıcı
 
             localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 
@@ -300,6 +325,6 @@
             });
         }
 
-    </script>
-</body>
-</html>
+        // Çark Segmentlerini Oluşturma
+        function createWheel() {
+            const segments = ['+2 Hak', '0 Bakiye', '10', '20', '30', '40', '50', '500', '+2 Hak', '0 B
