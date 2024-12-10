@@ -15,15 +15,16 @@
         }
 
         h1 {
-            font-size: 3em;
+            font-size: 2.5em;
             margin-bottom: 20px;
         }
 
         input[type="text"], input[type="password"] {
             padding: 10px;
-            width: 300px;
+            width: 250px;
             margin: 10px;
             border-radius: 5px;
+            border: none;
         }
 
         button {
@@ -33,6 +34,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
         }
 
         canvas {
@@ -48,6 +50,8 @@
             background: rgba(0, 0, 0, 0.5);
             padding: 15px;
             border-radius: 10px;
+            max-width: 400px;
+            margin: auto;
         }
 
         #leaderboard ul {
@@ -58,6 +62,10 @@
         #leaderboard li {
             font-size: 1.2em;
             margin: 10px 0;
+        }
+
+        #game-section {
+            display: none;
         }
     </style>
 </head>
@@ -70,7 +78,7 @@
         <p id="login-msg"></p>
     </div>
 
-    <div id="game-section" style="display: none;">
+    <div id="game-section">
         <h2>Hoş Geldiniz, <span id="user-name-display"></span>!</h2>
         <canvas id="wheel" width="400" height="400"></canvas>
         <button id="spin-btn">Çevir</button>
@@ -82,26 +90,23 @@
     </div>
 
     <script>
-        // Global Variables
-        let currentUser = null;
-        let spinCount = 5;
-        let users = JSON.parse(localStorage.getItem("users")) || {};
-        let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || {};
-
         const loginSection = document.getElementById("login-section");
         const gameSection = document.getElementById("game-section");
-        const loginBtn = document.getElementById("login-btn");
-        const spinBtn = document.getElementById("spin-btn");
         const usernameInput = document.getElementById("username");
         const passwordInput = document.getElementById("password");
+        const loginBtn = document.getElementById("login-btn");
         const loginMsg = document.getElementById("login-msg");
         const userNameDisplay = document.getElementById("user-name-display");
         const spinCountDisplay = document.getElementById("spin-count");
+        const spinBtn = document.getElementById("spin-btn");
         const leaderboardList = document.getElementById("leaderboard-list");
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
 
-        // Çark bölümleri
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem("users")) || {};
+        let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || {};
+
         const wheelSections = [
             { label: "+10 Altın", value: 10 },
             { label: "+20 Altın", value: 20 },
@@ -110,10 +115,60 @@
             { label: "+50 Altın", value: 50 },
             { label: "+500 Altın", value: 500 },
             { label: "+2 Hak", value: "extra" },
-            { label: "0 Bakiye", value: "zero" }
+            { label: "0 Altın", value: "zero" }
         ];
 
-        // Draw the wheel
+        loginBtn.addEventListener("click", () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!username || !password) {
+                loginMsg.textContent = "Lütfen kullanıcı adı ve şifre girin!";
+                return;
+            }
+
+            if (!users[username]) {
+                users[username] = { password, gold: 0, spins: 5 };
+            } else if (users[username].password !== password) {
+                loginMsg.textContent = "Hatalı şifre!";
+                return;
+            }
+
+            currentUser = username;
+            localStorage.setItem("users", JSON.stringify(users));
+            userNameDisplay.textContent = username;
+            spinCountDisplay.textContent = users[username].spins;
+            loginSection.style.display = "none";
+            gameSection.style.display = "block";
+            updateLeaderboard();
+            drawWheel();
+        });
+
+        spinBtn.addEventListener("click", () => {
+            const user = users[currentUser];
+            if (user.spins <= 0) {
+                alert("Haklarınız tükendi!");
+                return;
+            }
+
+            user.spins -= 1;
+            spinCountDisplay.textContent = user.spins;
+            rotateWheel((result) => {
+                if (result.value === "extra") {
+                    user.spins += 2;
+                } else if (result.value === "zero") {
+                    user.gold = 0;
+                } else {
+                    user.gold += result.value;
+                }
+
+                leaderboard[currentUser] = user.gold;
+                localStorage.setItem("users", JSON.stringify(users));
+                localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+                updateLeaderboard();
+            });
+        });
+
         function drawWheel() {
             const radius = canvas.width / 2;
             const arc = (2 * Math.PI) / wheelSections.length;
@@ -137,11 +192,9 @@
 
         function rotateWheel(callback) {
             let angle = 0;
-            const spinTime = Math.random() * 3000 + 2000; // 2-5 seconds
-            const speed = Math.random() * 10 + 20; // Random speed
-
+            const spinTime = Math.random() * 3000 + 2000;
             const interval = setInterval(() => {
-                angle += speed;
+                angle += 10;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.save();
                 ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -153,78 +206,23 @@
 
             setTimeout(() => {
                 clearInterval(interval);
-                const resultIndex = Math.floor((angle / 360) % wheelSections.length);
+                const resultIndex = Math.floor(((angle / 360) % wheelSections.length));
                 callback(wheelSections[resultIndex]);
             }, spinTime);
         }
 
-        // Update leaderboard
         function updateLeaderboard() {
             leaderboardList.innerHTML = "";
-            const sortedLeaderboard = Object.entries(leaderboard)
+            const sorted = Object.entries(leaderboard)
                 .sort(([, a], [, b]) => b - a)
                 .slice(0, 5);
 
-            sortedLeaderboard.forEach(([user, gold], index) => {
+            sorted.forEach(([name, gold], index) => {
                 const li = document.createElement("li");
-                li.textContent = `${index + 1}. ${user}: ${gold} altın`;
+                li.textContent = `${index + 1}. ${name}: ${gold} altın`;
                 leaderboardList.appendChild(li);
             });
         }
-
-        // Login system
-        loginBtn.addEventListener("click", () => {
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (!username || !password) {
-                loginMsg.textContent = "Lütfen kullanıcı adı ve şifre girin!";
-                return;
-            }
-
-            if (!users[username]) {
-                users[username] = { password, gold: 0 };
-            } else if (users[username].password !== password) {
-                loginMsg.textContent = "Hatalı şifre!";
-                return;
-            }
-
-            currentUser = username;
-            spinCount = 5;
-            userNameDisplay.textContent = username;
-            gameSection.style.display = "block";
-            loginSection.style.display = "none";
-            updateLeaderboard();
-        });
-
-        // Spin button
-        spinBtn.addEventListener("click", () => {
-            if (spinCount <= 0) {
-                alert("Haklarınız tükendi!");
-                return;
-            }
-
-            spinCount--;
-            spinCountDisplay.textContent = spinCount;
-
-            rotateWheel((result) => {
-                if (result.value === "extra") {
-                    spinCount += 2;
-                } else if (result.value === "zero") {
-                    users[currentUser].gold = 0;
-                } else {
-                    users[currentUser].gold += result.value;
-                }
-
-                leaderboard[currentUser] = users[currentUser].gold;
-                localStorage.setItem("users", JSON.stringify(users));
-                localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-                updateLeaderboard();
-            });
-        });
-
-        // Initialize the wheel
-        drawWheel();
     </script>
 </body>
 </html>
