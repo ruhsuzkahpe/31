@@ -1,10 +1,48 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Şans Çarkı</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        canvas {
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,6 +53,99 @@
         <p>Çevirme Hakkı: <span id="spin-count">3</span></p>
         <p id="result-message"></p>
     </div>
-    <script src="script.js"></script>
+    <script>
+        const canvas = document.getElementById("wheel");
+        const ctx = canvas.getContext("2d");
+        const spinButton = document.getElementById("spin-button");
+        const goldBalanceEl = document.getElementById("gold-balance");
+        const spinCountEl = document.getElementById("spin-count");
+        const resultMessageEl = document.getElementById("result-message");
+
+        const segments = ["10 Altın", "20 Altın", "50 Altın", "100 Altın", "0 Altın"];
+        const segmentColors = ["#FFD700", "#FFA500", "#FF4500", "#FF6347", "#90EE90"];
+        let spinCount = 3;
+        let goldBalance = 0;
+
+        // Çarkı çiz
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2;
+            const anglePerSegment = (2 * Math.PI) / segments.length;
+
+            segments.forEach((segment, index) => {
+                const startAngle = index * anglePerSegment;
+                const endAngle = startAngle + anglePerSegment;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = segmentColors[index];
+                ctx.fill();
+
+                // Metni ekle
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#000";
+                ctx.font = "16px Arial";
+                ctx.fillText(segment, radius - 10, 10);
+                ctx.restore();
+            });
+        }
+
+        // Çevirme fonksiyonu
+        function spinWheel() {
+            if (spinCount <= 0) {
+                resultMessageEl.textContent = "Çevirme hakkınız bitti!";
+                return;
+            }
+
+            const spins = Math.floor(Math.random() * 5); // 0-4 arasında rastgele segment
+            const anglePerSegment = 360 / segments.length;
+            const targetAngle = spins * anglePerSegment;
+            const duration = 3000;
+            const start = performance.now();
+
+            let currentAngle = 0;
+
+            function animateWheel(timestamp) {
+                const elapsed = timestamp - start;
+                if (elapsed < duration) {
+                    const easing = Math.pow(elapsed / duration, 3);
+                    currentAngle = easing * targetAngle;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.save();
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate((currentAngle * Math.PI) / 180);
+                    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+                    drawWheel();
+                    ctx.restore();
+                    requestAnimationFrame(animateWheel);
+                } else {
+                    const winningSegment = segments[spins];
+                    resultMessageEl.textContent = `Kazandınız: ${winningSegment}`;
+                    if (winningSegment !== "0 Altın") {
+                        const gold = parseInt(winningSegment.split(" ")[0], 10);
+                        goldBalance += gold;
+                        goldBalanceEl.textContent = goldBalance;
+                    }
+                    spinCount -= 1;
+                    spinCountEl.textContent = spinCount;
+                    spinButton.disabled = spinCount === 0;
+                }
+            }
+
+            requestAnimationFrame(animateWheel);
+        }
+
+        // Çarkı ilk çizim
+        drawWheel();
+
+        // Çevirme butonuna tıklama
+        spinButton.addEventListener("click", spinWheel);
+    </script>
 </body>
 </html>
