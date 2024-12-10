@@ -49,7 +49,7 @@
             background-color: #777;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             padding: 10px;
             width: 250px;
             margin: 10px;
@@ -84,10 +84,11 @@
         <h1>Şans Çarkı</h1>
         
         <!-- Kullanıcı Girişi -->
-        <div class="profile-section">
+        <div class="profile-section" id="login-section">
             <input type="text" id="username" placeholder="Kullanıcı Adınızı Girin" />
+            <input type="password" id="password" placeholder="Şifrenizi Girin" />
             <button id="login-btn">Giriş Yap</button>
-            <p id="welcome-msg"></p>
+            <p id="login-msg"></p>
         </div>
 
         <!-- Oyun Bölümü -->
@@ -116,22 +117,38 @@
         let spinCount = 3;
         let riskUsed = false;
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
-        // Kullanıcı adı ile giriş yapılması
+        // Giriş yapma ve kontrol etme
         document.getElementById('login-btn').addEventListener('click', function() {
             username = document.getElementById('username').value.trim();
-            if (username && !leaderboard.find(user => user.username === username)) {
-                localStorage.setItem('username', username);
-                document.getElementById('welcome-msg').textContent = `${username} hoş geldiniz!`;
+            const password = document.getElementById('password').value.trim();
+            const user = JSON.parse(localStorage.getItem(username));
+
+            if (user && user.password === password) {
+                currentUser = { username: user.username, gold: user.gold };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                document.getElementById('login-msg').textContent = `${username} hoş geldiniz!`;
                 document.querySelector('.profile-section').style.display = 'none';
                 document.querySelector('.game-section').style.display = 'block';
                 updateLeaderboard();
+                loadUserData();
             } else {
-                alert('Lütfen geçerli bir kullanıcı adı girin veya aynı kullanıcı adını kullanmayın.');
+                document.getElementById('login-msg').textContent = 'Yanlış kullanıcı adı veya şifre!';
             }
         });
 
-        // Çarkı döndürme
+        // Kullanıcı verilerini yükle
+        function loadUserData() {
+            if (currentUser) {
+                gold = currentUser.gold;
+                spinCount = 3;
+                document.getElementById('gold-balance').textContent = gold;
+                document.getElementById('spin-count').textContent = spinCount;
+            }
+        }
+
+        // Çarkı döndürme işlemi
         document.getElementById('spin-button').addEventListener('click', function() {
             if (spinCount <= 0) {
                 alert('Çevirme hakkınız kalmadı!');
@@ -141,17 +158,39 @@
             spinCount--;
             document.getElementById('spin-count').textContent = spinCount;
 
-            // Risk al butonunu aktif et
             if (!riskUsed) {
                 document.getElementById('risk-button').disabled = false;
             }
 
-            // Çarkı çevirme işlemi
-            let result = spinWheel();
-            updateGold(result);
-            showResultMessage(result);
-            updateLeaderboard();
+            // Çark animasyonu ve sonucu gösterme
+            const result = spinWheel();
+            animateWheel(() => {
+                updateGold(result);
+                showResultMessage(result);
+                saveUserData();
+                updateLeaderboard();
+            });
         });
+
+        // Çark animasyonu
+        function animateWheel(callback) {
+            let currentDegree = 0;
+            const interval = setInterval(() => {
+                currentDegree += 10;
+                document.getElementById('wheel').style.transform = `rotate(${currentDegree}deg)`;
+                if (currentDegree >= 360 * 3) {
+                    clearInterval(interval);
+                    callback();
+                }
+            }, 10);
+        }
+
+        // Çarkın dönüşü
+        function spinWheel() {
+            const segments = ['+2 Hak', '0 Bakiye', '10', '20', '30', '40', '50', '500', '+2 Hak', '0 Bakiye'];
+            let randomIndex = Math.floor(Math.random() * segments.length);
+            return segments[randomIndex];
+        }
 
         // Risk al butonu
         document.getElementById('risk-button').addEventListener('click', function() {
@@ -164,56 +203,14 @@
             document.getElementById('risk-button').disabled = true;
 
             // Riskli çark
-            let result = riskSpin();
-            updateGold(result);
-            showResultMessage(result);
-            updateLeaderboard();
+            const result = riskSpin();
+            animateWheel(() => {
+                updateGold(result);
+                showResultMessage(result);
+                saveUserData();
+                updateLeaderboard();
+            });
         });
-
-        // Sosyal medya paylaşım butonu
-        document.getElementById('share-button').addEventListener('click', function() {
-            alert('Kazancınızı sosyal medyada paylaştınız!');
-            spinCount++;  // Sosyal paylaşım sonrası 1 ekstra çevirme hakkı ver
-            document.getElementById('spin-count').textContent = spinCount;
-        });
-
-        // Çarkın çizilmesi
-        const canvas = document.getElementById('wheel');
-        const ctx = canvas.getContext('2d');
-        const segments = ['+2 Hak', '0 Bakiye', '10', '20', '30', '40', '50', '500', '+2 Hak', '0 Bakiye'];
-
-        function drawWheel() {
-            const radius = canvas.width / 2;
-            const segmentAngle = Math.PI * 2 / segments.length;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < segments.length; i++) {
-                const angleStart = i * segmentAngle;
-                const angleEnd = (i + 1) * segmentAngle;
-
-                ctx.fillStyle = i % 2 === 0 ? '#e74c3c' : '#2ecc71'; // Alternatif renkler
-                ctx.beginPath();
-                ctx.moveTo(radius, radius);
-                ctx.arc(radius, radius, radius, angleStart, angleEnd);
-                ctx.fill();
-
-                // Segment üzerine yazı ekleyelim
-                ctx.fillStyle = '#fff';
-                ctx.font = '20px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                const angleMid = (angleStart + angleEnd) / 2;
-                ctx.fillText(segments[i], radius + Math.cos(angleMid) * (radius / 2), radius + Math.sin(angleMid) * (radius / 2));
-            }
-        }
-
-        drawWheel();
-
-        // Çarkın dönmesi
-        function spinWheel() {
-            let randomIndex = Math.floor(Math.random() * segments.length);
-            return segments[randomIndex];
-        }
 
         // Riskli çark
         function riskSpin() {
@@ -243,11 +240,23 @@
             document.getElementById('result-message').textContent = `Sonuç: ${result} altın kazandınız!`;
         }
 
+        // Kullanıcı verilerini kaydetme
+        function saveUserData() {
+            if (currentUser) {
+                currentUser.gold = gold;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                let user = JSON.parse(localStorage.getItem(currentUser.username));
+                user.gold = gold;
+                localStorage.setItem(currentUser.username, JSON.stringify(user));
+            }
+        }
+
         // Liderboard'u güncelleme
         function updateLeaderboard() {
-            if (!username || gold <= 0) return;
+            if (!currentUser || gold <= 0) return;
 
-            leaderboard.push({ username: username, gold: gold });
+            leaderboard.push({ username: currentUser.username, gold: gold });
             leaderboard.sort((a, b) => b.gold - a.gold);
 
             if (leaderboard.length > 10) {
