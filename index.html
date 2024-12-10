@@ -74,6 +74,10 @@
             padding: 5px 0;
             border-bottom: 1px solid #ddd;
         }
+
+        #leaderboard li span {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -104,7 +108,7 @@
         const wheelCanvas = document.getElementById('wheel');
         const ctx = wheelCanvas.getContext('2d');
 
-        let userData = {};
+        let currentUser = null;
 
         // Çarkın bölümleri
         const segments = [
@@ -155,7 +159,7 @@
 
                 if ((angle / 360) > spinDuration) {
                     clearInterval(interval);
-                    const resultIndex = Math.floor((angle / 360) % segments.length);
+                    const resultIndex = Math.floor(((angle / 360) % 1) * segments.length);
                     onComplete(segments[resultIndex]);
                 }
             }, 30);
@@ -167,9 +171,9 @@
                 .slice(0, 5);
 
             leaderboardList.innerHTML = "";
-            leaderboardData.forEach(([username, score]) => {
+            leaderboardData.forEach(([username, score], index) => {
                 const li = document.createElement('li');
-                li.textContent = `${username}: ${score} altın`;
+                li.innerHTML = `<span>${index + 1}.</span> ${username}: ${score} altın`;
                 leaderboardList.appendChild(li);
             });
         };
@@ -193,7 +197,7 @@
                 return;
             }
 
-            userData = users[username];
+            currentUser = { username, ...users[username] };
             document.getElementById('welcome-user').textContent = username;
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('game-section').classList.remove('hidden');
@@ -206,18 +210,18 @@
                     alert("2 Ekstra Hak Kazandınız!");
                 } else if (result.value === "zero") {
                     alert("Bakiyeniz sıfırlandı!");
-                    userData.gold = 0;
+                    currentUser.gold = 0;
                 } else {
-                    userData.gold += result.value;
+                    currentUser.gold += result.value;
                     alert(`${result.label}`);
                 }
 
                 const users = JSON.parse(localStorage.getItem("users") || "{}");
-                users[userData.username] = userData;
+                users[currentUser.username] = { password: currentUser.password, gold: currentUser.gold };
                 localStorage.setItem("users", JSON.stringify(users));
 
                 const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "{}");
-                leaderboard[userData.username] = userData.gold;
+                leaderboard[currentUser.username] = currentUser.gold;
                 localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
                 updateLeaderboard();
             });
