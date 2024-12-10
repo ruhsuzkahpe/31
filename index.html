@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,41 +6,59 @@
     <title>Şans Çarkı</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Times New Roman", serif;
+            color: #fff;
             text-align: center;
-            background-color: #f9f9f9;
+            background: url('https://cdn.pixabay.com/photo/2016/04/22/20/21/dark-1348848_1280.jpg') no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
             padding: 0;
         }
 
         .container {
             margin: 20px auto;
-            max-width: 600px;
+            max-width: 700px;
             padding: 20px;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
         }
 
         button {
             padding: 10px 20px;
             font-size: 16px;
             color: #fff;
-            background-color: #007bff;
+            background-color: #6a0dad;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 10px;
         }
 
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
+        button:hover {
+            background-color: #9932cc;
         }
 
         canvas {
             margin: 20px auto;
             display: block;
+        }
+
+        #balance-panel {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #balance-panel p {
+            font-size: 18px;
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -49,24 +67,39 @@
         <h1>Şans Çarkı</h1>
         <canvas id="wheel" width="500" height="500"></canvas>
         <button id="spin-button">Çevir!</button>
-        <p>Altın: <span id="gold-balance">0</span></p>
-        <p>Çevirme Hakkı: <span id="spin-count">3</span></p>
+        <button id="show-balance-button">Bakiyeyi Gör</button>
         <p id="result-message"></p>
     </div>
+
+    <div id="balance-panel">
+        <p>Altın: <span id="gold-balance">0</span></p>
+        <p>Çevirme Hakkı: <span id="spin-count">3</span></p>
+    </div>
+
     <script>
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
         const spinButton = document.getElementById("spin-button");
+        const showBalanceButton = document.getElementById("show-balance-button");
         const goldBalanceEl = document.getElementById("gold-balance");
         const spinCountEl = document.getElementById("spin-count");
         const resultMessageEl = document.getElementById("result-message");
+        const balancePanel = document.getElementById("balance-panel");
 
-        const segments = ["10 Altın", "20 Altın", "50 Altın", "100 Altın", "0 Altın"];
-        const segmentColors = ["#FFD700", "#FFA500", "#FF4500", "#FF6347", "#90EE90"];
+        const segments = [
+            "10 Altın", "20 Altın", "50 Altın", "100 Altın", 
+            "0 Altın", "Ekstra Hak", "Bakiye Sıfır", 
+            "25 Altın", "Ekstra Hak", "Bakiye Sıfır"
+        ];
+        const segmentColors = [
+            "#FFD700", "#FFA500", "#FF4500", "#FF6347", 
+            "#90EE90", "#ADD8E6", "#DC143C", 
+            "#8A2BE2", "#ADD8E6", "#DC143C"
+        ];
+
         let spinCount = 3;
         let goldBalance = 0;
 
-        // Çarkı çiz
         function drawWheel() {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
@@ -84,29 +117,26 @@
                 ctx.fillStyle = segmentColors[index];
                 ctx.fill();
 
-                // Metni ekle
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + anglePerSegment / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#000";
-                ctx.font = "16px Arial";
+                ctx.font = "14px Arial";
                 ctx.fillText(segment, radius - 10, 10);
                 ctx.restore();
             });
         }
 
-        // Çevirme fonksiyonu
         function spinWheel() {
             if (spinCount <= 0) {
                 resultMessageEl.textContent = "Çevirme hakkınız bitti!";
                 return;
             }
 
-            const spins = Math.floor(Math.random() * 5); // 0-4 arasında rastgele segment
-            const anglePerSegment = 360 / segments.length;
-            const targetAngle = spins * anglePerSegment;
-            const duration = 3000;
+            const spins = Math.floor(Math.random() * segments.length);
+            const targetAngle = (spins * 360) / segments.length + 360 * 3; // 3 tur
+            const duration = 4000;
             const start = performance.now();
 
             let currentAngle = 0;
@@ -125,14 +155,18 @@
                     ctx.restore();
                     requestAnimationFrame(animateWheel);
                 } else {
-                    const winningSegment = segments[spins];
-                    resultMessageEl.textContent = `Kazandınız: ${winningSegment}`;
-                    if (winningSegment !== "0 Altın") {
-                        const gold = parseInt(winningSegment.split(" ")[0], 10);
+                    const result = segments[spins];
+                    resultMessageEl.textContent = `Kazandınız: ${result}`;
+                    if (result === "Ekstra Hak") {
+                        spinCount += 1;
+                    } else if (result === "Bakiye Sıfır") {
+                        goldBalance = 0;
+                    } else {
+                        const gold = parseInt(result.split(" ")[0], 10) || 0;
                         goldBalance += gold;
-                        goldBalanceEl.textContent = goldBalance;
                     }
                     spinCount -= 1;
+                    goldBalanceEl.textContent = goldBalance;
                     spinCountEl.textContent = spinCount;
                     spinButton.disabled = spinCount === 0;
                 }
@@ -141,11 +175,12 @@
             requestAnimationFrame(animateWheel);
         }
 
-        // Çarkı ilk çizim
-        drawWheel();
-
-        // Çevirme butonuna tıklama
         spinButton.addEventListener("click", spinWheel);
+        showBalanceButton.addEventListener("click", () => {
+            balancePanel.style.display = balancePanel.style.display === "none" ? "block" : "none";
+        });
+
+        drawWheel();
     </script>
 </body>
 </html>
