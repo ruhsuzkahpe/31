@@ -88,19 +88,21 @@
         let riskUsed = false;
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
+        // Kullanıcı giriş yaparsa
         document.getElementById('login-btn').addEventListener('click', function() {
             username = document.getElementById('username').value.trim();
-            if (username) {
+            if (username && !leaderboard.find(user => user.username === username)) {
                 localStorage.setItem('username', username);
                 document.getElementById('welcome-msg').textContent = `${username} hoş geldiniz!`;
                 document.querySelector('.profile-section').style.display = 'none';
                 document.querySelector('.game-section').style.display = 'block';
                 updateLeaderboard();
             } else {
-                alert('Lütfen bir kullanıcı adı girin.');
+                alert('Lütfen geçerli bir kullanıcı adı girin veya aynı kullanıcı adını kullanmayın.');
             }
         });
 
+        // Çarkı döndürme
         document.getElementById('spin-button').addEventListener('click', function() {
             if (spinCount <= 0) {
                 alert('Çevirme hakkınız kalmadı!');
@@ -122,6 +124,7 @@
             updateLeaderboard();
         });
 
+        // Risk al butonu
         document.getElementById('risk-button').addEventListener('click', function() {
             if (riskUsed) {
                 alert('Risk al hakkınızı zaten kullandınız!');
@@ -138,33 +141,66 @@
             updateLeaderboard();
         });
 
+        // Sosyal medya paylaşım butonu
         document.getElementById('share-button').addEventListener('click', function() {
-            // Kullanıcı sosyal medya üzerinden paylaşabilir
             alert('Kazancınızı sosyal medyada paylaştınız!');
             spinCount++;  // Sosyal paylaşım sonrası 1 ekstra çevirme hakkı ver
             document.getElementById('spin-count').textContent = spinCount;
         });
 
-        function spinWheel() {
-            // Çarkı rastgele döndür
-            let segments = [100, 200, 500, -1000, -1000, -1000, 100, 500, 200, -1000];
-            let randomIndex = Math.floor(Math.random() * segments.length);
-            return segments[randomIndex];
+        // Çarkın çizilmesi
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const segments = ['100', '200', '500', '-1000', '-1000', '-1000', '100', '500', '200', '-1000'];
+
+        function drawWheel() {
+            const radius = canvas.width / 2;
+            const segmentAngle = Math.PI * 2 / segments.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < segments.length; i++) {
+                const angleStart = i * segmentAngle;
+                const angleEnd = (i + 1) * segmentAngle;
+
+                ctx.fillStyle = i % 2 === 0 ? '#e74c3c' : '#2ecc71'; // Alternatif renkler
+                ctx.beginPath();
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius, angleStart, angleEnd);
+                ctx.fill();
+
+                // Segment üzerine yazı ekleyelim
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const angleMid = (angleStart + angleEnd) / 2;
+                ctx.fillText(segments[i], radius + Math.cos(angleMid) * (radius / 2), radius + Math.sin(angleMid) * (radius / 2));
+            }
         }
 
+        drawWheel();
+
+        // Çarkın dönmesi
+        function spinWheel() {
+            let randomIndex = Math.floor(Math.random() * segments.length);
+            return parseInt(segments[randomIndex]);
+        }
+
+        // Riskli çark
         function riskSpin() {
-            // Risk al: 5 segmentte 2x, diğer segmentlerde -1000
             let segments = [-1000, -1000, -1000, -1000, -1000, 2, 2, 2, 2, 2];
             let randomIndex = Math.floor(Math.random() * segments.length);
             return segments[randomIndex];
         }
 
+        // Altın güncellemesi
         function updateGold(result) {
             gold += result;
             if (gold < 0) gold = 0;  // Altın sıfırdan aşağıya inemez
             document.getElementById('gold-balance').textContent = gold;
         }
 
+        // Sonuç mesajı
         function showResultMessage(result) {
             let message = '';
             if (result === 2) {
@@ -177,11 +213,15 @@
             document.getElementById('result-message').textContent = message;
         }
 
+        // Sıralama güncelleme
         function updateLeaderboard() {
-            leaderboard.push({ username, gold });
+            if (!leaderboard.find(user => user.username === username)) {
+                leaderboard.push({ username, gold });
+            }
+
             leaderboard.sort((a, b) => b.gold - a.gold); // Altınlarına göre sırala
             leaderboard = leaderboard.slice(0, 5); // En iyi 5 kullanıcıyı göster
-            
+
             // Leaderboard güncelleme
             let leaderboardHTML = '';
             leaderboard.forEach((user, index) => {
@@ -189,6 +229,15 @@
             });
             document.getElementById('leaderboard').innerHTML = leaderboardHTML;
             localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+        }
+
+        // İlk açılışta kullanıcı adı varsa yükleyelim
+        if (localStorage.getItem('username')) {
+            username = localStorage.getItem('username');
+            document.getElementById('welcome-msg').textContent = `${username} hoş geldiniz!`;
+            document.querySelector('.profile-section').style.display = 'none';
+            document.querySelector('.game-section').style.display = 'block';
+            updateLeaderboard();
         }
     </script>
 </body>
