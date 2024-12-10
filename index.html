@@ -6,65 +6,91 @@
     <title>Şans Çarkı</title>
     <style>
         body {
-            font-family: "Arial", sans-serif;
-            background: #222;
-            color: #fff;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2e3b4e, #1c2a35);
+            color: white;
             text-align: center;
+            margin: 0;
+            padding: 20px;
         }
 
         .container {
-            margin-top: 50px;
+            max-width: 1200px;
+            margin: auto;
         }
 
-        canvas {
-            border: 2px solid #fff;
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .profile-section, .game-section, .leaderboard-section {
+            margin-top: 40px;
+        }
+
+        #wheel {
+            border: 5px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
             margin-bottom: 20px;
         }
 
         button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
-            margin: 10px;
+            padding: 12px 24px;
             border: none;
-            cursor: pointer;
             border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
         button:disabled {
             background-color: #777;
         }
 
-        button:hover {
-            background-color: #45a049;
-        }
-
         input[type="text"] {
             padding: 10px;
-            width: 200px;
-            margin: 20px;
+            width: 250px;
+            margin: 10px;
             border-radius: 5px;
         }
 
-        .profile-section, .game-section, .leaderboard-section {
+        .leaderboard {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 5px;
             margin-top: 20px;
         }
 
-        #leaderboard {
-            list-style-type: none;
-            padding: 0;
+        .leaderboard ol {
+            padding-left: 20px;
+            text-align: left;
         }
+
+        .leaderboard li {
+            margin: 10px 0;
+        }
+
+        #result-message {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Şans Çarkı</h1>
+        
+        <!-- Kullanıcı Girişi -->
         <div class="profile-section">
             <input type="text" id="username" placeholder="Kullanıcı Adınızı Girin" />
             <button id="login-btn">Giriş Yap</button>
             <p id="welcome-msg"></p>
         </div>
 
+        <!-- Oyun Bölümü -->
         <div class="game-section" style="display: none;">
             <canvas id="wheel" width="500" height="500"></canvas>
             <button id="spin-button">Çevir!</button>
@@ -72,12 +98,15 @@
             <p>Altın: <span id="gold-balance">0</span></p>
             <p>Çevirme Hakkı: <span id="spin-count">3</span></p>
             <p id="result-message"></p>
-            <p><button id="share-button">Kazancını Sosyal Medyada Paylaş</button></p>
+            <button id="share-button">Kazancınızı Paylaş!</button>
         </div>
 
+        <!-- Sıralama -->
         <div class="leaderboard-section">
             <h2>Global Sıralama</h2>
-            <ol id="leaderboard"></ol>
+            <div class="leaderboard">
+                <ol id="leaderboard"></ol>
+            </div>
         </div>
     </div>
 
@@ -88,7 +117,7 @@
         let riskUsed = false;
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
-        // Kullanıcı giriş yaparsa
+        // Kullanıcı adı ile giriş yapılması
         document.getElementById('login-btn').addEventListener('click', function() {
             username = document.getElementById('username').value.trim();
             if (username && !leaderboard.find(user => user.username === username)) {
@@ -108,7 +137,7 @@
                 alert('Çevirme hakkınız kalmadı!');
                 return;
             }
-            
+
             spinCount--;
             document.getElementById('spin-count').textContent = spinCount;
 
@@ -134,7 +163,7 @@
             riskUsed = true;
             document.getElementById('risk-button').disabled = true;
 
-            // Risk al: 5 segmentte 2x, diğer segmentlerde -1000
+            // Riskli çark
             let result = riskSpin();
             updateGold(result);
             showResultMessage(result);
@@ -151,7 +180,7 @@
         // Çarkın çizilmesi
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
-        const segments = ['100', '200', '500', '-1000', '-1000', '-1000', '100', '500', '200', '-1000'];
+        const segments = ['+2 Hak', '0 Bakiye', '10', '20', '30', '40', '50', '500', '+2 Hak', '0 Bakiye'];
 
         function drawWheel() {
             const radius = canvas.width / 2;
@@ -183,62 +212,60 @@
         // Çarkın dönmesi
         function spinWheel() {
             let randomIndex = Math.floor(Math.random() * segments.length);
-            return parseInt(segments[randomIndex]);
+            return segments[randomIndex];
         }
 
         // Riskli çark
         function riskSpin() {
-            let segments = [-1000, -1000, -1000, -1000, -1000, 2, 2, 2, 2, 2];
-            let randomIndex = Math.floor(Math.random() * segments.length);
-            return segments[randomIndex];
+            let result = Math.random() < 0.5 ? -1000 : 2; // %50 -1000, %50 2x
+            return result;
         }
 
-        // Altın güncellemesi
+        // Altın güncelleme
         function updateGold(result) {
-            gold += result;
-            if (gold < 0) gold = 0;  // Altın sıfırdan aşağıya inemez
+            if (result === '+2 Hak') {
+                spinCount += 2;
+            } else if (result === '0 Bakiye') {
+                gold = 0;
+            } else if (result === 2) {
+                gold *= 2;
+            } else if (result === -1000) {
+                gold -= 1000;
+            } else {
+                gold += parseInt(result);
+            }
+
             document.getElementById('gold-balance').textContent = gold;
         }
 
-        // Sonuç mesajı
+        // Sonuç mesajını gösterme
         function showResultMessage(result) {
-            let message = '';
-            if (result === 2) {
-                message = 'Tebrikler, 2x kazandınız!';
-            } else if (result === -1000) {
-                message = 'Üzgünüz, -1000 altın kaybettiniz!';
-            } else {
-                message = `Kazandığınız: ${result} altın`;
-            }
-            document.getElementById('result-message').textContent = message;
+            document.getElementById('result-message').textContent = `Sonuç: ${result} altın kazandınız!`;
         }
 
-        // Sıralama güncelleme
+        // Liderboard'u güncelleme
         function updateLeaderboard() {
-            if (!leaderboard.find(user => user.username === username)) {
-                leaderboard.push({ username, gold });
+            if (!username || gold <= 0) return;
+
+            leaderboard.push({ username: username, gold: gold });
+            leaderboard.sort((a, b) => b.gold - a.gold);
+
+            if (leaderboard.length > 10) {
+                leaderboard = leaderboard.slice(0, 10);  // En iyi 10 kişiyi göster
             }
 
-            leaderboard.sort((a, b) => b.gold - a.gold); // Altınlarına göre sırala
-            leaderboard = leaderboard.slice(0, 5); // En iyi 5 kullanıcıyı göster
-
-            // Leaderboard güncelleme
-            let leaderboardHTML = '';
-            leaderboard.forEach((user, index) => {
-                leaderboardHTML += `<li>${index + 1}. ${user.username} - ${user.gold} Altın</li>`;
-            });
-            document.getElementById('leaderboard').innerHTML = leaderboardHTML;
             localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+
+            const leaderboardList = document.getElementById('leaderboard');
+            leaderboardList.innerHTML = '';
+
+            leaderboard.forEach((user, index) => {
+                let listItem = document.createElement('li');
+                listItem.textContent = `${index + 1}. ${user.username} - ${user.gold} Altın`;
+                leaderboardList.appendChild(listItem);
+            });
         }
 
-        // İlk açılışta kullanıcı adı varsa yükleyelim
-        if (localStorage.getItem('username')) {
-            username = localStorage.getItem('username');
-            document.getElementById('welcome-msg').textContent = `${username} hoş geldiniz!`;
-            document.querySelector('.profile-section').style.display = 'none';
-            document.querySelector('.game-section').style.display = 'block';
-            updateLeaderboard();
-        }
     </script>
 </body>
 </html>
