@@ -48,6 +48,32 @@
         button:disabled {
             background-color: #777;
         }
+
+        canvas {
+            margin: 20px auto;
+            display: block;
+            background: #fff;
+            border: 5px solid #4CAF50;
+            border-radius: 50%;
+        }
+
+        #leaderboard {
+            margin-top: 20px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        #leaderboard ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #leaderboard li {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -61,42 +87,143 @@
         </div>
         <div id="game-section" class="hidden">
             <h2>Hoş geldiniz, <span id="welcome-user"></span>!</h2>
-            <p>Oyun ekranı buraya gelecek.</p>
+            <canvas id="wheel" width="500" height="500"></canvas>
+            <button id="spin-btn">Çevir!</button>
+            <p id="result-msg"></p>
+            <div id="leaderboard">
+                <h3>Sıralama:</h3>
+                <ul id="leaderboard-list"></ul>
+            </div>
         </div>
     </div>
 
     <script>
-        // Giriş butonu
-        document.getElementById('login-btn').addEventListener('click', () => {
+        const loginBtn = document.getElementById('login-btn');
+        const spinBtn = document.getElementById('spin-btn');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const wheelCanvas = document.getElementById('wheel');
+        const ctx = wheelCanvas.getContext('2d');
+
+        let userData = {};
+
+        // Çarkın bölümleri
+        const segments = [
+            { label: "+10 Altın", value: 10 },
+            { label: "+20 Altın", value: 20 },
+            { label: "+30 Altın", value: 30 },
+            { label: "+40 Altın", value: 40 },
+            { label: "+50 Altın", value: 50 },
+            { label: "+500 Altın", value: 500 },
+            { label: "+2 Hak", value: "extra" },
+            { label: "0 Bakiye", value: "zero" },
+            { label: "+2 Hak", value: "extra" },
+            { label: "0 Bakiye", value: "zero" }
+        ];
+
+        const drawWheel = () => {
+            const radius = wheelCanvas.width / 2;
+            const arc = (2 * Math.PI) / segments.length;
+            for (let i = 0; i < segments.length; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = i % 2 === 0 ? "#4CAF50" : "#FFC107";
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius, i * arc, (i + 1) * arc);
+                ctx.fill();
+                ctx.save();
+                ctx.translate(radius, radius);
+                ctx.rotate((i + 0.5) * arc);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "black";
+                ctx.fillText(segments[i].label, radius - 10, 10);
+                ctx.restore();
+            }
+        };
+
+        const rotateWheel = (onComplete) => {
+            let angle = 0;
+            const spinDuration = Math.random() * 3 + 2; // Rastgele 2-5 saniye
+            const spinSpeed = Math.random() * 10 + 10;
+
+            const interval = setInterval(() => {
+                ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+                ctx.save();
+                ctx.translate(wheelCanvas.width / 2, wheelCanvas.height / 2);
+                ctx.rotate((angle += spinSpeed) * Math.PI / 180);
+                ctx.translate(-wheelCanvas.width / 2, -wheelCanvas.height / 2);
+                drawWheel();
+                ctx.restore();
+
+                if ((angle / 360) > spinDuration) {
+                    clearInterval(interval);
+                    const resultIndex = Math.floor((angle / 360) % segments.length);
+                    onComplete(segments[resultIndex]);
+                }
+            }, 30);
+        };
+
+        const updateLeaderboard = () => {
+            const leaderboardData = Object.entries(JSON.parse(localStorage.getItem("leaderboard") || "{}"))
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            leaderboardList.innerHTML = "";
+            leaderboardData.forEach(([username, score]) => {
+                const li = document.createElement('li');
+                li.textContent = `${username}: ${score} altın`;
+                leaderboardList.appendChild(li);
+            });
+        };
+
+        loginBtn.addEventListener('click', () => {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
 
             if (!username || !password) {
-                document.getElementById('login-msg').textContent = 'Lütfen kullanıcı adı ve şifre girin!';
+                document.getElementById('login-msg').textContent = "Lütfen kullanıcı adı ve şifre girin!";
                 return;
             }
 
-            // Kullanıcı bilgilerini kontrol et
-            let userData = JSON.parse(localStorage.getItem(username));
-            if (!userData) {
-                // Yeni kullanıcı oluştur
-                userData = { username, password };
-                localStorage.setItem(username, JSON.stringify(userData));
-                document.getElementById('login-msg').textContent = 'Kayıt oluşturuldu, giriş başarılı!';
-            } else {
-                // Şifreyi kontrol et
-                if (userData.password !== password) {
-                    document.getElementById('login-msg').textContent = 'Hatalı şifre!';
-                    return;
-                }
-                document.getElementById('login-msg').textContent = 'Giriş başarılı!';
+            const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+            if (!users[username]) {
+                users[username] = { password, gold: 0 };
+                localStorage.setItem("users", JSON.stringify(users));
+            } else if (users[username].password !== password) {
+                document.getElementById('login-msg').textContent = "Hatalı şifre!";
+                return;
             }
 
-            // Giriş başarılı, oyun ekranına geç
+            userData = users[username];
+            document.getElementById('welcome-user').textContent = username;
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('game-section').classList.remove('hidden');
-            document.getElementById('welcome-user').textContent = userData.username;
+            updateLeaderboard();
         });
+
+        spinBtn.addEventListener('click', () => {
+            rotateWheel((result) => {
+                if (result.value === "extra") {
+                    alert("2 Ekstra Hak Kazandınız!");
+                } else if (result.value === "zero") {
+                    alert("Bakiyeniz sıfırlandı!");
+                    userData.gold = 0;
+                } else {
+                    userData.gold += result.value;
+                    alert(`${result.label}`);
+                }
+
+                const users = JSON.parse(localStorage.getItem("users") || "{}");
+                users[userData.username] = userData;
+                localStorage.setItem("users", JSON.stringify(users));
+
+                const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "{}");
+                leaderboard[userData.username] = userData.gold;
+                localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+                updateLeaderboard();
+            });
+        });
+
+        drawWheel();
     </script>
 </body>
 </html>
