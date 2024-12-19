@@ -1,228 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şans Çarkı</title>
+    <title>Eğlenceli Ejderha</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #2c3e50, #4ca1af);
-            color: white;
-            text-align: center;
             margin: 0;
-            padding: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: black;
+            font-family: Arial, sans-serif;
         }
 
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            z-index: -1;
         }
 
-        input[type="text"], input[type="password"] {
-            padding: 10px;
-            width: 250px;
-            margin: 10px;
-            border-radius: 5px;
-            border: none;
+        .background div {
+            width: 100%;
+            height: 100%;
+            animation: changeColor 3s infinite;
         }
 
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
+        @keyframes changeColor {
+            0% { background-color: red; }
+            25% { background-color: yellow; }
+            50% { background-color: green; }
+            75% { background-color: blue; }
+            100% { background-color: purple; }
         }
 
-        canvas {
-            margin: 20px auto;
-            display: block;
-            background-color: white;
-            border: 5px solid #4CAF50;
-            border-radius: 50%;
+        .dragon {
+            position: relative;
+            z-index: 10;
+            animation: dance 2s infinite;
         }
 
-        #leaderboard {
-            margin-top: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 10px;
-            max-width: 400px;
-            margin: auto;
+        .dragon img {
+            width: 150px;
+            height: auto;
         }
 
-        #leaderboard ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #leaderboard li {
-            font-size: 1.2em;
-            margin: 10px 0;
-        }
-
-        #game-section {
-            display: none;
+        @keyframes dance {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
     </style>
 </head>
 <body>
-    <div id="login-section">
-        <h1>Şans Çarkı</h1>
-        <input type="text" id="username" placeholder="Kullanıcı Adı">
-        <input type="password" id="password" placeholder="Şifre">
-        <button id="login-btn">Giriş Yap</button>
-        <p id="login-msg"></p>
+    <div class="background">
+        <!-- Arka plandaki renkli kareler -->
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
     </div>
-
-    <div id="game-section">
-        <h2>Hoş Geldiniz, <span id="user-name-display"></span>!</h2>
-        <canvas id="wheel" width="400" height="400"></canvas>
-        <button id="spin-btn">Çevir</button>
-        <p>Haklar: <span id="spin-count">5</span></p>
-        <div id="leaderboard">
-            <h3>Sıralama:</h3>
-            <ul id="leaderboard-list"></ul>
-        </div>
+    <div class="dragon">
+        <!-- Dans eden ejderha -->
+        <img src="https://cdn.pixabay.com/animation/2023/06/14/20/54/20-54-08-98_512.gif" alt="Dans Eden Ejderha">
     </div>
-
-    <script>
-        const loginSection = document.getElementById("login-section");
-        const gameSection = document.getElementById("game-section");
-        const usernameInput = document.getElementById("username");
-        const passwordInput = document.getElementById("password");
-        const loginBtn = document.getElementById("login-btn");
-        const loginMsg = document.getElementById("login-msg");
-        const userNameDisplay = document.getElementById("user-name-display");
-        const spinCountDisplay = document.getElementById("spin-count");
-        const spinBtn = document.getElementById("spin-btn");
-        const leaderboardList = document.getElementById("leaderboard-list");
-        const canvas = document.getElementById("wheel");
-        const ctx = canvas.getContext("2d");
-
-        let currentUser = null;
-        let users = JSON.parse(localStorage.getItem("users")) || {};
-        let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || {};
-
-        const wheelSections = [
-            { label: "+10 Altın", value: 10 },
-            { label: "+20 Altın", value: 20 },
-            { label: "+30 Altın", value: 30 },
-            { label: "+40 Altın", value: 40 },
-            { label: "+50 Altın", value: 50 },
-            { label: "+500 Altın", value: 500 },
-            { label: "+2 Hak", value: "extra" },
-            { label: "0 Altın", value: "zero" }
-        ];
-
-        loginBtn.addEventListener("click", () => {
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (!username || !password) {
-                loginMsg.textContent = "Lütfen kullanıcı adı ve şifre girin!";
-                return;
-            }
-
-            if (!users[username]) {
-                users[username] = { password, gold: 0, spins: 5 };
-            } else if (users[username].password !== password) {
-                loginMsg.textContent = "Hatalı şifre!";
-                return;
-            }
-
-            currentUser = username;
-            localStorage.setItem("users", JSON.stringify(users));
-            userNameDisplay.textContent = username;
-            spinCountDisplay.textContent = users[username].spins;
-            loginSection.style.display = "none";
-            gameSection.style.display = "block";
-            updateLeaderboard();
-            drawWheel();
-        });
-
-        spinBtn.addEventListener("click", () => {
-            const user = users[currentUser];
-            if (user.spins <= 0) {
-                alert("Haklarınız tükendi!");
-                return;
-            }
-
-            user.spins -= 1;
-            spinCountDisplay.textContent = user.spins;
-            rotateWheel((result) => {
-                if (result.value === "extra") {
-                    user.spins += 2;
-                } else if (result.value === "zero") {
-                    user.gold = 0;
-                } else {
-                    user.gold += result.value;
-                }
-
-                leaderboard[currentUser] = user.gold;
-                localStorage.setItem("users", JSON.stringify(users));
-                localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-                updateLeaderboard();
-            });
-        });
-
-        function drawWheel() {
-            const radius = canvas.width / 2;
-            const arc = (2 * Math.PI) / wheelSections.length;
-
-            for (let i = 0; i < wheelSections.length; i++) {
-                ctx.beginPath();
-                ctx.moveTo(radius, radius);
-                ctx.arc(radius, radius, radius, i * arc, (i + 1) * arc);
-                ctx.fillStyle = i % 2 === 0 ? "#FFC107" : "#4CAF50";
-                ctx.fill();
-                ctx.save();
-                ctx.translate(radius, radius);
-                ctx.rotate((i + 0.5) * arc);
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#000";
-                ctx.font = "16px Arial";
-                ctx.fillText(wheelSections[i].label, radius - 10, 10);
-                ctx.restore();
-            }
-        }
-
-        function rotateWheel(callback) {
-            let angle = 0;
-            const spinTime = Math.random() * 3000 + 2000;
-            const interval = setInterval(() => {
-                angle += 10;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate(angle * Math.PI / 180);
-                ctx.translate(-canvas.width / 2, -canvas.height / 2);
-                drawWheel();
-                ctx.restore();
-            }, 30);
-
-            setTimeout(() => {
-                clearInterval(interval);
-                const resultIndex = Math.floor(((angle / 360) % wheelSections.length));
-                callback(wheelSections[resultIndex]);
-            }, spinTime);
-        }
-
-        function updateLeaderboard() {
-            leaderboardList.innerHTML = "";
-            const sorted = Object.entries(leaderboard)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 5);
-
-            sorted.forEach(([name, gold], index) => {
-                const li = document.createElement("li");
-                li.textContent = `${index + 1}. ${name}: ${gold} altın`;
-                leaderboardList.appendChild(li);
-            });
-        }
-    </script>
+    <audio autoplay loop>
+        <source src="https://www.fesliyanstudios.com/play-mp3/387" type="audio/mpeg">
+        Tarayıcınız bu sesi desteklemiyor.
+    </audio>
 </body>
 </html>
