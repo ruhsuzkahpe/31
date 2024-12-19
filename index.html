@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dans Eden Ejderha</title>
     <style>
-        /* Genel ayarlar */
+        /* Genel Ayarlar */
         * {
             margin: 0;
             padding: 0;
@@ -13,15 +13,15 @@
         }
 
         body {
-            overflow: hidden;
             height: 100vh;
-            background: black;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: black;
         }
 
-        /* Arka plan */
+        /* Arka Plan */
         .background {
             position: fixed;
             top: 0;
@@ -29,18 +29,18 @@
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(8, 1fr); /* Karelerin boyutu */
-            grid-template-rows: repeat(8, 1fr);
+            grid-template-columns: repeat(6, 1fr); /* Kareler için */
+            grid-template-rows: repeat(6, 1fr);
             z-index: -1;
         }
 
         .background div {
+            animation: colorChange 3s infinite;
             width: 100%;
             height: 100%;
-            animation: changeColor 2s infinite;
         }
 
-        @keyframes changeColor {
+        @keyframes colorChange {
             0% { background-color: red; }
             25% { background-color: yellow; }
             50% { background-color: green; }
@@ -51,48 +51,46 @@
         /* Ejderha */
         .dragon {
             position: relative;
-            z-index: 10;
-            animation: dance 2s infinite;
+            z-index: 1;
+            animation: bounce 2s infinite;
         }
 
         .dragon img {
-            width: 200px; /* Ejderha boyutu */
+            width: 200px;
             height: auto;
-            display: block;
         }
 
-        @keyframes dance {
+        @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-30px); }
+            50% { transform: translateY(-20px); }
         }
 
-        /* Ses */
+        /* Ses Gizleme */
         audio {
             display: none;
         }
     </style>
 </head>
 <body>
-    <!-- Arka plan kareleri -->
+    <!-- Arka Plan Kareleri -->
     <div class="background">
-        <!-- Daha büyük kareler için grid -->
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
     </div>
 
-    <!-- Ejderha -->
+    <!-- Dans Eden Ejderha -->
     <div class="dragon">
         <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" alt="Dans Eden Ejderha">
     </div>
 
-    <!-- Müzik -->
+    <!-- Arka Plan Müziği -->
     <audio autoplay loop>
         <source src="https://www.fesliyanstudios.com/play-mp3/387" type="audio/mpeg">
-        Tarayıcınız bu sesi desteklemiyor.
+        Tarayıcınız ses dosyasını desteklemiyor.
     </audio>
 </body>
 </html>
