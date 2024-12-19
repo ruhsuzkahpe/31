@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eğlenceli Ejderha</title>
+    <title>Dans Eden Ejderha</title>
     <style>
+        /* Genel ayarlar */
         body {
             margin: 0;
+            padding: 0;
             overflow: hidden;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             background: black;
-            font-family: Arial, sans-serif;
         }
 
+        /* Arka plan */
         .background {
             position: absolute;
             top: 0;
@@ -23,15 +25,15 @@
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
+            grid-template-columns: repeat(8, 1fr); /* Daha büyük kareler için */
+            grid-template-rows: repeat(8, 1fr);
             z-index: -1;
         }
 
         .background div {
             width: 100%;
             height: 100%;
-            animation: changeColor 3s infinite;
+            animation: changeColor 2s infinite;
         }
 
         @keyframes changeColor {
@@ -42,41 +44,44 @@
             100% { background-color: purple; }
         }
 
+        /* Ejderha */
         .dragon {
             position: relative;
-            z-index: 10;
             animation: dance 2s infinite;
         }
 
         .dragon img {
-            width: 150px;
+            width: 250px; /* Daha büyük bir ejderha */
             height: auto;
         }
 
         @keyframes dance {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        /* Ses için bir uyarı */
+        audio {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <!-- Arka plan kareleri -->
     <div class="background">
-        <!-- Arka plandaki renkli kareler -->
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
     </div>
+
+    <!-- Dans eden ejderha -->
     <div class="dragon">
-        <!-- Dans eden ejderha -->
         <img src="https://cdn.pixabay.com/animation/2023/06/14/20/54/20-54-08-98_512.gif" alt="Dans Eden Ejderha">
     </div>
+
+    <!-- Arka planda çalan müzik -->
     <audio autoplay loop>
         <source src="https://www.fesliyanstudios.com/play-mp3/387" type="audio/mpeg">
         Tarayıcınız bu sesi desteklemiyor.
