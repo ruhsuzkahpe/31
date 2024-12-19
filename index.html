@@ -6,26 +6,30 @@
     <title>Dans Eden Ejderha</title>
     <style>
         /* Genel ayarlar */
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             overflow: hidden;
             height: 100vh;
+            background: black;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: black;
         }
 
         /* Arka plan */
         .background {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(8, 1fr); /* Daha büyük kareler için */
+            grid-template-columns: repeat(8, 1fr); /* Karelerin boyutu */
             grid-template-rows: repeat(8, 1fr);
             z-index: -1;
         }
@@ -47,12 +51,14 @@
         /* Ejderha */
         .dragon {
             position: relative;
+            z-index: 10;
             animation: dance 2s infinite;
         }
 
         .dragon img {
-            width: 250px; /* Daha büyük bir ejderha */
+            width: 200px; /* Ejderha boyutu */
             height: auto;
+            display: block;
         }
 
         @keyframes dance {
@@ -60,7 +66,7 @@
             50% { transform: translateY(-30px); }
         }
 
-        /* Ses için bir uyarı */
+        /* Ses */
         audio {
             display: none;
         }
@@ -69,6 +75,8 @@
 <body>
     <!-- Arka plan kareleri -->
     <div class="background">
+        <!-- Daha büyük kareler için grid -->
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
@@ -76,12 +84,12 @@
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
     </div>
 
-    <!-- Dans eden ejderha -->
+    <!-- Ejderha -->
     <div class="dragon">
-        <img src="https://cdn.pixabay.com/animation/2023/06/14/20/54/20-54-08-98_512.gif" alt="Dans Eden Ejderha">
+        <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" alt="Dans Eden Ejderha">
     </div>
 
-    <!-- Arka planda çalan müzik -->
+    <!-- Müzik -->
     <audio autoplay loop>
         <source src="https://www.fesliyanstudios.com/play-mp3/387" type="audio/mpeg">
         Tarayıcınız bu sesi desteklemiyor.
