@@ -6,9 +6,9 @@
     <title>Hill Climb Racing Basit</title>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; margin: 0; overflow: hidden; background: #87CEEB; }
-        canvas { background: #c0c0c0; display: block; margin: auto; }
+        canvas { display: block; background: #c0c0c0; margin: auto; }
         #controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); }
-        button { padding: 10px 20px; font-size: 16px; margin: 5px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -23,38 +23,26 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = 800;
+        canvas.height = 400;
 
-        let car = {
-            x: 100,
-            y: canvas.height - 100,
-            width: 50,
-            height: 30,
-            speed: 0,
-            gravity: 0.5,
-            lift: -10,
-            velocityY: 0
-        };
-
-        let ground = {
-            x: 0,
-            y: canvas.height - 50,
-            width: canvas.width,
-            height: 50
-        };
-
-        let gas = false;
-        let brake = false;
+        let car = { x: 100, y: 300, width: 50, height: 30, speed: 0, gravity: 0.5, velocityY: 0 };
+        let ground = { y: 350, height: 50 };
+        let gas = false, brake = false;
 
         function drawCar() {
             ctx.fillStyle = "red";
             ctx.fillRect(car.x, car.y, car.width, car.height);
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(car.x + 10, car.y + 30, 10, 0, Math.PI * 2);
+            ctx.arc(car.x + 40, car.y + 30, 10, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function drawGround() {
             ctx.fillStyle = "green";
-            ctx.fillRect(ground.x, ground.y, ground.width, ground.height);
+            ctx.fillRect(0, ground.y, canvas.width, ground.height);
         }
 
         function updateCar() {
@@ -62,15 +50,13 @@
             if (brake) car.speed -= 0.2;
 
             car.x += car.speed;
-
-            if (car.y + car.height < ground.y) {
-                car.velocityY += car.gravity;
-            } else {
-                car.velocityY = 0;
-                car.y = ground.y - car.height;
-            }
-
+            car.velocityY += car.gravity;
             car.y += car.velocityY;
+
+            if (car.y + car.height > ground.y) {
+                car.y = ground.y - car.height;
+                car.velocityY = 0;
+            }
         }
 
         function gameLoop() {
