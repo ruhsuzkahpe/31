@@ -26,9 +26,14 @@
         canvas.width = 800;
         canvas.height = 400;
 
-        let car = { x: 100, y: 300, width: 50, height: 30, speed: 0, gravity: 0.5, velocityY: 0 };
-        let ground = { y: 350, height: 50 };
+        let car = { x: 100, y: 200, width: 50, height: 30, speed: 0, velocityY: 0 };
         let gas = false, brake = false;
+
+        // Dalgalı yollar oluştur
+        let road = [];
+        for (let i = 0; i < 15; i++) {
+            road.push({ x: i * 80, y: 250 + Math.sin(i * 0.5) * 50 });
+        }
 
         function drawCar() {
             ctx.fillStyle = "red";
@@ -40,28 +45,36 @@
             ctx.fill();
         }
 
-        function drawGround() {
-            ctx.fillStyle = "green";
-            ctx.fillRect(0, ground.y, canvas.width, ground.height);
+        function drawRoad() {
+            ctx.strokeStyle = "green";
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(road[0].x, road[0].y);
+            for (let i = 1; i < road.length; i++) {
+                ctx.lineTo(road[i].x, road[i].y);
+            }
+            ctx.stroke();
         }
 
         function updateCar() {
-            if (gas) car.speed += 0.2;
-            if (brake) car.speed -= 0.2;
+            if (gas) car.speed += 0.1;
+            if (brake) car.speed -= 0.1;
 
             car.x += car.speed;
-            car.velocityY += car.gravity;
-            car.y += car.velocityY;
 
-            if (car.y + car.height > ground.y) {
-                car.y = ground.y - car.height;
-                car.velocityY = 0;
+            // Arabayı yolun eğimine uygun hale getir
+            for (let i = 0; i < road.length - 1; i++) {
+                if (car.x >= road[i].x && car.x <= road[i + 1].x) {
+                    let slope = (road[i + 1].y - road[i].y) / (road[i + 1].x - road[i].x);
+                    car.y = road[i].y + slope * (car.x - road[i].x) - car.height;
+                    break;
+                }
             }
         }
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawGround();
+            drawRoad();
             updateCar();
             drawCar();
             requestAnimationFrame(gameLoop);
