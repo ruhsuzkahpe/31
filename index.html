@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İsmail'i Ne Kadar Tanıyorsun?</title>
+    <title>İsmail'i Ne Kadar Tanıyorsun? - Uzman Modu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* CSS Kodları - Görsel Düzenlemeler */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e0f2f7; /* Açık mavi tonu */
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); /* Mor ve Mavi Geçişli Arkaplan */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -16,91 +17,152 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            color: #333;
+            overflow: hidden; /* Animasyonlar için */
+        }
+
+        /* Arkaplan baloncuk animasyonu */
+        .background-bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: bubbleRise 15s infinite ease-in;
+        }
+
+        .bubble:nth-child(1) { width: 60px; height: 60px; left: 10%; animation-duration: 12s; animation-delay: 0s; }
+        .bubble:nth-child(2) { width: 80px; height: 80px; left: 20%; animation-duration: 15s; animation-delay: 2s; }
+        .bubble:nth-child(3) { width: 50px; height: 50px; left: 30%; animation-duration: 10s; animation-delay: 4s; }
+        .bubble:nth-child(4) { width: 70px; height: 70px; left: 40%; animation-duration: 18s; animation-delay: 6s; }
+        .bubble:nth-child(5) { width: 90px; height: 90px; left: 50%; animation-duration: 13s; animation-delay: 8s; }
+        .bubble:nth-child(6) { width: 65px; height: 65px; left: 60%; animation-duration: 16s; animation-delay: 10s; }
+        .bubble:nth-child(7) { width: 75px; height: 75px; left: 70%; animation-duration: 11s; animation-delay: 12s; }
+        .bubble:nth-child(8) { width: 85px; height: 85px; left: 80%; animation-duration: 14s; animation-delay: 14s; }
+        .bubble:nth-child(9) { width: 55px; height: 55px; left: 90%; animation-duration: 17s; animation-delay: 16s; }
+
+        @keyframes bubbleRise {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
         }
 
         .quiz-container {
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.95); /* Yarı şeffaf beyaz */
             padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 550px;
+            max-width: 600px;
             text-align: center;
-            animation: fadeIn 1s ease-out;
+            animation: containerPop 0.8s ease-out;
+            border: 2px solid #a770ef; /* Mor kenarlık */
+            position: relative; /* Z-index için */
+            z-index: 10;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes containerPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
         }
 
         h1 {
-            color: #2c3e50; /* Koyu gri */
+            font-family: 'Montserrat', sans-serif;
+            color: #4a148c; /* Koyu mor */
             margin-bottom: 30px;
-            font-size: 2.2em;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
         .question {
             margin-bottom: 25px;
-            font-size: 1.4em;
-            color: #34495e; /* Orta gri */
-            min-height: 60px;
+            font-size: 1.5em;
+            color: #333;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            line-height: 1.4;
+            line-height: 1.5;
+            animation: textFadeIn 0.8s ease-out;
+        }
+
+        @keyframes textFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .options label {
             display: block;
-            background-color: #f0f8ff; /* Çok açık mavi */
-            padding: 15px 20px;
-            margin-bottom: 12px;
-            border-radius: 8px;
+            background-color: #f3e5f5; /* Çok açık mor */
+            padding: 18px 25px;
+            margin-bottom: 15px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             text-align: left;
-            border: 1px solid #cce7ee;
-            font-size: 1.1em;
-            color: #4a637a;
+            border: 1px solid #ce93d8; /* Hafif mor kenarlık */
+            font-size: 1.2em;
+            color: #6a1b9a; /* Mor yazı */
             display: flex;
             align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
 
         .options label:hover {
-            background-color: #e0f0f5;
-            transform: translateY(-2px);
+            background-color: #e1bee7;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
         }
 
         .options input[type="radio"] {
-            margin-right: 15px;
-            transform: scale(1.2);
+            margin-right: 18px;
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: #8e24aa; /* Radio butonu rengi */
         }
 
         button {
-            background-color: #3498db; /* Mavi */
+            background-color: #8e24aa; /* Koyu mor */
             color: white;
-            padding: 14px 30px;
+            padding: 15px 35px;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
+            border-radius: 10px;
+            font-size: 1.2em;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-top: 25px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
         }
 
         button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
+            background-color: #6a1b9a;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
         .feedback {
-            margin-top: 15px;
+            margin-top: 20px;
             font-weight: bold;
-            font-size: 1.1em;
-            min-height: 25px; /* Geri bildirim alanı için boşluk */
+            font-size: 1.2em;
+            min-height: 30px;
+            animation: feedbackFadeIn 0.5s ease-out;
+        }
+
+        @keyframes feedbackFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .feedback.correct {
@@ -108,36 +170,56 @@
         }
 
         .feedback.incorrect {
-            color: #e74c3c; /* Kırmızı */
+            color: #c0392b; /* Kırmızı */
         }
 
         .result {
-            margin-top: 30px;
-            font-size: 1.5em;
+            margin-top: 35px;
+            font-size: 1.6em;
             color: #2c3e50;
             line-height: 1.6;
+            animation: resultPop 0.8s ease-out;
+        }
+
+        @keyframes resultPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .whatsapp-button {
             display: inline-block;
             background-color: #25D366; /* WhatsApp yeşili */
             color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
+            padding: 16px 35px;
+            border-radius: 10px;
             text-decoration: none;
-            font-size: 1.2em;
-            margin-top: 30px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            font-size: 1.3em;
+            margin-top: 35px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-family: 'Montserrat', sans-serif;
         }
 
         .whatsapp-button:hover {
             background-color: #1DA851;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
+    <div class="background-bubbles">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
     <div class="quiz-container">
         <h1>İsmail'i Ne Kadar Tanıyorsun?</h1>
         <div id="quiz">
@@ -171,24 +253,25 @@
 
         let currentQuestionIndex = 0;
         let score = 0;
-        let answeredThisQuestion = false; // Kullanıcının bu soruyu cevaplayıp cevaplamadığını takip eder
+        let canProceed = false; // Kullanıcının bir sonraki soruya geçip geçemeyeceğini kontrol eder
 
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const nextButton = document.getElementById('next-button');
         const quizContainer = document.getElementById('quiz');
         const resultText = document.getElementById('result-text');
-        const feedbackText = document.getElementById('feedback-text'); // Geri bildirim alanı
+        const feedbackText = document.getElementById('feedback-text');
 
         function loadQuestion() {
-            answeredThisQuestion = false; // Yeni soru yüklendiğinde sıfırla
-            feedbackText.textContent = ''; // Geri bildirim mesajını temizle
-            feedbackText.className = 'feedback'; // Geri bildirim sınıfını temizle
-            nextButton.textContent = 'Cevapla'; // Buton metnini sıfırla
+            canProceed = false;
+            feedbackText.textContent = '';
+            feedbackText.className = 'feedback';
+            nextButton.textContent = 'Cevapla';
+            nextButton.style.display = 'block'; // Butonu görünür yap
 
             const currentQuestion = questions[currentQuestionIndex];
             questionText.textContent = currentQuestion.question;
-            optionsContainer.innerHTML = ''; // Önceki seçenekleri temizle
+            optionsContainer.innerHTML = '';
 
             currentQuestion.options.forEach(option => {
                 const label = document.createElement('label');
@@ -196,9 +279,8 @@
                 input.type = 'radio';
                 input.name = 'answer';
                 input.value = option;
-                // Seçeneklere tıklanınca geri bildirimi temizle
                 input.addEventListener('change', () => {
-                    feedbackText.textContent = '';
+                    feedbackText.textContent = ''; // Seçenek değişince geri bildirimi temizle
                     feedbackText.className = 'feedback';
                 });
 
@@ -209,51 +291,55 @@
         }
 
         function handleAnswer() {
-            if (answeredThisQuestion) { // Eğer bu soru zaten cevaplandıysa, sonraki soruya geç
+            if (canProceed) { // Eğer bir sonraki soruya geçme izni varsa
                 currentQuestionIndex++;
                 if (currentQuestionIndex < questions.length) {
                     loadQuestion();
                 } else {
-                    showResult();
+                    showResult(true); // Tüm sorular doğru bilindi
                 }
                 return;
             }
 
             const selectedOption = document.querySelector('input[name="answer"]:checked');
             if (selectedOption) {
-                answeredThisQuestion = true; // Bu sorunun cevaplandığını işaretle
-                nextButton.textContent = 'Sonraki Soru'; // Buton metnini değiştir
-
                 if (selectedOption.value === questions[currentQuestionIndex].correct) {
                     score++;
                     feedbackText.textContent = 'Doğru cevap!';
                     feedbackText.className = 'feedback correct';
+                    canProceed = true; // Doğru cevaplandı, bir sonraki soruya geçebilir
+                    nextButton.textContent = 'Sonraki Soru';
                 } else {
                     feedbackText.textContent = `Yanlış cevap! Doğru cevap: ${questions[currentQuestionIndex].correct}`;
                     feedbackText.className = 'feedback incorrect';
+                    canProceed = false; // Yanlış cevaplandı, eleme durumu
+                    nextButton.style.display = 'none'; // Butonu gizle
+                    setTimeout(() => showResult(false), 2000); // 2 saniye sonra eleme sonucunu göster
                 }
             } else {
                 alert("Lütfen bir seçenek işaretleyin!");
             }
         }
 
-        function showResult() {
+        function showResult(passedAllQuestions) {
             quizContainer.style.display = 'none';
             resultText.style.display = 'block';
 
             let message = '';
-            if (score === questions.length) {
+            let whatsappLinkText = 'WhatsApp\'tan İletişime Geç';
+            let whatsappURL = `https://wa.me/905406190119?text=Merhaba,%20Ismail%20testini%20tamamladim!`;
+
+            if (passedAllQuestions) {
                 message = `Tebrikler! İsmail'i çok iyi tanıyorsun! ${score} sorudan ${score} tanesini doğru bildin.`;
-            } else if (score > 0) {
-                message = `İsmail'i fena tanımıyorsun! ${score} sorudan ${score} tanesini doğru bildin.`;
             } else {
-                message = `İsmail'i biraz daha tanıman gerekiyor galiba. Hiç doğru cevabın yok.`;
+                message = `Maalesef yanlış cevap verdin ve elendin. İsmail'i daha iyi tanımak için WhatsApp'tan iletişime geçebilirsin! (Doğru bildiğin soru sayısı: ${score})`;
+                whatsappURL = `https://wa.me/905406190119?text=Merhaba,%20Ismail%20testinde%20elendim%20ama%20daha%20iyi%20tanimak%20istiyorum!`; // Elenme durumuna özel mesaj
             }
 
             resultText.innerHTML = `
                 <p>${message}</p>
-                <a href="https://wa.me/905406190119?text=Merhaba,%20Ismail%20testini%20tamamladim!" target="_blank" class="whatsapp-button">
-                    WhatsApp'tan İletişime Geç
+                <a href="${whatsappURL}" target="_blank" class="whatsapp-button">
+                    ${whatsappLinkText}
                 </a>
             `;
         }
