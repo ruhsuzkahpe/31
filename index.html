@@ -1,4 +1,3 @@
-ismail_testi.html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,10 +5,10 @@ ismail_testi.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>İsmail'i Ne Kadar Tanıyorsun?</title>
     <style>
-        /* CSS Kodları */
+        /* CSS Kodları - Görsel Düzenlemeler */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f2f7; /* Açık mavi tonu */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,86 +19,121 @@ ismail_testi.html
         }
 
         .quiz-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
             text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 25px;
+            color: #2c3e50; /* Koyu gri */
+            margin-bottom: 30px;
+            font-size: 2.2em;
         }
 
         .question {
-            margin-bottom: 20px;
-            font-size: 1.2em;
-            color: #555;
-            min-height: 50px; /* Sorular için biraz boşluk bırakır */
+            margin-bottom: 25px;
+            font-size: 1.4em;
+            color: #34495e; /* Orta gri */
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
+            line-height: 1.4;
         }
 
         .options label {
             display: block;
-            background-color: #e9e9e9;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            background-color: #f0f8ff; /* Çok açık mavi */
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            text-align: left; /* Seçenekleri sola hizala */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-align: left;
+            border: 1px solid #cce7ee;
+            font-size: 1.1em;
+            color: #4a637a;
+            display: flex;
+            align-items: center;
         }
 
         .options label:hover {
-            background-color: #dcdcdc;
+            background-color: #e0f0f5;
+            transform: translateY(-2px);
         }
 
         .options input[type="radio"] {
-            margin-right: 10px;
+            margin-right: 15px;
+            transform: scale(1.2);
         }
 
         button {
-            background-color: #007bff;
+            background-color: #3498db; /* Mavi */
             color: white;
-            padding: 12px 25px;
+            padding: 14px 30px;
             border: none;
-            border-radius: 5px;
-            font-size: 1em;
+            border-radius: 8px;
+            font-size: 1.1em;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+            min-height: 25px; /* Geri bildirim alanı için boşluk */
+        }
+
+        .feedback.correct {
+            color: #27ae60; /* Yeşil */
+        }
+
+        .feedback.incorrect {
+            color: #e74c3c; /* Kırmızı */
         }
 
         .result {
             margin-top: 30px;
-            font-size: 1.3em;
-            color: #333;
+            font-size: 1.5em;
+            color: #2c3e50;
+            line-height: 1.6;
         }
 
         .whatsapp-button {
             display: inline-block;
             background-color: #25D366; /* WhatsApp yeşili */
             color: white;
-            padding: 12px 25px;
-            border-radius: 5px;
+            padding: 15px 30px;
+            border-radius: 8px;
             text-decoration: none;
-            font-size: 1.1em;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
+            font-size: 1.2em;
+            margin-top: 30px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .whatsapp-button:hover {
             background-color: #1DA851;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -109,13 +143,14 @@ ismail_testi.html
         <div id="quiz">
             <div class="question" id="question-text"></div>
             <div class="options" id="options-container"></div>
-            <button id="next-button">Sonraki Soru</button>
+            <div class="feedback" id="feedback-text"></div>
+            <button id="next-button">Cevapla</button>
         </div>
         <div class="result" id="result-text" style="display: none;"></div>
     </div>
 
     <script>
-        // JavaScript Kodları
+        // JavaScript Kodları - Test Mantığı
         const questions = [
             {
                 question: "İsmail hangi rengi seçerdi?",
@@ -136,14 +171,21 @@ ismail_testi.html
 
         let currentQuestionIndex = 0;
         let score = 0;
+        let answeredThisQuestion = false; // Kullanıcının bu soruyu cevaplayıp cevaplamadığını takip eder
 
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const nextButton = document.getElementById('next-button');
         const quizContainer = document.getElementById('quiz');
         const resultText = document.getElementById('result-text');
+        const feedbackText = document.getElementById('feedback-text'); // Geri bildirim alanı
 
         function loadQuestion() {
+            answeredThisQuestion = false; // Yeni soru yüklendiğinde sıfırla
+            feedbackText.textContent = ''; // Geri bildirim mesajını temizle
+            feedbackText.className = 'feedback'; // Geri bildirim sınıfını temizle
+            nextButton.textContent = 'Cevapla'; // Buton metnini sıfırla
+
             const currentQuestion = questions[currentQuestionIndex];
             questionText.textContent = currentQuestion.question;
             optionsContainer.innerHTML = ''; // Önceki seçenekleri temizle
@@ -154,23 +196,41 @@ ismail_testi.html
                 input.type = 'radio';
                 input.name = 'answer';
                 input.value = option;
+                // Seçeneklere tıklanınca geri bildirimi temizle
+                input.addEventListener('change', () => {
+                    feedbackText.textContent = '';
+                    feedbackText.className = 'feedback';
+                });
+
                 label.appendChild(input);
                 label.appendChild(document.createTextNode(option));
                 optionsContainer.appendChild(label);
             });
         }
 
-        function checkAnswer() {
-            const selectedOption = document.querySelector('input[name="answer"]:checked');
-            if (selectedOption) {
-                if (selectedOption.value === questions[currentQuestionIndex].correct) {
-                    score++;
-                }
+        function handleAnswer() {
+            if (answeredThisQuestion) { // Eğer bu soru zaten cevaplandıysa, sonraki soruya geç
                 currentQuestionIndex++;
                 if (currentQuestionIndex < questions.length) {
                     loadQuestion();
                 } else {
                     showResult();
+                }
+                return;
+            }
+
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (selectedOption) {
+                answeredThisQuestion = true; // Bu sorunun cevaplandığını işaretle
+                nextButton.textContent = 'Sonraki Soru'; // Buton metnini değiştir
+
+                if (selectedOption.value === questions[currentQuestionIndex].correct) {
+                    score++;
+                    feedbackText.textContent = 'Doğru cevap!';
+                    feedbackText.className = 'feedback correct';
+                } else {
+                    feedbackText.textContent = `Yanlış cevap! Doğru cevap: ${questions[currentQuestionIndex].correct}`;
+                    feedbackText.className = 'feedback incorrect';
                 }
             } else {
                 alert("Lütfen bir seçenek işaretleyin!");
@@ -198,7 +258,7 @@ ismail_testi.html
             `;
         }
 
-        nextButton.addEventListener('click', checkAnswer);
+        nextButton.addEventListener('click', handleAnswer);
 
         // Sayfa yüklendiğinde ilk soruyu göster
         loadQuestion();
