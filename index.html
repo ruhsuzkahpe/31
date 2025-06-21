@@ -61,12 +61,44 @@
             border-radius: 15px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 600px;
+            max-width: 600px; /* Sabit genişlik yerine maksimum genişlik */
             text-align: center;
             animation: containerPop 0.8s ease-out;
             border: 2px solid #a770ef; /* Mor kenarlık */
             position: relative; /* Z-index için */
             z-index: 10;
+
+            /* Mobil uyumluluk */
+            box-sizing: border-box; /* Padding ve border genişliğe dahil */
+            margin: 0 10px; /* Kenarlardan boşluk */
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 25px; /* Daha küçük padding */
+            }
+            h1 {
+                font-size: 1.8em; /* Daha küçük başlık */
+            }
+            .question {
+                font-size: 1.2em; /* Daha küçük soru metni */
+                min-height: 50px;
+            }
+            .options label {
+                font-size: 1em; /* Daha küçük seçenek metni */
+                padding: 12px 18px;
+            }
+            .options input[type="radio"] {
+                transform: scale(1.1); /* Radio butonu boyutu */
+                margin-right: 15px;
+            }
+            .whatsapp-button {
+                font-size: 1.1em;
+                padding: 12px 25px;
+            }
+            button { /* "Cevapla" butonu mobil cihazda gizlenecek */
+                display: none !important;
+            }
         }
 
         @keyframes containerPop {
@@ -144,6 +176,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 0.5px;
+            display: none; /* Otomatik ilerleme için varsayılan olarak gizli */
         }
 
         button:hover {
@@ -205,6 +238,61 @@
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
+
+        /* Kalp Patlaması Efekti */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .heart {
+            position: absolute;
+            background-color: #e0245e; /* Kırmızı kalp rengi */
+            transform: rotate(-45deg);
+            animation: heartBurst 2s forwards;
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        .heart:before,
+        .heart:after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: inherit;
+            border-radius: 50%;
+        }
+
+        .heart:before {
+            top: -50%;
+            left: 0;
+        }
+
+        .heart:after {
+            top: 0;
+            left: 50%;
+        }
+
+        @keyframes heartBurst {
+            0% {
+                transform: scale(0) rotate(-45deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(1.5) rotate(-45deg);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -226,10 +314,12 @@
             <div class="question" id="question-text"></div>
             <div class="options" id="options-container"></div>
             <div class="feedback" id="feedback-text"></div>
-            <button id="next-button">Cevapla</button>
+            <button id="next-button" style="display: none;">Cevapla</button>
         </div>
         <div class="result" id="result-text" style="display: none;"></div>
     </div>
+
+    <div class="hearts-container" id="hearts-container"></div>
 
     <script>
         // JavaScript Kodları - Test Mantığı
@@ -253,25 +343,24 @@
 
         let currentQuestionIndex = 0;
         let score = 0;
-        let canProceed = false; // Kullanıcının bir sonraki soruya geçip geçemeyeceğini kontrol eder
+        let answeredCurrentQuestion = false; // Bir sorunun zaten cevaplanıp cevaplanmadığını kontrol eder
 
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
-        const nextButton = document.getElementById('next-button');
+        const nextButton = document.getElementById('next-button'); // Gizlenecek olsa da referans tutuyoruz
         const quizContainer = document.getElementById('quiz');
         const resultText = document.getElementById('result-text');
         const feedbackText = document.getElementById('feedback-text');
+        const heartsContainer = document.getElementById('hearts-container');
 
         function loadQuestion() {
-            canProceed = false;
-            feedbackText.textContent = '';
-            feedbackText.className = 'feedback';
-            nextButton.textContent = 'Cevapla';
-            nextButton.style.display = 'block'; // Butonu görünür yap
+            answeredCurrentQuestion = false; // Yeni soru yüklendiğinde sıfırla
+            feedbackText.textContent = ''; // Geri bildirim mesajını temizle
+            feedbackText.className = 'feedback'; // Geri bildirim sınıfını temizle
 
             const currentQuestion = questions[currentQuestionIndex];
             questionText.textContent = currentQuestion.question;
-            optionsContainer.innerHTML = '';
+            optionsContainer.innerHTML = ''; // Önceki seçenekleri temizle
 
             currentQuestion.options.forEach(option => {
                 const label = document.createElement('label');
@@ -279,10 +368,8 @@
                 input.type = 'radio';
                 input.name = 'answer';
                 input.value = option;
-                input.addEventListener('change', () => {
-                    feedbackText.textContent = ''; // Seçenek değişince geri bildirimi temizle
-                    feedbackText.className = 'feedback';
-                });
+                // Seçenek seçildiğinde doğrudan handleAnswer'ı çağır
+                input.addEventListener('change', handleAnswer);
 
                 label.appendChild(input);
                 label.appendChild(document.createTextNode(option));
@@ -291,32 +378,33 @@
         }
 
         function handleAnswer() {
-            if (canProceed) { // Eğer bir sonraki soruya geçme izni varsa
-                currentQuestionIndex++;
-                if (currentQuestionIndex < questions.length) {
-                    loadQuestion();
-                } else {
-                    showResult(true); // Tüm sorular doğru bilindi
-                }
+            if (answeredCurrentQuestion) { // Eğer bu soru zaten cevaplandıysa, tekrar işlem yapma
                 return;
             }
 
             const selectedOption = document.querySelector('input[name="answer"]:checked');
             if (selectedOption) {
+                answeredCurrentQuestion = true; // Soru cevaplandı olarak işaretle
+
                 if (selectedOption.value === questions[currentQuestionIndex].correct) {
                     score++;
                     feedbackText.textContent = 'Doğru cevap!';
                     feedbackText.className = 'feedback correct';
-                    canProceed = true; // Doğru cevaplandı, bir sonraki soruya geçebilir
-                    nextButton.textContent = 'Sonraki Soru';
+                    setTimeout(() => { // Kısa bir gecikmeyle sonraki soruya geç
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex < questions.length) {
+                            loadQuestion();
+                        } else {
+                            showResult(true); // Tüm sorular doğru bilindi
+                        }
+                    }, 1000); // 1 saniye sonra geçiş
                 } else {
                     feedbackText.textContent = `Yanlış cevap! Doğru cevap: ${questions[currentQuestionIndex].correct}`;
                     feedbackText.className = 'feedback incorrect';
-                    canProceed = false; // Yanlış cevaplandı, eleme durumu
-                    nextButton.style.display = 'none'; // Butonu gizle
                     setTimeout(() => showResult(false), 2000); // 2 saniye sonra eleme sonucunu göster
                 }
             } else {
+                // Bu kısım normalde otomatik ilerlemede tetiklenmemeli
                 alert("Lütfen bir seçenek işaretleyin!");
             }
         }
@@ -326,11 +414,11 @@
             resultText.style.display = 'block';
 
             let message = '';
-            let whatsappLinkText = 'WhatsApp\'tan İletişime Geç';
             let whatsappURL = `https://wa.me/905406190119?text=Merhaba,%20Ismail%20testini%20tamamladim!`;
 
             if (passedAllQuestions) {
                 message = `Tebrikler! İsmail'i çok iyi tanıyorsun! ${score} sorudan ${score} tanesini doğru bildin.`;
+                triggerHeartsBurst(); // Kalp patlaması animasyonunu başlat
             } else {
                 message = `Maalesef yanlış cevap verdin ve elendin. İsmail'i daha iyi tanımak için WhatsApp'tan iletişime geçebilirsin! (Doğru bildiğin soru sayısı: ${score})`;
                 whatsappURL = `https://wa.me/905406190119?text=Merhaba,%20Ismail%20testinde%20elendim%20ama%20daha%20iyi%20tanimak%20istiyorum!`; // Elenme durumuna özel mesaj
@@ -339,12 +427,43 @@
             resultText.innerHTML = `
                 <p>${message}</p>
                 <a href="${whatsappURL}" target="_blank" class="whatsapp-button">
-                    ${whatsappLinkText}
+                    WhatsApp'tan İletişime Geç
                 </a>
             `;
         }
 
-        nextButton.addEventListener('click', handleAnswer);
+        // Kalp patlaması animasyonunu tetikleyen fonksiyon
+        function triggerHeartsBurst() {
+            const numberOfHearts = 25; // Patlayacak kalp sayısı
+            for (let i = 0; i < numberOfHearts; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                const size = Math.random() * 20 + 10; // Kalp boyutu (10px - 30px)
+                heart.style.width = `${size}px`;
+                heart.style.height = `${size}px`;
+
+                // Ekranın orta alt kısmından çıksınlar
+                const startX = window.innerWidth / 2;
+                const startY = window.innerHeight;
+
+                heart.style.left = `${startX}px`;
+                heart.style.top = `${startY}px`;
+
+                // Rastgele bitiş noktaları
+                const endX = Math.random() * window.innerWidth - (window.innerWidth / 2) + startX;
+                const endY = Math.random() * window.innerHeight * 0.8; // Yukarıya doğru patlama
+                
+                heart.style.setProperty('--x', `${endX - startX}px`);
+                heart.style.setProperty('--y', `${endY - startY}px`);
+
+                heartsContainer.appendChild(heart);
+
+                // Animasyon bitince kalbi kaldır
+                heart.addEventListener('animationend', () => {
+                    heart.remove();
+                });
+            }
+        }
 
         // Sayfa yüklendiğinde ilk soruyu göster
         loadQuestion();
