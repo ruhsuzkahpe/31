@@ -1,87 +1,207 @@
-!DOCTYPE html>
+ismail_testi.html
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hill Climb Racing Basit</title>
+    <title>İsmail'i Ne Kadar Tanıyorsun?</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; margin: 0; overflow: hidden; background: #87CEEB; }
-        canvas { display: block; background: #c0c0c0; margin: auto; }
-        #controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); }
-        button { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; }
+        /* CSS Kodları */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #555;
+            min-height: 50px; /* Sorular için biraz boşluk bırakır */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .options label {
+            display: block;
+            background-color: #e9e9e9;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: left; /* Seçenekleri sola hizala */
+        }
+
+        .options label:hover {
+            background-color: #dcdcdc;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 30px;
+            font-size: 1.3em;
+            color: #333;
+        }
+
+        .whatsapp-button {
+            display: inline-block;
+            background-color: #25D366; /* WhatsApp yeşili */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.1em;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .whatsapp-button:hover {
+            background-color: #1DA851;
+        }
     </style>
 </head>
 <body>
-
-    <canvas id="gameCanvas"></canvas>
-    <div id="controls">
-        <button onmousedown="gas=true" onmouseup="gas=false">Gaz</button>
-        <button onmousedown="brake=true" onmouseup="brake=false">Fren</button>
+    <div class="quiz-container">
+        <h1>İsmail'i Ne Kadar Tanıyorsun?</h1>
+        <div id="quiz">
+            <div class="question" id="question-text"></div>
+            <div class="options" id="options-container"></div>
+            <button id="next-button">Sonraki Soru</button>
+        </div>
+        <div class="result" id="result-text" style="display: none;"></div>
     </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        canvas.width = 800;
-        canvas.height = 400;
-
-        let car = { x: 100, y: 200, width: 50, height: 30, speed: 0, velocityY: 0 };
-        let gas = false, brake = false;
-
-        // Dalgalı yollar oluştur
-        let road = [];
-        for (let i = 0; i < 20; i++) {
-            road.push({ x: i * 80, y: 250 + Math.sin(i * 0.5) * 50 });
-        }
-
-        function drawCar() {
-            ctx.fillStyle = "red";
-            ctx.fillRect(car.x, car.y, car.width, car.height);
-            ctx.fillStyle = "black";
-            ctx.beginPath();
-            ctx.arc(car.x + 10, car.y + 30, 10, 0, Math.PI * 2);
-            ctx.arc(car.x + 40, car.y + 30, 10, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        function drawRoad() {
-            ctx.strokeStyle = "green";
-            ctx.lineWidth = 5;
-            ctx.beginPath();
-            ctx.moveTo(road[0].x, road[0].y);
-            for (let i = 1; i < road.length; i++) {
-                ctx.lineTo(road[i].x, road[i].y);
+        // JavaScript Kodları
+        const questions = [
+            {
+                question: "İsmail hangi rengi seçerdi?",
+                options: ["Mavi", "Kırmızı", "Yeşil", "Mor"],
+                correct: "Mor"
+            },
+            {
+                question: "İsmail'in boyu kaç santimetredir?",
+                options: ["175", "182", "189", "193"],
+                correct: "189"
+            },
+            {
+                question: "İsmail'in göz rengi ne?",
+                options: ["Mavi", "Kahverengi", "Yeşil", "Ela"],
+                correct: "Ela"
             }
-            ctx.stroke();
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextButton = document.getElementById('next-button');
+        const quizContainer = document.getElementById('quiz');
+        const resultText = document.getElementById('result-text');
+
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+            optionsContainer.innerHTML = ''; // Önceki seçenekleri temizle
+
+            currentQuestion.options.forEach(option => {
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'answer';
+                input.value = option;
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(option));
+                optionsContainer.appendChild(label);
+            });
         }
 
-        function updateCar() {
-            if (gas) car.speed += 0.1;
-            if (brake) car.speed -= 0.1;
-
-            car.x += car.speed;
-
-            // Arabayı yolun eğimine uygun hale getir
-            for (let i = 0; i < road.length - 1; i++) {
-                if (car.x >= road[i].x && car.x <= road[i + 1].x) {
-                    let slope = (road[i + 1].y - road[i].y) / (road[i + 1].x - road[i].x);
-                    car.y = road[i].y + slope * (car.x - road[i].x) - car.height;
-                    break;
+        function checkAnswer() {
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (selectedOption) {
+                if (selectedOption.value === questions[currentQuestionIndex].correct) {
+                    score++;
                 }
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            } else {
+                alert("Lütfen bir seçenek işaretleyin!");
             }
         }
 
-        function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawRoad();
-            updateCar();
-            drawCar();
-            requestAnimationFrame(gameLoop);
+        function showResult() {
+            quizContainer.style.display = 'none';
+            resultText.style.display = 'block';
+
+            let message = '';
+            if (score === questions.length) {
+                message = `Tebrikler! İsmail'i çok iyi tanıyorsun! ${score} sorudan ${score} tanesini doğru bildin.`;
+            } else if (score > 0) {
+                message = `İsmail'i fena tanımıyorsun! ${score} sorudan ${score} tanesini doğru bildin.`;
+            } else {
+                message = `İsmail'i biraz daha tanıman gerekiyor galiba. Hiç doğru cevabın yok.`;
+            }
+
+            resultText.innerHTML = `
+                <p>${message}</p>
+                <a href="https://wa.me/905406190119?text=Merhaba,%20Ismail%20testini%20tamamladim!" target="_blank" class="whatsapp-button">
+                    WhatsApp'tan İletişime Geç
+                </a>
+            `;
         }
 
-        gameLoop();
-    </script>
+        nextButton.addEventListener('click', checkAnswer);
 
+        // Sayfa yüklendiğinde ilk soruyu göster
+        loadQuestion();
+    </script>
 </body>
 </html>
