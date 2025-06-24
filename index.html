@@ -3,243 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eşiyok'u Ne Kadar İyi Tanıyorsun?</title>
+    <title>Eşiyok'u Gerçekten Tanıyor Musun?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* TEMEL STİLLER */
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --light-text-color: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             padding: 20px;
+            overflow: hidden;
         }
 
-        .container {
-            background-color: #ffffff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
+        /* ANA TEST KARTI */
+        .quiz-container {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+            transform: scale(1);
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        
+        .quiz-container.hiding {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        
+        .quiz-header {
+            padding: 30px 40px;
         }
 
-        h1 {
-            color: #1c1e21;
-            text-align: center;
+        /* İLERLEME ÇUBUĞU */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px;
+            transition: width 0.4s ease-in-out;
+        }
+
+        #question-counter {
+            font-size: 0.9em;
+            color: var(--light-text-color);
             margin-bottom: 10px;
+            font-weight: 600;
         }
 
-        .subtitle {
+        #question-text {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        /* SEÇENEK BUTONLARI */
+        .options-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            background-color: var(--background-color);
+            border: 2px solid #e0e0e0;
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            text-align: left;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background-color: #e9ecef;
+            border-color: var(--secondary-color);
+        }
+        
+        .option-btn.correct {
+            background-color: var(--correct-color);
+            border-color: var(--correct-color);
+            color: white;
+            animation: pulse 0.5s;
+        }
+        
+        .option-btn.incorrect {
+            background-color: var(--incorrect-color);
+            border-color: var(--incorrect-color);
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        
+        /* SONUÇ EKRANLARI (KAYBETME/KAZANMA) */
+        .result-screen {
+            display: none; /* JavaScript ile gösterilecek */
             text-align: center;
-            color: #606770;
-            margin-top: 0;
+            padding: 40px;
+        }
+        
+        .result-screen h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .result-screen p {
+            font-size: 1.2em;
+            color: var(--light-text-color);
             margin-bottom: 30px;
         }
 
-        .question-block {
-            margin-bottom: 25px;
-        }
-
-        .question-block p {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        label {
-            display: block;
-            background-color: #f0f2f5;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        label:hover {
-            background-color: #e4e6eb;
-        }
-
-        input[type="radio"] {
-            margin-right: 10px;
-        }
-
-        button {
-            background-color: #1877f2;
+        /* WHATSAPP BUTONU */
+        #whatsapp-link {
+            display: inline-block;
+            background-color: #25D366;
             color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
             font-size: 1.1em;
-            font-weight: bold;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 8px;
-            width: 100%;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
         }
 
-        button:hover {
-            background-color: #166fe5;
+        #whatsapp-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
         }
 
-        #results {
-            margin-top: 30px;
-            border-top: 1px solid #dddfe2;
-            padding-top: 20px;
+        /* ANİMASYONLAR */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
         }
 
-        .result-item {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 6px;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* KONFETİ */
+        .confetti {
+            width: 15px;
+            height: 15px;
+            background-color: #f00;
+            position: absolute;
+            top: -20px;
+            animation: confetti-fall 3s linear infinite;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0); }
+            100% { transform: translateY(110vh) rotate(720deg); }
         }
 
-        .correct {
-            background-color: #e9f6ea;
-            border-left: 5px solid #42b72a;
-            color: #1e4620;
-        }
-
-        .incorrect {
-            background-color: #fbe9e7;
-            border-left: 5px solid #ff5252;
-            color: #c62828;
-        }
-
-        #results h2 {
-            text-align: center;
-            color: #1c1e21;
-        }
-
-        #score {
-            text-align: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Eşiyok'u Ne Kadar İyi Tanıyorsun?</h1>
-        <p class="subtitle">Bakalım Eşiyok hakkında ne kadar bilgilisin!</p>
-
-        <form id="quizForm">
-            <div class="question-block">
-                <p>1. Eşiyok'un en sevdiği renk nedir?</p>
-                <label><input type="radio" name="q1" value="kirmizi"> Kırmızı</label>
-                <label><input type="radio" name="q1" value="sari"> Sarı</label>
-                <label><input type="radio" name="q1" value="yesil"> Yeşil</label>
-                <label><input type="radio" name="q1" value="mor"> Mor</label>
+    <div class="quiz-container" id="quiz-container">
+        <div id="quiz-screen">
+            <div class="quiz-header">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div id="question-counter">Soru 1 / 5</div>
+                <h2 id="question-text">Soru metni buraya gelecek...</h2>
+                <div class="options-container" id="options-container">
+                    </div>
             </div>
-
-            <div class="question-block">
-                <p>2. Eşiyok'un doğum günü ne zamandır?</p>
-                <label><input type="radio" name="q2" value="1-ocak-2003"> 1 Ocak 2003</label>
-                <label><input type="radio" name="q2" value="14-subat-2004"> 14 Şubat 2004</label>
-                <label><input type="radio" name="q2" value="23-nisan-2005"> 23 Nisan 2005</label>
-                <label><input type="radio" name="q2" value="19-mayis-2002"> 19 Mayıs 2002</label>
-            </div>
-
-            <div class="question-block">
-                <p>3. Eşiyok'un en yakışıklı oda arkadaşı kimdir?</p>
-                <label><input type="radio" name="q3" value="ahmet"> Ahmet</label>
-                <label><input type="radio" name="q3" value="mert"> Mert</label>
-                <label><input type="radio" name="q3" value="mikail"> Mikail</label>
-                <label><input type="radio" name="q3" value="ismail"> İsmail</label>
-            </div>
-
-            <div class="question-block">
-                <p>4. Eşiyok hangi şarkıyı seçerdi?</p>
-                <label><input type="radio" name="q4" value="ati-italyforma"> Ati - İtalyforma</label>
-                <label><input type="radio" name="q4" value="kayra-tesaduf"> Kayra - Basit Birer Tesadüf</label>
-                <label><input type="radio" name="q4" value="sagopa-merhamet"> Sagopa - Merhametine Dön</label>
-                <label><input type="radio" name="q4" value="kayra-yasliyim"> Kayra - Çok Yaşlıyım</label>
-            </div>
-
-            <div class="question-block">
-                <p>5. Best depresyon şarkısı hangisidir?</p>
-                <label><input type="radio" name="q5" value="vegh-guldugun"> Vegh - Güldüğün Gün</label>
-                <label><input type="radio" name="q5" value="ah-canim-sevgilim"> Ah Canım Sevgilim</label>
-                <label><input type="radio" name="q5" value="bu-sehir"> Bu Şehir Beni Boğuyor</label>
-                <label><input type="radio" name="q5" value="yarim-kalan"> Yarım Kalan Sigara</label>
-            </div>
-        </form>
-
-        <button onclick="checkAnswers()">Sonuçları Gör</button>
-
-        <div id="results"></div>
+        </div>
+        
+        <div class="result-screen" id="fail-screen">
+            <h2>Kaybettin! 😔</h2>
+            <p>Görünüşe göre Eşiyok'u yeterince tanımıyorsun. Ama üzülme, şimdi tanışma fırsatın var!</p>
+            <a href="#" id="whatsapp-link" target="_blank">Eşiyok ile Tanış</a>
+        </div>
+        
+        <div class="result-screen" id="success-screen">
+             <h2>Tebrikler! 🥳</h2>
+            <p>Vay canına! Sen Eşiyok'u gerçekten çok iyi tanıyorsun. Bu bir alkışı hak eder!</p>
+        </div>
     </div>
 
     <script>
-        function checkAnswers() {
-            // Doğru cevapları burada tanımlıyoruz
-            const correctAnswers = {
-                q1: "mor",
-                q2: "14-subat-2004",
-                q3: "ismail",
-                q4: "kayra-tesaduf",
-                q5: "ah-canim-sevgilim"
-            };
+        const questions = [
+            {
+                question: "Eşiyok'un en sevdiği renk nedir?",
+                options: ["Kırmızı", "Sarı", "Yeşil", "Mor"],
+                answer: "Mor"
+            },
+            {
+                question: "Eşiyok'un doğum günü ne zamandır?",
+                options: ["1 Ocak 2003", "14 Şubat 2004", "23 Nisan 2005", "19 Mayıs 2002"],
+                answer: "14 Şubat 2004"
+            },
+            {
+                question: "Eşiyok'un en yakışıklı oda arkadaşı kimdir?",
+                options: ["Ahmet", "Mert", "Mikail", "İsmail"],
+                answer: "İsmail"
+            },
+            {
+                question: "Eşiyok hangi şarkıyı seçerdi?",
+                options: ["Ati - İtalyforma", "Kayra - Basit Birer Tesadüf", "Sagopa - Merhametine Dön", "Kayra - Çok Yaşlıyım"],
+                answer: "Kayra - Basit Birer Tesadüf"
+            },
+            {
+                question: "Eşiyok'a göre en iyi 'depresyon' şarkısı hangisidir?",
+                options: ["Vegh - Güldüğün Gün", "Ah Canım Sevgilim", "Bu Şehir Beni Boğuyor", "Yarım Kalan Sigara"],
+                answer: "Ah Canım Sevgilim"
+            }
+        ];
 
-            const form = document.getElementById('quizForm');
-            const resultsDiv = document.getElementById('results');
-            let score = 0;
-            let resultsHTML = '<h2>✨ Sonuçlar ✨</h2>';
+        let currentQuestionIndex = 0;
 
-            // Her bir soruyu kontrol et
-            for (const question in correctAnswers) {
-                const selectedOption = form.elements[question].value;
-                const questionText = form.elements[question][0].closest('.question-block').querySelector('p').innerText;
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const progressBarEl = document.getElementById('progress-bar');
+        const questionCounterEl = document.getElementById('question-counter');
+        const quizContainerEl = document.getElementById('quiz-container');
 
-                resultsHTML += `<div class="result-item `
-                if (selectedOption) {
-                    if (selectedOption === correctAnswers[question]) {
-                        score++;
-                        resultsHTML += `correct"><b>${questionText}</b><br>✔️ Senin cevabın: ${getLabelText(form.elements[question])}. Doğru!`;
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // Bir sonraki soruya geçmeden önce eski seçenekleri temizle
+            optionsContainerEl.innerHTML = '';
+            
+            // Mevcut soruyu al
+            const currentQuestion = questions[currentQuestionIndex];
+
+            // Soru metnini ve sayacı güncelle
+            questionTextEl.innerText = currentQuestion.question;
+            questionCounterEl.innerText = `Soru ${currentQuestionIndex + 1} / ${questions.length}`;
+
+            // İlerleme çubuğunu güncelle
+            const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBarEl.style.width = `${progressPercentage}%`;
+
+            // Seçenek butonlarını oluştur
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-btn');
+                button.addEventListener('click', () => selectAnswer(option, button));
+                optionsContainerEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedOption, button) {
+            // Tüm butonları pasif yap
+            const allOptions = optionsContainerEl.getElementsByClassName('option-btn');
+            for(let btn of allOptions) {
+                btn.disabled = true;
+            }
+
+            const correctAnswer = questions[currentQuestionIndex].answer;
+
+            if (selectedOption === correctAnswer) {
+                // Cevap doğruysa
+                button.classList.add('correct');
+                progressBarEl.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
                     } else {
-                        const correctAnswerValue = correctAnswers[question];
-                        const correctAnswerLabel = getLabelTextByValue(form.elements[question], correctAnswerValue);
-                        resultsHTML += `incorrect"><b>${questionText}</b><br>❌ Senin cevabın: ${getLabelText(form.elements[question])}.<br><b>Doğru cevap:</b> ${correctAnswerLabel}.`;
+                        showSuccessScreen();
                     }
-                } else {
-                    const correctAnswerValue = correctAnswers[question];
-                    const correctAnswerLabel = getLabelTextByValue(form.elements[question], correctAnswerValue);
-                    resultsHTML += `incorrect"><b>${questionText}</b><br>Boş bıraktın.<br><b>Doğru cevap:</b> ${correctAnswerLabel}.`;
-                }
-                resultsHTML += `</div>`;
+                }, 1000); // 1 saniye bekle ve sonraki soruya geç
+            } else {
+                // Cevap yanlışsa
+                button.classList.add('incorrect');
+                setTimeout(showFailScreen, 1000); // 1 saniye bekle ve kaybetme ekranını göster
             }
-
-            resultsHTML += `<p id="score">Toplam Puanın: ${score} / 5</p>`;
-
-            resultsDiv.innerHTML = resultsHTML;
         }
 
-        // Seçili olan radio button'ın metnini almak için yardımcı fonksiyon
-        function getLabelText(radioGroup) {
-            for (let i = 0; i < radioGroup.length; i++) {
-                if (radioGroup[i].checked) {
-                    return radioGroup[i].parentElement.innerText.trim();
-                }
-            }
-            return "Cevap verilmedi";
+        function showFailScreen() {
+            const phoneNumber = "905526673043"; // Ülke kodu ile birlikte
+            const message = encodeURIComponent("Eşiyok seni tanımıyormuşum daha fazla tanımak isterim");
+            const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
+            
+            document.getElementById('whatsapp-link').href = whatsappURL;
+            
+            quizContainerEl.classList.add('hiding');
+            setTimeout(() => {
+                document.getElementById('quiz-screen').style.display = 'none';
+                document.getElementById('fail-screen').style.display = 'block';
+                quizContainerEl.classList.remove('hiding');
+            }, 300);
         }
 
-        // Değere göre radio button'ın metnini almak için yardımcı fonksiyon
-        function getLabelTextByValue(radioGroup, value) {
-             for (let i = 0; i < radioGroup.length; i++) {
-                if (radioGroup[i].value === value) {
-                    return radioGroup[i].parentElement.innerText.trim();
-                }
-            }
-            return "";
+        function showSuccessScreen() {
+            quizContainerEl.classList.add('hiding');
+             setTimeout(() => {
+                document.getElementById('quiz-screen').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
+                quizContainerEl.classList.remove('hiding');
+                triggerConfetti();
+            }, 300);
         }
+        
+        function triggerConfetti() {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(confetti);
+
+                // Performans için konfetileri DOM'dan sil
+                setTimeout(() => {
+                    confetti.remove();
+                }, 4000);
+            }
+        }
+
+
+        // Testi başlat
+        startQuiz();
     </script>
 </body>
 </html>
-
