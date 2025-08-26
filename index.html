@@ -3,130 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benim Günlüğüm</title>
+    <title>Benim Gelişmiş Günlüğüm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #66BB6A;
+            --background-color: #f0f2f5;
+            --card-bg-color: #ffffff;
+            --text-color: #333;
+            --heading-color: #2c3e50;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
             margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .container {
-            background-color: #fff;
-            padding: 25px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 700px;
-            box-sizing: border-box;
+            max-width: 800px;
         }
 
         h1 {
-            color: #333;
             text-align: center;
-            margin-bottom: 25px;
-            font-size: 2.2rem;
-        }
-        
-        #journal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            color: var(--heading-color);
             margin-bottom: 30px;
         }
 
-        #journal-form label {
-            font-weight: bold;
-            color: #555;
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            box-shadow: 0 6px 15px var(--shadow-color);
+            padding: 30px;
+            margin-bottom: 30px;
         }
 
-        #journal-input {
+        form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--heading-color);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            box-sizing: border-box;
             font-size: 1rem;
-            resize: vertical;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
         }
-        
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input[type="file"] {
+            padding: 5px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .price-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
         #submit-btn {
-            background-color: #007bff;
+            background-color: var(--primary-color);
             color: white;
-            padding: 12px 20px;
+            padding: 14px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1.1rem;
-            transition: background-color 0.3s ease;
+            font-weight: 700;
+            transition: background-color 0.3s;
         }
-        
+
         #submit-btn:hover {
-            background-color: #0056b3;
+            background-color: var(--secondary-color);
         }
 
         #journals-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
             list-style: none;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
         }
 
         .journal-entry {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #eee;
+            background-color: var(--card-bg-color);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px var(--shadow-color);
             position: relative;
         }
 
-        .journal-entry h2 {
-            margin-top: 0;
-            color: #444;
-            font-size: 1.5rem;
-            border-bottom: 1px solid #ddd;
+        .journal-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-color);
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
 
-        .journal-entry p {
+        .journal-entry-header h2 {
             margin: 0;
-            color: #666;
+            color: var(--heading-color);
+            font-size: 1.4rem;
+        }
+
+        .journal-entry-header span {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .journal-entry-content {
+            display: grid;
+            gap: 15px;
+        }
+
+        .journal-entry-content p {
+            margin: 0;
             line-height: 1.6;
         }
-        
+
+        .journal-entry-content strong {
+            color: var(--primary-color);
+        }
+
+        .journal-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            height: auto;
+            display: block;
+        }
+
         .delete-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background-color: #dc3545;
             color: white;
             border: none;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.8rem;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
         }
 
         .delete-btn:hover {
-            background-color: #c82333;
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Günlüğüm</h1>
+        <h1>Günlük Kayıtlarım</h1>
         
-        <form id="journal-form">
-            <label for="journal-input">Bugün neler oldu?</label>
-            <textarea id="journal-input" placeholder="Bugünümü yazıyorum..." rows="5" required></textarea>
-            <button type="submit" id="submit-btn">Günlüğü Kaydet</button>
-        </form>
+        <div class="card">
+            <form id="journal-form">
+                <div class="form-group">
+                    <label for="title">Başlık</label>
+                    <input type="text" id="title" placeholder="Günün başlığını yazın" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="note">Notlar</label>
+                    <textarea id="note" placeholder="Bugün neler oldu? Ne aldın?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Eşya Fiyatı</label>
+                    <div class="price-group">
+                        <input type="number" id="price" placeholder="Eşya fiyatını girin" min="0">
+                        <span>₺</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="photo">Fotoğraf Yükle</label>
+                    <input type="file" id="photo" accept="image/*">
+                </div>
+
+                <button type="submit" id="submit-btn">Kaydı Ekle</button>
+            </form>
+        </div>
         
         <ul id="journals-list">
             </ul>
@@ -134,20 +235,29 @@
 
     <script>
         const form = document.getElementById('journal-form');
-        const journalInput = document.getElementById('journal-input');
+        const titleInput = document.getElementById('title');
+        const noteInput = document.getElementById('note');
+        const priceInput = document.getElementById('price');
+        const photoInput = document.getElementById('photo');
         const journalsList = document.getElementById('journals-list');
 
         let journals = JSON.parse(localStorage.getItem('journals')) || [];
 
-        // Günlükleri ekranda gösteren fonksiyon
         function renderJournals() {
-            journalsList.innerHTML = ''; // Listeyi temizle
+            journalsList.innerHTML = '';
             journals.forEach((entry, index) => {
                 const li = document.createElement('li');
                 li.classList.add('journal-entry');
                 li.innerHTML = `
-                    <h2>${entry.date}</h2>
-                    <p>${entry.text}</p>
+                    <div class="journal-entry-header">
+                        <h2>${entry.title}</h2>
+                        <span>${entry.date}</span>
+                    </div>
+                    <div class="journal-entry-content">
+                        ${entry.price ? `<p><strong>Fiyat:</strong> ${entry.price} ₺</p>` : ''}
+                        ${entry.note ? `<p>${entry.note}</p>` : ''}
+                        ${entry.photo ? `<img src="${entry.photo}" alt="Günlük fotoğrafı" class="journal-image">` : ''}
+                    </div>
                     <button class="delete-btn" data-index="${index}">Sil</button>
                 `;
                 journalsList.prepend(li); // En yeni günlüğü en üste ekle
@@ -155,7 +265,6 @@
             attachDeleteEvents();
         }
 
-        // Günlük silme butonlarına olay dinleyici ekle
         function attachDeleteEvents() {
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -167,26 +276,38 @@
             });
         }
 
-        // Form gönderildiğinde yeni günlüğü kaydet
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const today = new Date();
-            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = today.toLocaleDateString('tr-TR', dateOptions);
+            const formattedDate = today.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 
             const newEntry = {
+                title: titleInput.value,
+                note: noteInput.value,
+                price: priceInput.value,
                 date: formattedDate,
-                text: journalInput.value
+                photo: null
             };
-            
-            journals.push(newEntry);
-            localStorage.setItem('journals', JSON.stringify(journals));
 
-            journalInput.value = ''; // Giriş alanını temizle
-            renderJournals(); // Listeyi yeniden oluştur
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                newEntry.photo = e.target.result;
+                journals.push(newEntry);
+                localStorage.setItem('journals', JSON.stringify(journals));
+                renderJournals();
+                form.reset(); // Formu sıfırla
+            };
+
+            if (photoInput.files.length > 0) {
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                journals.push(newEntry);
+                localStorage.setItem('journals', JSON.stringify(journals));
+                renderJournals();
+                form.reset();
+            }
         });
 
-        // Sayfa yüklendiğinde mevcut günlükleri göster
         document.addEventListener('DOMContentLoaded', renderJournals);
     </script>
 </body>
