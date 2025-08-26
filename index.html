@@ -3,51 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Günlük Uygulaması</title>
+    <title>Benim Günlüğüm</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
-        header { background-color: #4CAF50; color: white; padding: 1rem; text-align: center; }
-        .container { max-width: 800px; margin: 2rem auto; padding: 1rem; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        textarea { width: 100%; height: 150px; padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px; border: 1px solid #ccc; }
-        button { padding: 0.7rem 1.5rem; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .entry { background-color: #e8f5e9; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; }
-        .entry h3 { margin: 0 0 0.5rem 0; }
-        .page-flip { transition: transform 0.6s; transform-style: preserve-3d; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 25px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+        }
+        
+        #journal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        #journal-form label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        #journal-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            resize: vertical;
+        }
+        
+        #submit-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        #submit-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #journals-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .journal-entry {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            position: relative;
+        }
+
+        .journal-entry h2 {
+            margin-top: 0;
+            color: #444;
+            font-size: 1.5rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .journal-entry p {
+            margin: 0;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Günlüğüm</h1>
+        
+        <form id="journal-form">
+            <label for="journal-input">Bugün neler oldu?</label>
+            <textarea id="journal-input" placeholder="Bugünümü yazıyorum..." rows="5" required></textarea>
+            <button type="submit" id="submit-btn">Günlüğü Kaydet</button>
+        </form>
+        
+        <ul id="journals-list">
+            </ul>
+    </div>
 
-<header>
-    <h1>Kitap Gibi Günlük</h1>
-</header>
+    <script>
+        const form = document.getElementById('journal-form');
+        const journalInput = document.getElementById('journal-input');
+        const journalsList = document.getElementById('journals-list');
 
-<div class="container">
-    <h2>Yeni Günlük Girdisi</h2>
-    <textarea id="entryText" placeholder="Gününüzü yazın..."></textarea>
-    <button onclick="addEntry()">Kaydet</button>
+        let journals = JSON.parse(localStorage.getItem('journals')) || [];
 
-    <h2>Günlükler</h2>
-    <div id="entries"></div>
-</div>
+        // Günlükleri ekranda gösteren fonksiyon
+        function renderJournals() {
+            journalsList.innerHTML = ''; // Listeyi temizle
+            journals.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.classList.add('journal-entry');
+                li.innerHTML = `
+                    <h2>${entry.date}</h2>
+                    <p>${entry.text}</p>
+                    <button class="delete-btn" data-index="${index}">Sil</button>
+                `;
+                journalsList.prepend(li); // En yeni günlüğü en üste ekle
+            });
+            attachDeleteEvents();
+        }
 
-<script>
-    const entriesContainer = document.getElementById('entries');
+        // Günlük silme butonlarına olay dinleyici ekle
+        function attachDeleteEvents() {
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = e.target.getAttribute('data-index');
+                    journals.splice(index, 1);
+                    localStorage.setItem('journals', JSON.stringify(journals));
+                    renderJournals();
+                });
+            });
+        }
 
-    function addEntry() {
-        const text = document.getElementById('entryText').value;
-        if(text.trim() === '') return;
+        // Form gönderildiğinde yeni günlüğü kaydet
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const today = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = today.toLocaleDateString('tr-TR', dateOptions);
 
-        const entryDiv = document.createElement('div');
-        entryDiv.className = 'entry page-flip';
+            const newEntry = {
+                date: formattedDate,
+                text: journalInput.value
+            };
+            
+            journals.push(newEntry);
+            localStorage.setItem('journals', JSON.stringify(journals));
 
-        const date = new Date().toLocaleDateString();
-        entryDiv.innerHTML = `<h3>${date}</h3><p>${text}</p>`;
+            journalInput.value = ''; // Giriş alanını temizle
+            renderJournals(); // Listeyi yeniden oluştur
+        });
 
-        entriesContainer.prepend(entryDiv);
-        document.getElementById('entryText').value = '';
-    }
-</script>
-
+        // Sayfa yüklendiğinde mevcut günlükleri göster
+        document.addEventListener('DOMContentLoaded', renderJournals);
+    </script>
 </body>
 </html>
