@@ -3,214 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eşiyok'u Gerçekten Tanıyor Musun? [Mizah Edition]</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <title>Günlük Uygulaması</title>
     <style>
-        :root{--primary-color:#8e2de2;--secondary-color:#4a00e0;--correct-color:#28a745;--incorrect-color:#dc3545;--card-bg:rgba(255,255,255,0.15);--text-color:#fff;--light-text-color:#e0e0e0;--border-color:rgba(255,255,255,0.3)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Poppins',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(45deg,#ff007b,#6a00ff,#00d4ff,#ff007b);background-size:400% 400%;padding:20px;overflow:hidden;animation:gradientBG 15s ease infinite}@keyframes gradientBG{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}.card-container{background:var(--card-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid var(--border-color);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:100%;max-width:600px;overflow:hidden;padding:40px;text-align:center;transform:scale(1);transition:transform .3s ease-in-out,opacity .3s ease-in-out}#start-screen h2{font-size:2em;color:var(--text-color);margin-bottom:15px;text-shadow:0 2px 5px rgba(0,0,0,0.2)}#taunt-message{display:block;height:25px;font-size:1.1em;color:var(--text-color);margin-bottom:20px;font-weight:600;opacity:0;transition:opacity .3s ease}.start-buttons{display:flex;justify-content:center;gap:20px}.start-buttons button{font-family:'Poppins',sans-serif;font-size:1.2em;font-weight:600;padding:15px 40px;border-radius:10px;border:none;cursor:pointer;transition:all .2s ease;box-shadow:0 4px 15px rgba(0,0,0,0.1)}#start-btn-yes{background-color:var(--correct-color);color:#fff}#start-btn-yes:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 6px 20px rgba(40,167,69,0.4)}#start-btn-no{background-color:var(--incorrect-color);color:#fff;transition:top .3s ease-out,left .3s ease-out,transform .3s ease-out}.quiz-container{display:none;transform:scale(1);transition:transform .3s ease-in-out,opacity .3s ease-in-out}.quiz-header{padding:0;animation:slide-in .5s ease-out forwards}@keyframes slide-in{0%{transform:translateY(30px);opacity:0}100%{transform:translateY(0);opacity:1}}.progress-bar-container{width:100%;height:8px;background-color:rgba(255,255,255,0.2);border-radius:5px;margin-bottom:20px}.progress-bar{width:0%;height:100%;background:linear-gradient(90deg,#f8ff00,#3ad59f);border-radius:5px;transition:width .4s ease-in-out}#question-counter{font-size:.9em;color:var(--light-text-color);margin-bottom:10px;font-weight:600}#question-text{font-size:1.5em;font-weight:600;color:var(--text-color);margin-bottom:30px;line-height:1.4;min-height:84px}.options-container{display:grid;gap:15px}.option-btn{display:block;width:100%;background-color:rgba(255,255,255,0.1);border:1px solid var(--border-color);color:var(--text-color);font-family:'Poppins',sans-serif;font-size:1em;font-weight:600;text-align:left;padding:15px 20px;border-radius:10px;cursor:pointer;transition:all .2s ease;opacity:0;animation:fade-in .5s ease forwards;animation-delay:var(--delay)}.option-btn:hover:not([disabled]){background-color:rgba(255,255,255,0.2);border-color:#fff}@keyframes fade-in{to{opacity:1}}.option-btn.correct{background-color:var(--correct-color);border-color:var(--correct-color);color:#fff;animation:pulse .5s}.option-btn.incorrect{background-color:var(--incorrect-color);border-color:var(--incorrect-color);color:#fff;animation:shake .5s}.option-btn:disabled{cursor:not-allowed}.result-screen{display:none;text-align:center;padding:0}.result-screen h2{font-size:2.5em;margin-bottom:20px;color:var(--text-color);text-shadow:0 3px 8px rgba(0,0,0,0.3)}.result-screen p{font-size:1.2em;color:var(--light-text-color);margin-bottom:30px}.whatsapp-link{display:inline-block;color:#fff;padding:15px 30px;border-radius:50px;text-decoration:none;font-weight:600;font-size:1.1em;transition:transform .2s ease,box-shadow .2s ease}#whatsapp-fail-link{background-color:#25D366;box-shadow:0 4px 15px rgba(37,211,102,.4)}#whatsapp-fail-link:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(37,211,102,.5)}#whatsapp-success-link{background:linear-gradient(45deg,#8e2de2,#4a00e0);box-shadow:0 4px 15px rgba(74,0,224,.4)}#whatsapp-success-link:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(74,0,224,.5)}@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-10px)}20%,40%,60%,80%{transform:translateX(10px)}}@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}.confetti{width:15px;height:15px;background-color:red;position:absolute;top:-20px;animation:confetti-fall 3s linear infinite}@keyframes confetti-fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(110vh) rotate(720deg)}}
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
+        header { background-color: #4CAF50; color: white; padding: 1rem; text-align: center; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 1rem; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        textarea { width: 100%; height: 150px; padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px; border: 1px solid #ccc; }
+        button { padding: 0.7rem 1.5rem; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .entry { background-color: #e8f5e9; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; }
+        .entry h3 { margin: 0 0 0.5rem 0; }
+        .page-flip { transition: transform 0.6s; transform-style: preserve-3d; }
     </style>
 </head>
 <body>
-    
-    <div class="card-container" id="start-screen">
-        <h2>Bu teste katılmak istiyor musun?</h2>
-        <p id="taunt-message"></p>
-        <div class="start-buttons">
-            <button id="start-btn-yes">Evet</button>
-            <button id="start-btn-no">Hayır</button>
-        </div>
-    </div>
-    
-    <div class="card-container quiz-container" id="quiz-container">
-        <div id="quiz-screen">
-            <div class="quiz-header">
-                <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
-                <div id="question-counter"></div>
-                <h2 id="question-text"></h2>
-                <div class="options-container" id="options-container"></div>
-            </div>
-        </div>
-        <div class="result-screen" id="fail-screen">
-            <h2>Daha çok fırın ekmek yemen lazım... 🍞</h2>
-            <p>Görünüşe göre Eşiyok'u yeterince tanımıyorsun. Ama üzülme, şimdi tanışma fırsatın var!</p>
-            <a href="#" id="whatsapp-fail-link" class="whatsapp-link" target="_blank">Eşiyok ile Tanış</a>
-        </div>
-        <div class="result-screen" id="success-screen">
-             <h2>Eşiyokoloji Profesörü! 🧑‍🏫</h2>
-            <p>Vay canına! Sen Eşiyok'u gerçekten çok iyi tanıyorsun. Bu bir alkışı hak eder!</p>
-            <a href="#" id="whatsapp-success-link" class="whatsapp-link" target="_blank">Başarını Kutla!</a>
-        </div>
-    </div>
 
-    <script>
-        // ELEMENTLER
-        const startScreenEl = document.getElementById('start-screen');
-        const quizContainerEl = document.getElementById('quiz-container');
-        const startBtnYes = document.getElementById('start-btn-yes');
-        const startBtnNo = document.getElementById('start-btn-no');
-        const tauntMessageEl = document.getElementById('taunt-message');
+<header>
+    <h1>Kitap Gibi Günlük</h1>
+</header>
 
-        // MİZAHİ İÇERİKLER
-        const taunts = [
-            "Çok yavaş!",
-            "Beni yakalayamazsın ki!",
-            "Israr etme bence.",
-            "Evet butonu orada, canım.",
-            "Nereye kaçıyorum ama?",
-            "Pes et artık.",
-            "Bu imkansız bir görev."
-        ];
-        let noButtonHoverCount = 0;
-        let tauntTimeout;
+<div class="container">
+    <h2>Yeni Günlük Girdisi</h2>
+    <textarea id="entryText" placeholder="Gününüzü yazın..."></textarea>
+    <button onclick="addEntry()">Kaydet</button>
 
-        // BAŞLANGIÇ EKRANI MANTIĞI
-        function handleNoButton() {
-            // Butonun pozisyonunu `fixed` olarak ayarla, böylece tüm ekranı kullanır
-            startBtnNo.style.position = 'fixed';
-            
-            // Yeni pozisyonu hesapla
-            const btnRect = startBtnNo.getBoundingClientRect();
-            const newTop = Math.random() * (window.innerHeight - btnRect.height);
-            const newLeft = Math.random() * (window.innerWidth - btnRect.width);
+    <h2>Günlükler</h2>
+    <div id="entries"></div>
+</div>
 
-            // Yeni pozisyonu uygula
-            startBtnNo.style.top = `${newTop}px`;
-            startBtnNo.style.left = `${newLeft}px`;
+<script>
+    const entriesContainer = document.getElementById('entries');
 
-            // Mizah zamanı!
-            noButtonHoverCount++;
-            
-            // Rastgele bir alaycı mesaj göster
-            const randomTaunt = taunts[Math.floor(Math.random() * taunts.length)];
-            tauntMessageEl.innerText = randomTaunt;
-            tauntMessageEl.style.opacity = 1;
+    function addEntry() {
+        const text = document.getElementById('entryText').value;
+        if(text.trim() === '') return;
 
-            // Önceki zamanlayıcıyı temizle ve mesajı 2 saniye sonra gizle
-            clearTimeout(tauntTimeout);
-            tauntTimeout = setTimeout(() => {
-                tauntMessageEl.style.opacity = 0;
-            }, 2000);
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'entry page-flip';
 
-            // Yeterince denediyse, "Evet" butonunu değiştir
-            if (noButtonHoverCount > 3) {
-                startBtnYes.innerText = "Doğru seçim bu...";
-            }
-        }
+        const date = new Date().toLocaleDateString();
+        entryDiv.innerHTML = `<h3>${date}</h3><p>${text}</p>`;
 
-        startBtnYes.addEventListener('click', () => {
-            startScreenEl.style.display = 'none';
-            quizContainerEl.style.display = 'block';
-            startQuiz();
-        });
+        entriesContainer.prepend(entryDiv);
+        document.getElementById('entryText').value = '';
+    }
+</script>
 
-        startBtnNo.addEventListener('mouseover', handleNoButton);
-        startBtnNo.addEventListener('click', (event) => {
-            event.preventDefault(); // Tıklamanın varsayılan eylemini engelle
-            handleNoButton();
-        });
-
-        // TEST MANTIĞI
-        const questions = [
-            { question: "Eşiyok'un en sevdiği renk nedir?", options: ["Kırmızı", "Mavi", "Yeşil", "Sarı"], answer: "Mavi" },
-            { question: "Eşiyok'un doğum günü ne zamandır?", options: ["1 Ocak 2003", "14 Şubat 2004", "23 Nisan 2005", "19 Mayıs 2002"], answer: "14 Şubat 2004" },
-            { question: "Eşiyok'un en yakışıklı oda arkadaşı kimdir?", options: ["Ahmet", "Mert", "Mikail", "İsmail"], answer: "İsmail" },
-            { question: "Eşiyok hangi şarkıyı seçerdi?", options: ["Ati - İtalyforma", "Kayra - Basit Birer Tesadüf", "Sagopa - Merhametine Dön", "Kayra - Çok Yaşlıyım"], answer: "Kayra - Basit Birer Tesadüf" },
-            { question: "Eşiyok'a göre en iyi 'depresyon' şarkısı hangisidir?", options: ["Vegh - Güldüğün Gün", "Gözlerindeki Ay", "Bu Şehir Beni Boğuyor", "Yarım Kalan Sigara"], answer: "Gözlerindeki Ay" },
-            { question: "Eşiyok'un en güvenilir kelimesi hangisidir?", options: ["Hallederiz", "Bakarız obe", "Relax olcan"], answer: "Relax olcan" },
-            { question: "Eşiyok hangi kitabı seçerdi?", options: ["Serenad", "Kürk Mantolu Madonna", "Bir Kürt Sevdim", "Kuyucaklı Yusuf"], answer: "Serenad" },
-            { question: "Eşiyok'un 'best' stickerı hangisidir?", options: ["Fatih Terim gururlu bakış", "Eyüp B küçümseyici bakış", "Zenci götü", "Sinan Engin"], answer: "Fatih Terim gururlu bakış" }
-        ];
-
-        let currentQuestionIndex = 0;
-        const phoneNumber = "905526673043";
-
-        const questionTextEl = document.getElementById('question-text');
-        const optionsContainerEl = document.getElementById('options-container');
-        const progressBarEl = document.getElementById('progress-bar');
-        const questionCounterEl = document.getElementById('question-counter');
-        const quizHeaderEl = document.querySelector('.quiz-header');
-
-        function startQuiz() {
-            currentQuestionIndex = 0;
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            quizHeaderEl.style.animation = 'none';
-            quizHeaderEl.offsetHeight; // Animasyonu yeniden tetiklemek için reflow
-            quizHeaderEl.style.animation = 'slide-in .5s ease-out forwards';
-
-            optionsContainerEl.innerHTML = '';
-            const currentQuestion = questions[currentQuestionIndex];
-            questionTextEl.innerText = currentQuestion.question;
-            questionCounterEl.innerText = `Soru ${currentQuestionIndex + 1} / ${questions.length}`;
-            const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
-            progressBarEl.style.width = `${progressPercentage}%`;
-
-            currentQuestion.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.innerText = option;
-                button.classList.add('option-btn');
-                button.style.setProperty('--delay', `${index * 100}ms`);
-                button.addEventListener('click', () => selectAnswer(option, button));
-                optionsContainerEl.appendChild(button);
-            });
-        }
-
-        function selectAnswer(selectedOption, button) {
-            Array.from(optionsContainerEl.children).forEach(btn => btn.disabled = true);
-            const correctAnswer = questions[currentQuestionIndex].answer;
-
-            if (selectedOption === correctAnswer) {
-                button.classList.add('correct');
-                progressBarEl.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
-                setTimeout(() => {
-                    currentQuestionIndex++;
-                    if (currentQuestionIndex < questions.length) loadQuestion();
-                    else showSuccessScreen();
-                }, 1200);
-            } else {
-                button.classList.add('incorrect');
-                setTimeout(showFailScreen, 1200);
-            }
-        }
-
-        function showResultScreen(screenId, callback) {
-            const quizScreen = document.getElementById('quiz-screen');
-            const resultScreen = document.getElementById(screenId);
-
-            quizScreen.style.display = 'none';
-            resultScreen.style.display = 'block';
-            resultScreen.style.animation = 'slide-in .5s ease-out forwards';
-            
-            if (callback) callback();
-        }
-
-        function showFailScreen() {
-            const message = encodeURIComponent("Eşiyok seni tanımıyormuşum daha fazla tanımak isterim");
-            document.getElementById('whatsapp-fail-link').href = `https://wa.me/${phoneNumber}?text=${message}`;
-            showResultScreen('fail-screen');
-        }
-
-        function showSuccessScreen() {
-            const message = encodeURIComponent("EŞİYOK SENİ SENDEN DAHA İYİ TANIYORUM");
-            document.getElementById('whatsapp-success-link').href = `https://wa.me/${phoneNumber}?text=${message}`;
-            showResultScreen('success-screen', triggerConfetti);
-        }
-
-        function triggerConfetti() {
-            for (let i = 0; i < 100; i++) {
-                const c = document.createElement('div');
-                c.classList.add('confetti');
-                c.style.left = Math.random() * 100 + 'vw';
-                c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
-                c.style.animationDelay = Math.random() * 2 + 's';
-                document.body.appendChild(c);
-                setTimeout(() => c.remove(), 4000);
-            }
-        }
-    </script>
 </body>
 </html>
