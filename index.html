@@ -469,4 +469,248 @@
         .map(t=> t.startsWith('#') ? t.toLowerCase() : ('#'+t.toLowerCase()));
     }
 
-    let 
+    let pendingImage = null; // base64 from drop or file
+
+    dropzone.addEventListener('dragover', (e)=>{ e.preventDefault(); dropzone.classList.add('drag') });
+    dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
+    dropzone.addEventListener('drop', async (e)=>{
+      e.preventDefault(); dropzone.classList.remove('drag');
+      const f = e.dataTransfer.files?.[0];
+      if(f && f.type.startsWith('image/')) pendingImage = await toBase64(f);
+      dropzone.textContent = f ? `Yüklendi: ${f.name}` : 'Dosya okunamadı';
+    });
+
+    photoInput.addEventListener('change', async ()=>{
+      const f = photoInput.files?.[0];
+      if(f) pendingImage = await toBase64(f);
+    });
+
+    noteInput.addEventListener('input', ()=>{
+      charCount.textContent = `(${noteInput.value.length}/2000)`;
+    });
+
+    journalForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const now = new Date();
+      const entry = {
+        id: crypto.randomUUID(),
+        title: titleInput.value.trim(),
+        note: noteInput.value.trim(),
+        dateISO: now.toISOString(),
+        dateText: formatDateTR(now),
+        tags: parseTags(tagsInput.value),
+        mood: moodSelect.value || '',
+        photo: pendingImage,
+        favorite: false
+      };
+      if(!entry.title) return alert('Başlık gerekli.');
+      const all = getJournals();
+      all.push(entry);
+      setJournals(all);
+      // reset
+      journalForm.reset(); pendingImage=null; dropzone.textContent='Dosyanı buraya sürükle & bırak ya da aşağıdan seç'; charCount.textContent='(0/2000)';
+      renderJournals();
+    });
+
+    function renderJournals(){
+      const q = searchInput.value.toLowerCase().trim();
+      const tagFilter = (filterTag.value||'').toLowerCase().trim();
+      const df = filterFrom.value ? new Date(filterFrom.value) : null;
+      const dt = filterTo.value ? new Date(filterTo.value) : null;
+      let list = [...getJournals()];
+
+      // filter
+      list = list.filter(e=>{
+        const hay = (e.title+' '+e.note+' '+(e.tags||[]).join(' ')).toLowerCase();
+        if(q && !hay.includes(q)) return false;
+        if(tagFilter && !(e.tags||[]).includes(tagFilter.startsWith('#') ? tagFilter : '#'+tagFilter)) return false;
+        if(df && new Date(e.dateISO) < df) return false;
+        if(dt && new Date(e.dateISO) > new Date(dt.getTime()+24*3600*1000-1)) return false; // inclusive
+        return true;
+      });
+
+      // sort
+      const s = sortBy.value;
+      list.sort((a,b)=>{
+        if(s==='date-desc') return new Date(b.dateISO)-new Date(a.dateISO);
+        if(s==='date-asc') return new Date(a.dateISO)-new Date(b.dateISO);
+        if(s==='title-asc') return a.title.localeCompare(b.title,'tr');
+        if(s==='title-desc') return b.title.localeCompare(a.title,'tr');
+        if(s==='fav-first') return (b.favorite===true)-(a.favorite===true) || (new Date(b.dateISO)-new Date(a.dateISO));
+        return 0;
+      });
+
+      journalsList.innerHTML = '';
+      list.forEach(e=>{
+        const li = document.createElement('li');
+        li.className='entry';
+        li.innerHTML = `
+          <header>
+            <div>
+              <h3>${sanitize(e.title)}</h3>
+              <div class="meta">
+                <span>📅 ${sanitize(e.dateText)}</span>
+                ${e.mood ? `<span>${sanitize(e.mood)}</span>`:''}
+              </div>
+              <div class="chips">
+                ${(e.tags||[]).map(t=>`<span class="chip">${sanitize(t)}</span>`).join('')}
+                ${e.favorite? `<span class="chip">⭐ Favori</span>`:''}
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn ghost small" data-act="edit" data-id="${e.id}" title="Düzenle">✏️</button>
+              <button class="btn small ${e.favorite?'secondary':'ghost'}" data-act="fav" data-id="${e.id}" title="Favori">⭐</button>
+              <button class="btn danger small" data-act="del" data-id="${e.id}" title="Sil">🗑️</button>
+            </div>
+          </header>
+          <div class="content">
+            <p>${sanitize(e.note).replace(/\n/g,'<br>')}</p>
+            ${e.photo ? `<img src="${e.photo}" alt="Günlük fotoğrafı">` : ''}
+          </div>
+        `;
+        journalsList.appendChild(li);
+      });
+
+      // bind actions
+      journalsList.querySelectorAll('[data-act]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          if(act==='del') confirmDelete(id);
+          else if(act==='edit') openEdit(id);
+          else if(act==='fav') toggleFav(id);
+        });
+      });
+    }
+
+    function toggleFav(id){
+      const all = getJournals();
+      const idx = all.findIndex(x=>x.id===id);
+      if(idx<0) return;
+      all[idx].favorite = !all[idx].favorite;
+      setJournals(all);
+      renderJournals();
+    }
+
+    function confirmDelete(id){
+      showModal({
+        title:'Kaydı sil',
+        body:'Bu kaydı silmek istediğine emin misin? Bu işlem geri alınamaz.',
+        confirmText:'Evet, sil',
+        confirmClass:'danger',
+        onConfirm: ()=>{
+          const all = getJournals().filter(x=>x.id!==id);
+          setJournals(all);
+          renderJournals();
+        }
+      });
+    }
+
+    function openEdit(id){
+      const e = getJournals().find(x=>x.id===id);
+      if(!e) return;
+      showModal({
+        title:'Kaydı Düzenle',
+        body: `
+          <div class="row">
+            <div>
+              <label>Başlık</label>
+              <input id="edit-title" value="${sanitize(e.title)}">
+            </div>
+            <div>
+              <label>Ruh Hali</label>
+              <select id="edit-mood">
+                <option ${!e.mood?'selected':''}></option>
+                ${['😀 Mutlu','😌 Sakin','😴 Yorgun','😕 Kafası Karışık','😔 Üzgün','😤 Sinirli','🤩 Heyecanlı'].map(m=>`<option ${e.mood===m?'selected':''}>${m}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label>Not</label>
+            <textarea id="edit-note" maxlength="2000">${sanitize(e.note)}</textarea>
+          </div>
+          <div>
+            <label>Etiketler</label>
+            <input id="edit-tags" value="${sanitize((e.tags||[]).join(', '))}">
+          </div>
+          <div>
+            <label>Fotoğraf</label>
+            <input id="edit-photo" type="file" accept="image/*">
+            ${e.photo? `<img src="${e.photo}" style="margin-top:8px; max-height:150px; border-radius:8px">`:''}
+          </div>
+        `,
+        confirmText:'Kaydet',
+        onConfirm: async ()=>{
+          const all = getJournals();
+          const idx = all.findIndex(x=>x.id===id); if(idx<0) return;
+          const nf = $('#edit-photo').files?.[0];
+          all[idx].title = $('#edit-title').value.trim();
+          all[idx].note = $('#edit-note').value.trim();
+          all[idx].tags = parseTags($('#edit-tags').value);
+          all[idx].mood = $('#edit-mood').value || '';
+          if(nf) all[idx].photo = await toBase64(nf);
+          setJournals(all);
+          renderJournals();
+        }
+      });
+    }
+
+    /************** SEARCH / FILTER EVENTS **************/
+    [searchInput, filterTag, filterFrom, filterTo, sortBy].forEach(el=> el.addEventListener('input', renderJournals));
+
+    /************** EXPORT / IMPORT / PRINT **************/
+    exportBtn.addEventListener('click', ()=>{
+      const data = storage.exportAll();
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `gunlugum-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    importInput.addEventListener('change', async ()=>{
+      const f = importInput.files?.[0]; if(!f) return;
+      try{
+        const text = await f.text();
+        const obj = JSON.parse(text);
+        storage.importAll(obj);
+        users = storage.users; currentUser = storage.current;
+        alert('İçe aktarma tamamlandı.');
+        checkAuth();
+      }catch(err){ alert('JSON okunamadı.'); }
+      importInput.value = '';
+    });
+
+    printBtn.addEventListener('click', ()=> window.print());
+
+    /************** MODAL **************/
+    function showModal({title, body, confirmText='Tamam', cancelText='İptal', onConfirm, confirmClass='secondary'}){
+      modalRoot.innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal">
+            <h3 style="margin:0 0 10px; color:var(--heading)">${title}</h3>
+            <div class="body" style="margin:8px 0 14px">${body}</div>
+            <div style="display:flex; gap:10px; justify-content:flex-end">
+              <button class="btn ghost" id="m-cancel">${cancelText}</button>
+              <button class="btn ${confirmClass}" id="m-ok">${confirmText}</button>
+            </div>
+          </div>
+        </div>
+      `;
+      modalRoot.classList.remove('hidden');
+      $('#m-cancel').addEventListener('click', closeModal);
+      $('#m-ok').addEventListener('click', ()=>{ closeModal(); onConfirm && onConfirm(); });
+      function closeModal(){ modalRoot.classList.add('hidden'); modalRoot.innerHTML=''; }
+    }
+
+    /************** INIT **************/
+    checkAuth();
+
+    // Küçük kalite: klavye kısayolları
+    document.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key.toLowerCase()==='f'){ e.preventDefault(); searchInput.focus(); }
+    });
+  </script>
+</body>
+</html>
