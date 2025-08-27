@@ -3,802 +3,901 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Benim Günlüğüm — Tam Gelişmiş</title>
+<title>Benim Günlüğüm — Kusursuz Sürüm</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ---------- Tema & Temel ---------- */
   :root{
-    --primary:#5C6BC0; --accent:#7986CB; --bg:#ECEFF1; --card:#fff; --text:#37474F;
-    --muted:#607d8b; --danger:#EF5350; --success:#2e7d32; --border:#B0BEC5; --shadow:rgba(0,0,0,.08);
+    --primary:#5C6BC0; --primary-2:#7986CB;
+    --bg:#ECEFF1; --card:#ffffff; --text:#263238;
+    --muted:#607d8b; --danger:#EF5350; --border:#B0BEC5;
+    --shadow: 0 8px 20px rgba(0,0,0,0.08);
+    --success:#2e7d32;
   }
-  :root.dark{ --bg:#0f172a; --card:#111827; --text:#cbd5e1; --muted:#94a3b8; --primary:#818cf8; --accent:#6366f1; --border:#334155; --shadow:rgba(0,0,0,.45); }
+  :root.dark{
+    --bg:#0f1724; --card:#0b1220; --text:#cbd5e1;
+    --muted:#94a3b8; --primary:#818cf8; --primary-2:#6366f1;
+    --border:#203040; --shadow: 0 8px 20px rgba(0,0,0,0.5);
+  }
 
-  *{box-sizing:border-box} html,body{height:100%}
-  body{font-family:'Poppins',sans-serif;margin:0;padding:20px;background:var(--bg);color:var(--text);display:flex;justify-content:center}
-  .container{width:100%;max-width:1100px;display:grid;gap:22px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 8px 20px var(--shadow)}
-  h1,h2{margin:0;color:var(--primary)}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; padding:28px; font-family:'Poppins',sans-serif;
+    background:var(--bg); color:var(--text); display:flex; justify-content:center;
+  }
 
-  form{display:grid;gap:12px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:800px){.row{grid-template-columns:1fr}}
-  label{font-weight:600;margin-bottom:6px;display:block}
-  input,textarea,select{padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:inherit}
-  textarea{min-height:110px;resize:vertical}
-  .btn{background:var(--primary);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
-  .btn.small{padding:6px 10px;font-size:.9rem}
-  .hint{font-size:.85rem;color:var(--muted)}
-  #journals-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;list-style:none;padding:0;margin:0}
-  .entry{padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);box-shadow:0 4px 12px var(--shadow);display:flex;flex-direction:column;gap:8px}
-  .entry header{display:flex;justify-content:space-between;align-items:flex-start}
-  .chips{display:flex;gap:6px;flex-wrap:wrap}
-  .chip{background:transparent;border:1px solid var(--border);padding:4px 8px;border-radius:999px;font-size:.78rem;color:var(--muted)}
-  .actions{display:flex;gap:6px}
-  .dropzone{border:2px dashed var(--border);padding:10px;border-radius:8px;text-align:center}
-  .dropzone.drag{border-color:var(--primary)}
-  .hidden{display:none!important}
-  .flex{display:flex;gap:8px;align-items:center}
-  .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .cal-day{padding:8px;border-radius:8px;text-align:right;border:1px solid transparent;min-height:70px;position:relative}
-  .cal-day.out{opacity:.25}
-  .cal-day .dot{width:8px;height:8px;border-radius:50%;position:absolute;left:6px;bottom:6px}
-  canvas{max-width:100%}
-  .stat-box{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:900px){.stat-box{grid-template-columns:1fr}}
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60}
-  .modal{background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border);max-width:640px;width:100%}
-  .no-print{display:block}
-  @media(print){.no-print{display:none!important}}
+  .wrapper{width:100%; max-width:920px; display:grid; gap:22px}
+
+  .card{
+    background:var(--card); border-radius:14px; padding:22px;
+    box-shadow:var(--shadow); border:1px solid var(--border);
+    transition:transform .16s ease, box-shadow .16s ease;
+  }
+  .card:hover{ transform:translateY(-3px) }
+
+  h1,h2{ margin:0 0 14px; color:var(--primary); text-align:center }
+  h2.small{ font-size:1rem; color:var(--muted); margin-top:6px }
+
+  form{ display:grid; gap:12px }
+  label{ font-weight:600; margin-bottom:6px; display:block }
+  input[type="text"], input[type="password"], input[type="date"], textarea, select {
+    padding:12px; border-radius:10px; border:1px solid var(--border); width:100%;
+    font-size:1rem; background:transparent; color:inherit;
+  }
+  textarea{ min-height:120px; resize:vertical }
+
+  .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+  @media(max-width:700px){ .row{ grid-template-columns:1fr } }
+
+  .btn{
+    background:var(--primary); color:#fff; border:none; padding:12px 16px; border-radius:10px; cursor:pointer;
+    font-weight:700; transition:opacity .12s;
+  }
+  .btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--border) }
+  .btn.small{ padding:8px 10px; font-size:.9rem; border-radius:8px }
+  .btn.danger{ background:var(--danger) }
+  .hint{ color:var(--muted); font-size:.9rem }
+
+  /* Journal grid */
+  #journals-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; list-style:none; padding:0; margin:0 }
+  .journal-entry{
+    background:var(--card); padding:18px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,0.04);
+    border:1px solid var(--border); position:relative; display:flex; flex-direction:column; gap:10px;
+  }
+  .journal-entry header{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; border-bottom:2px solid rgba(0,0,0,0.03); padding-bottom:10px }
+  .journal-entry h3{ margin:0; color:var(--primary) }
+  .meta{ font-size:.85rem; color:var(--muted) }
+
+  .chips{ display:flex; gap:8px; flex-wrap:wrap }
+  .chip{ background:transparent; border:1px solid var(--border); padding:6px 8px; border-radius:999px; font-size:.8rem; color:var(--muted) }
+
+  .journal-image{ width:100%; border-radius:10px; object-fit:cover; max-height:240px }
+
+  .delete-btn{ position:absolute; top:12px; right:12px; background:var(--danger); color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer }
+
+  .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+  .searchbar{ display:flex; gap:8px; align-items:center }
+  .searchbar input{ padding:10px; border-radius:10px; border:1px solid var(--border); width:320px; max-width:60vw }
+
+  .dropzone{ border:2px dashed var(--border); border-radius:10px; padding:12px; text-align:center; cursor:pointer }
+  .dropzone.drag{ border-color:var(--primary); box-shadow:0 6px 18px rgba(0,0,0,0.05) }
+
+  /* modal */
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:999 }
+  .modal{ background:var(--card); padding:18px; border-radius:12px; max-width:600px; width:100%; border:1px solid var(--border) }
+
+  /* calendar */
+  .calendar{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px }
+  .cal-day{ background:var(--card); padding:8px; min-height:70px; border-radius:8px; border:1px solid transparent; position:relative }
+  .cal-day.out{ opacity:.28 }
+  .cal-day .dot{ position:absolute; left:8px; bottom:8px; width:8px; height:8px; border-radius:50%; background:#ffd54f }
+
+  /* responsive */
+  @media(max-width:920px){ .searchbar input{ width:220px } }
+
+  /* print */
+  @media print{ .no-print{ display:none!important } }
 </style>
 </head>
 <body>
-<div class="container">
-
-  <!-- TOP: theme, export/import, reminder -->
-  <div class="card no-print">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="flex">
-        <button id="theme-toggle" class="btn small">🌗 Tema</button>
-        <button id="export-json" class="btn small">📤 JSON Dışa Aktar</button>
-        <label for="import-json" class="btn small ghost" style="cursor:pointer">📥 JSON İçe Aktar</label>
-        <input id="import-json" type="file" accept="application/json" class="hidden">
-        <button id="print-btn" class="btn small ghost">🖨 Yazdır / PDF</button>
-      </div>
-      <div class="flex">
-        <label class="hint" style="margin-right:8px">Günlük hatırlatıcı:</label>
-        <input type="time" id="reminder-time">
-        <button id="toggle-reminder" class="btn small ghost">⏰ Aktif Et</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- AUTH (simple) -->
-  <div id="auth-container" class="card">
-    <h2>Giriş / Kayıt</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <form id="login-form">
-        <label>Kullanıcı</label><input id="login-username" autocomplete="username">
-        <label>Şifre</label><input id="login-password" type="password" autocomplete="current-password">
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <button class="btn" type="submit">Giriş</button>
-          <button id="show-register" class="btn ghost" type="button">Kayıt Ol</button>
-        </div>
-      </form>
-
-      <form id="register-form" class="hidden">
-        <label>Kullanıcı</label><input id="register-username">
-        <label>Şifre</label><input id="register-password" type="password" minlength="6" placeholder="En az 6 karakter">
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <button class="btn" type="submit">Kayıt</button>
-          <button id="show-login" class="btn ghost" type="button">Giriş</button>
-        </div>
-        <div class="hint">Şifreler SHA-256 ile hash'lenerek yerelde saklanır.</div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MAIN APP -->
-  <div id="app-container" class="card hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h1>Hoşgeldin, <span id="username-display"></span></h1>
-      <div class="flex">
-        <button id="logout-btn" class="btn ghost small">Çıkış</button>
-      </div>
-    </div>
-
-    <!-- ENTRY FORM -->
-    <div class="card">
-      <form id="journal-form">
-        <div class="row">
-          <div>
-            <label>Başlık</label><input id="title" required>
-          </div>
-          <div>
-            <label>Kategori</label>
-            <select id="category">
-              <option value="">— Seç veya yeni ekle —</option>
-              <option>kişisel</option>
-              <option>iş</option>
-              <option>seyahat</option>
-              <option>sağlık</option>
-            </select>
-            <input id="category-custom" placeholder="Özel kategori ekle (isteğe bağlı)" style="margin-top:8px">
-          </div>
-        </div>
-
-        <div>
-          <label>Not <span id="count" class="hint">(0/2000)</span></label>
-          <textarea id="note" maxlength="2000"></textarea>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Etiketler (virgülle)</label><input id="tags" placeholder="#iş,#tatil">
-          </div>
-          <div>
-            <label>Ruh Hali</label>
-            <select id="mood">
-              <option value="">—</option><option>😀 Mutlu</option><option>😌 Sakin</option><option>😔 Üzgün</option><option>😤 Sinirli</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label>Fotoğraf</label>
-          <div id="dropzone" class="dropzone">Buraya sürükle veya seç</div>
-          <input id="photo" type="file" accept="image/*">
-        </div>
-
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn" type="submit">Kaydı Ekle</button>
-          <button id="export-entry" type="button" class="btn ghost">Bu kaydı JSON olarak dışa aktarma</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- FILTERS + TOOLS -->
+  <div class="wrapper">
+    <!-- Top bar: theme + export/import + print -->
     <div class="card no-print">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <input id="search" placeholder="Başlık veya not içinde ara…" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border)">
-        <input id="filter-category" placeholder="Kategori filtre" style="padding:8px;border-radius:8px;border:1px solid var(--border)">
-        <input id="filter-tag" placeholder="Etiket filtre (#iş gibi)" style="padding:8px;border-radius:8px;border:1px solid var(--border)">
-        <select id="sort-by" style="padding:8px;border-radius:8px;border:1px solid var(--border)">
-          <option value="date-desc">Tarih ↓</option>
-          <option value="date-asc">Tarih ↑</option>
-          <option value="title-asc">Başlık A→Z</option>
-          <option value="fav-first">Favori önce</option>
-        </select>
-        <button id="toggle-calendar" class="btn ghost small">📅 Takvim</button>
-        <button id="toggle-stats" class="btn ghost small">📊 İstatistikler</button>
-      </div>
-    </div>
-
-    <!-- calendar + stats -->
-    <div id="calendar-card" class="card hidden no-print">
-      <h3>Takvim</h3>
-      <div id="calendar" class="calendar"></div>
-    </div>
-
-    <div id="stats-card" class="card hidden no-print">
-      <h3>İstatistikler</h3>
-      <div class="stat-box">
-        <div>
-          <h4>Kayit sayısı: <span id="stat-count">0</span></h4>
-          <canvas id="chart-cats" width="400" height="200"></canvas>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap">
+        <div style="display:flex; gap:10px; align-items:center">
+          <button id="theme-toggle" class="btn small" title="Tema (dark/light)">🌗 Tema</button>
+          <button id="export-json" class="btn small" title="Tüm verileri JSON olarak dışa aktar">📤 Dışa Aktar</button>
+          <label for="import-json-file" class="btn small ghost" style="cursor:pointer">📥 İçe Aktar</label>
+          <input type="file" id="import-json-file" accept="application/json" style="display:none"/>
+          <button id="print-btn" class="btn small ghost" title="Yazdır / PDF">🖨 Yazdır</button>
         </div>
-        <div>
-          <h4>Son 30 gün dağılımı</h4>
-          <canvas id="chart-time" width="400" height="200"></canvas>
+        <div style="display:flex; gap:10px; align-items:center">
+          <label class="hint">Hatırlatıcı:</label>
+          <input id="reminder-time" type="time" style="padding:8px; border-radius:8px; border:1px solid var(--border)"/>
+          <button id="toggle-reminder" class="btn small ghost">⏰ Aktif Et</button>
         </div>
       </div>
     </div>
 
-    <!-- Journals -->
-    <ul id="journals-list"></ul>
+    <!-- Auth -->
+    <div id="auth-container" class="card">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+        <div id="login-section">
+          <h2>Giriş Yap</h2>
+          <form id="login-form">
+            <div class="row">
+              <div>
+                <label for="login-username">Kullanıcı Adı</label>
+                <input id="login-username" type="text" autocomplete="username" required/>
+              </div>
+              <div class="pw-wrap">
+                <label for="login-password">Şifre</label>
+                <input id="login-password" type="password" autocomplete="current-password" required/>
+                <span class="pw-toggle" data-target="login-password" style="position:absolute;right:20px;top:62px;cursor:pointer">👁️</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px">
+              <button class="btn" type="submit">Giriş</button>
+              <button id="show-register" type="button" class="btn ghost">Kayıt Ol</button>
+            </div>
+          </form>
+        </div>
 
+        <div id="register-section" class="hidden">
+          <h2>Kayıt Ol</h2>
+          <form id="register-form">
+            <div>
+              <label for="register-username">Kullanıcı Adı</label>
+              <input id="register-username" type="text" required/>
+            </div>
+            <div class="pw-wrap" style="position:relative">
+              <label for="register-password">Şifre</label>
+              <input id="register-password" type="password" minlength="6" required placeholder="En az 6 karakter"/>
+              <span class="pw-toggle" data-target="register-password" style="position:absolute;right:20px;top:62px;cursor:pointer">👁️</span>
+              <div class="hint">Şifreler tarayıcı tarafında SHA-256 ile hash'lenip saklanır.</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px">
+              <button class="btn" type="submit">Kayıt Ol</button>
+              <button id="show-login" type="button" class="btn ghost">Giriş Yap</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- App -->
+    <div id="app-container" class="card hidden">
+      <h1>Hoş Geldin, <span id="username-display"></span></h1>
+      <p class="small hint" style="text-align:center">Güzel — tüm özellikler açık ve düzenli tutuldu 🎯</p>
+
+      <!-- Journal form -->
+      <div class="card no-print">
+        <form id="journal-form">
+          <div class="row">
+            <div>
+              <label for="title">Başlık</label>
+              <input id="title" type="text" placeholder="Günün başlığı" required/>
+            </div>
+            <div>
+              <label for="tags">Etiketler (virgülle)</label>
+              <input id="tags" placeholder="#iş, #tatil"/>
+            </div>
+          </div>
+
+          <div>
+            <label for="note">Not <span id="char-count" class="hint">(0/2000)</span></label>
+            <textarea id="note" maxlength="2000" placeholder="Bugün neler oldu?"></textarea>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="photo">Fotoğraf</label>
+              <div id="dropzone" class="dropzone">Fotoğrafı sürükle & bırak ya da seç</div>
+              <input id="photo" type="file" accept="image/*" style="margin-top:8px"/>
+            </div>
+            <div>
+              <label for="category">Kategori</label>
+              <input id="category" placeholder="Örn: iş, kişisel, seyahat (isteğe bağlı)"/>
+              <label for="mood" style="margin-top:8px">Ruh Hali</label>
+              <select id="mood">
+                <option value="">—</option>
+                <option>😀 Mutlu</option>
+                <option>😌 Sakin</option>
+                <option>😔 Üzgün</option>
+                <option>😤 Sinirli</option>
+                <option>🤩 Heyecanlı</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:12px; align-items:center">
+            <button class="btn" type="submit">Kaydı Ekle</button>
+            <button id="export-entry" type="button" class="btn ghost">Bu kaydı dışa aktar</button>
+            <button id="logout-btn" type="button" class="btn ghost">Çıkış Yap</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Filters & tools -->
+      <div class="card no-print">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap">
+          <div class="searchbar">
+            <input id="search" placeholder="Başlık veya not içinde ara..." />
+            <input id="filter-tag" placeholder="Etiket filtre (#iş)" style="margin-left:6px" />
+            <input id="filter-category" placeholder="Kategori filtre" style="margin-left:6px" />
+            <select id="sort-by" style="margin-left:6px">
+              <option value="date-desc">Tarih (Yeni→Eski)</option>
+              <option value="date-asc">Tarih (Eski→Yeni)</option>
+              <option value="title-asc">Başlık A→Z</option>
+              <option value="fav-first">Favori önce</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center">
+            <button id="toggle-calendar" class="btn small ghost">📅 Takvim</button>
+            <button id="toggle-stats" class="btn small ghost">📊 İstatistik</button>
+            <button id="export-all" class="btn small">⚙️ Yedek Al</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div id="calendar-card" class="card hidden no-print">
+        <h3>Takvim</h3>
+        <div id="calendar" class="calendar"></div>
+      </div>
+
+      <!-- Stats -->
+      <div id="stats-card" class="card hidden no-print">
+        <h3>İstatistikler</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+          <div>
+            <h4>Toplam kayıt: <span id="stat-count">0</span></h4>
+            <canvas id="cats-chart" width="400" height="160"></canvas>
+          </div>
+          <div>
+            <h4>Son 30 gün dağılımı</h4>
+            <canvas id="time-chart" width="400" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Journals list -->
+      <ul id="journals-list"></ul>
+
+    </div>
   </div>
-</div>
 
-<!-- modal root -->
-<div id="modal-root" class="hidden"></div>
+  <!-- Modal root -->
+  <div id="modal-root" style="display:none"></div>
 
 <script>
-/* -------------------------
-   Utilities
---------------------------*/
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const toBase64 = file => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+/* ===========================================================
+   Kusursuz Sürüm - Script
+   - Temiz, modüler ve performans odaklı
+   - Özellikler: auth (sha256 hash), create/read/update/delete,
+     search/filter/sort, tags, favorite, edit, drag&drop foto,
+     export/import, print, PWA manifest+SW, IndexedDB backup,
+     calendar, stats, notifications
+   =========================================================== */
 
-const sha256 = async txt => {
-  const data = new TextEncoder().encode(txt);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+/* ----------------- Utilities ----------------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const toBase64 = file => new Promise((res, rej) => {
+  const r = new FileReader();
+  r.onload = () => res(r.result);
+  r.onerror = rej;
+  r.readAsDataURL(file);
+});
+const sha256 = async text => {
+  const enc = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
 };
+const formatDateTR = d => d.toLocaleDateString('tr-TR', { day:'2-digit', month:'long', year:'numeric' }) + ' ' + d.toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' });
+const sanitize = s => String(s || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 
-function sanitize(str=''){ return String(str).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+/* ----------------- Storage model ----------------- */
+/* Using localStorage for users + journals; IndexedDB for periodic backups */
+const STORAGE_KEY = 'diary_v1_users';
+let dbState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); // { users: {username: {pwHash, journals:[]}}, current: username }
+if(!dbState.users) dbState.users = {};
+if(!('current' in dbState)) dbState.current = null;
+function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(dbState)); }
 
-/* -------------------------
-   Simple IndexedDB wrapper
---------------------------*/
-const DB_NAME='diary_db_v1', DB_STORE='backups';
-function openDB(){ return new Promise((res,rej)=>{
-  const r = indexedDB.open(DB_NAME,1);
-  r.onupgradeneeded = ()=> r.result.createObjectStore(DB_STORE,{keyPath:'id'});
-  r.onsuccess = ()=> res(r.result);
-  r.onerror = ()=> rej(r.error);
+/* IndexedDB simple backup utilities */
+const IDB_NAME='diary_backups_v1', IDB_STORE='backups';
+function openIDB(){ return new Promise((res, rej) => {
+  const rq = indexedDB.open(IDB_NAME, 1);
+  rq.onupgradeneeded = () => rq.result.createObjectStore(IDB_STORE, { keyPath: 'id' });
+  rq.onsuccess = () => res(rq.result);
+  rq.onerror = () => rej(rq.error);
 });}
-async function saveBackup(id, data){
-  const db = await openDB();
-  return new Promise((res,rej)=>{
-    const tx = db.transaction(DB_STORE,'readwrite');
-    tx.objectStore(DB_STORE).put({id, data, ts:new Date().toISOString()});
-    tx.oncomplete = ()=> res();
-    tx.onerror = ()=> rej(tx.error);
-  });
+async function idbSave(id, data){
+  try{
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put({ id, data, ts: new Date().toISOString() });
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }catch(e){}
 }
-async function getBackup(id){
-  const db = await openDB();
-  return new Promise((res,rej)=>{
-    const tx = db.transaction(DB_STORE,'readonly');
-    const rq = tx.objectStore(DB_STORE).get(id);
-    rq.onsuccess = ()=> res(rq.result?.data ?? null);
-    rq.onerror = ()=> rej(rq.error);
-  });
+async function idbGet(id){
+  try{
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const rq = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(id);
+      rq.onsuccess = () => res(rq.result ? rq.result.data : null);
+      rq.onerror = () => rej(rq.error);
+    });
+  }catch(e){ return null; }
 }
 
-/* -------------------------
-   Storage Model (users + current)
---------------------------*/
-const storageKey = 'diary_app_v3';
-function loadData(){ return JSON.parse(localStorage.getItem(storageKey) || '{}'); }
-function saveData(obj){ localStorage.setItem(storageKey, JSON.stringify(obj)); }
-
-let appState = loadData();
-appState.users = appState.users || {}; // {username:{pwHash, journals:[]}}
-appState.current = appState.current || null;
-
-/* -------------------------
-   Elements
---------------------------*/
+/* ----------------- Elements ----------------- */
 const authContainer = $('#auth-container');
 const appContainer = $('#app-container');
 const loginForm = $('#login-form');
 const registerForm = $('#register-form');
-const showRegisterBtn = $('#show-register'), showLoginBtn = $('#show-login');
-const loginUsername = $('#login-username'), loginPassword = $('#login-password');
-const registerUsername = $('#register-username'), registerPassword = $('#register-password');
-const usernameDisplay = $('#username-display'), logoutBtn = $('#logout-btn');
+const showRegisterBtn = $('#show-register');
+const showLoginBtn = $('#show-login');
+const loginUsername = $('#login-username');
+const loginPassword = $('#login-password');
+const registerUsername = $('#register-username');
+const registerPassword = $('#register-password');
+const usernameDisplay = $('#username-display');
+const logoutBtn = $('#logout-btn');
 
 const journalForm = $('#journal-form');
-const titleInput = $('#title'), noteInput = $('#note'), tagsInput = $('#tags');
-const photoInput = $('#photo'), dropzone = $('#dropzone');
-const categorySelect = $('#category'), categoryCustom = $('#category-custom'), mood = $('#mood');
-const journalsList = $('#journals-list');
-const countEl = $('#count');
+const titleInput = $('#title');
+const tagsInput = $('#tags');
+const noteInput = $('#note');
+const charCount = $('#char-count');
+const photoInput = $('#photo');
+const dropzone = $('#dropzone');
+const categoryInput = $('#category');
+const moodSelect = $('#mood');
 
-const searchInput = $('#search'), filterCategory = $('#filter-category'), filterTag = $('#filter-tag'), sortBy = $('#sort-by');
-const toggleCalendar = $('#toggle-calendar'), toggleStats = $('#toggle-stats');
-const calendarCard = $('#calendar-card'), calendarEl = $('#calendar');
-const statsCard = $('#stats-card'), statCount = $('#stat-count');
-const chartCats = $('#chart-cats'), chartTime = $('#chart-time');
+const searchInput = $('#search');
+const filterTag = $('#filter-tag');
+const filterCategory = $('#filter-category');
+const sortBy = $('#sort-by');
+
+const journalsList = $('#journals-list');
+const calendarCard = $('#calendar-card');
+const calendarEl = $('#calendar');
+const statsCard = $('#stats-card');
+const statCount = $('#stat-count');
 
 const themeToggle = $('#theme-toggle');
-const exportJSON = $('#export-json'), importJSON = $('#import-json'),
-      printBtn = $('#print-btn');
-const remTime = $('#reminder-time'), toggleReminder = $('#toggle-reminder');
+const exportJSONBtn = $('#export-json');
+const importJSONFile = $('#import-json-file');
+const printBtn = $('#print-btn');
+const exportEntryBtn = $('#export-entry');
+const exportAllBtn = $('#export-all');
+
+const reminderTime = $('#reminder-time');
+const toggleReminderBtn = $('#toggle-reminder');
 
 const modalRoot = $('#modal-root');
-const exportEntryBtn = $('#export-entry');
 
-/* -------------------------
-   Theme
---------------------------*/
-const savedTheme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-document.documentElement.classList.toggle('dark', savedTheme==='dark');
-themeToggle.addEventListener('click', ()=> {
+/* ----------------- Theme & PWA setup ----------------- */
+const initTheme = () => {
+  const stored = localStorage.getItem('diary_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.classList.toggle('dark', stored === 'dark');
+};
+initTheme();
+themeToggle.addEventListener('click', () => {
   const isDark = document.documentElement.classList.toggle('dark');
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('diary_theme', isDark ? 'dark' : 'light');
 });
 
-/* -------------------------
-   Auth
---------------------------*/
-function saveAppState(){ saveData(appState); }
-function setCurrent(u){ appState.current = u; saveAppState(); }
-function users(){ return appState.users; }
-function journalsFor(u){ return (users()[u] && users()[u].journals) ? users()[u].journals : []; }
-function setJournalsFor(u, arr){ users()[u].journals = arr; saveAppState(); }
+/* create manifest and service worker dynamically for PWA offline shell */
+(function setupPWA(){
+  try{
+    const manifest = { name:'Benim Günlüğüm', short_name:'Günlük', start_url:'.', display:'standalone', background_color:'#ffffff', theme_color:'#5C6BC0' };
+    const manBlob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
+    const manURL = URL.createObjectURL(manBlob);
+    const link = document.createElement('link'); link.rel='manifest'; link.href = manURL; document.head.appendChild(link);
 
-function checkAuth(){
-  if(appState.current){
-    authContainer.classList.add('hidden'); appContainer.classList.remove('hidden');
-    usernameDisplay.textContent = appState.current;
+    const swCode = `
+      const CACHE='diary-shell-v1';
+      self.addEventListener('install', ev => {
+        ev.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', ev => ev.waitUntil(self.clients.claim()));
+      self.addEventListener('fetch', ev => {
+        ev.respondWith(caches.match(ev.request).then(r => r || fetch(ev.request).then(resp => { caches.open(CACHE).then(c=>c.put(ev.request, resp.clone())); return resp; }).catch(()=>r)));
+      });
+    `;
+    const swBlob = new Blob([swCode], { type:'text/javascript' });
+    const swURL = URL.createObjectURL(swBlob);
+    if('serviceWorker' in navigator) navigator.serviceWorker.register(swURL).catch(()=>{});
+  }catch(e){}
+})();
+
+/* ----------------- Auth logic (sha256 hashed passwords) ----------------- */
+async function registerUser(username, password){
+  if(!username || !password) throw 'Eksik bilgi';
+  if(dbState.users[username]) throw 'Kullanıcı zaten var';
+  const hash = await sha256(password);
+  dbState.users[username] = { pwHash: hash, journals: [] };
+  persist();
+}
+async function loginUser(username, password){
+  const u = dbState.users[username];
+  if(!u) throw 'Kullanıcı bulunamadı';
+  const h = await sha256(password);
+  if(h !== u.pwHash) throw 'Hatalı şifre';
+  dbState.current = username; persist();
+}
+function logout(){
+  dbState.current = null; persist(); renderAuth();
+}
+function currentJournals(){ return dbState.users[dbState.current]?.journals || []; }
+function saveCurrentJournals(arr){ if(!dbState.current) return; dbState.users[dbState.current].journals = arr; persist(); }
+
+/* ----------------- UI: auth rendering ----------------- */
+function renderAuth(){
+  if(dbState.current){
+    authContainer.classList.add('hidden');
+    appContainer.classList.remove('hidden');
+    usernameDisplay.textContent = dbState.current;
     renderAll();
-    // attempt to load backup if exists
-    getBackup('backup_'+appState.current).then(b=>{
-      if(b && Object.keys(users())[0]) {
-        // we don't auto-import, but store for possibility. (no action)
-      }
-    }).catch(()=>{});
+    loadReminderPref();
   } else {
-    authContainer.classList.remove('hidden'); appContainer.classList.add('hidden');
+    authContainer.classList.remove('hidden');
+    appContainer.classList.add('hidden');
   }
 }
+renderAuth();
 
-registerForm.addEventListener('submit', async e=>{
+registerForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const u = registerUsername.value.trim();
-  const p = registerPassword.value;
-  if(!u || !p) return alert('Kullanıcı ve şifre gerekli');
-  if(users()[u]) return alert('Kullanıcı mevcut');
-  const h = await sha256(p);
-  users()[u] = { pwHash: h, journals: [] };
-  saveAppState();
-  alert('Kayıt başarılı. Giriş yapabilirsiniz.');
-  registerForm.classList.add('hidden'); loginForm.classList.remove('hidden');
-  loginUsername.value = u;
+  try{
+    await registerUser(registerUsername.value.trim(), registerPassword.value);
+    alert('Kayıt başarılı. Giriş sayfasına yönlendiriliyorsunuz.');
+    registerForm.reset();
+    $('#login-section').scrollIntoView({behavior:'smooth'});
+    $('#login-section').classList.remove('hidden');
+    $('#register-section').classList.add('hidden');
+    loginUsername.value = registerUsername.value.trim();
+  }catch(err){ alert(err); }
 });
 
-loginForm.addEventListener('submit', async e=>{
+loginForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const u = loginUsername.value.trim(), p = loginPassword.value;
-  if(!users()[u]) return alert('Kullanıcı bulunamadı.');
-  const ok = users()[u].pwHash === await sha256(p);
-  if(!ok) return alert('Kullanıcı adı veya şifre yanlış');
-  setCurrent(u); checkAuth();
+  try{
+    await loginUser(loginUsername.value.trim(), loginPassword.value);
+    loginForm.reset();
+    renderAuth();
+  }catch(err){ alert(err); }
 });
+showRegisterBtn.addEventListener('click', ()=> { $('#login-section').classList.add('hidden'); $('#register-section').classList.remove('hidden'); });
+showLoginBtn.addEventListener('click', ()=> { $('#register-section').classList.add('hidden'); $('#login-section').classList.remove('hidden'); });
+logoutBtn.addEventListener('click', ()=> { logout(); });
 
-showRegisterBtn.addEventListener('click', ()=>{ loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); });
-showLoginBtn.addEventListener('click', ()=>{ registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
-logoutBtn.addEventListener('click', ()=>{ setCurrent(null); checkAuth(); });
+/* password visibility toggles */
+$$('.pw-toggle').forEach(el => el.addEventListener('click', () => {
+  const target = document.getElementById(el.dataset.target);
+  if(!target) return;
+  target.type = target.type === 'password' ? 'text' : 'password';
+  el.textContent = target.type === 'password' ? '👁️' : '🙈';
+}));
 
-/* -------------------------
-   Entry CRUD + Editing + Tags/Categories
---------------------------*/
+/* ----------------- Journal CRUD ----------------- */
 let pendingImage = null;
+dropzone.addEventListener('click', ()=> photoInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', async e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+  const f = e.dataTransfer.files?.[0];
+  if(f && f.type.startsWith('image/')) {
+    pendingImage = await toBase64(f);
+    dropzone.textContent = f.name;
+  }
+});
+photoInput.addEventListener('change', async ()=> {
+  const f = photoInput.files?.[0]; if(f) { pendingImage = await toBase64(f); dropzone.textContent = f.name; }
+});
 
-dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
-dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
-dropzone.addEventListener('drop', async e=>{ e.preventDefault(); dropzone.classList.remove('drag'); const f = e.dataTransfer.files?.[0]; if(f && f.type.startsWith('image/')){ pendingImage = await toBase64(f); dropzone.textContent = f.name } });
+noteInput.addEventListener('input', () => { $('#char-count').textContent = `(${noteInput.value.length}/2000)`; });
 
-photoInput.addEventListener('change', async ()=>{ const f = photoInput.files?.[0]; if(f) { pendingImage = await toBase64(f); dropzone.textContent = f.name } });
-
-noteInput.addEventListener('input', ()=> countEl.textContent = `(${noteInput.value.length}/2000)` );
-
-function parseTags(t){ return (t||'').split(',').map(s=>s.trim()).filter(Boolean).map(x=> x.startsWith('#')?x.toLowerCase():('#'+x.toLowerCase())); }
-function pickCategory(){ const custom = categoryCustom.value.trim(); return custom || categorySelect.value || ''; }
-
-journalForm.addEventListener('submit', async e=>{
+journalForm.addEventListener('submit', async e => {
   e.preventDefault();
-  if(!appState.current) return alert('Giriş yapın');
-  const title = titleInput.value.trim();
-  if(!title) return alert('Başlık gerekli');
-  const now = new Date();
+  if(!dbState.current){ alert('Önce giriş yapın'); return; }
+  const title = titleInput.value.trim(); if(!title){ alert('Başlık gerekli'); return; }
   const entry = {
     id: crypto.randomUUID(),
     title,
     note: noteInput.value,
-    dateISO: now.toISOString(),
-    dateText: now.toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'}) + ' ' + now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),
     tags: parseTags(tagsInput.value),
-    category: pickCategory(),
-    mood: mood.value || '',
+    category: categoryInput.value.trim(),
+    mood: moodSelect.value || '',
     photo: pendingImage,
+    dateISO: new Date().toISOString(),
+    dateText: formatDateTR(new Date()),
     favorite: false
   };
-  const arr = journalsFor(appState.current);
+  const arr = currentJournals();
   arr.push(entry);
-  setJournalsFor(appState.current, arr);
-  // auto-backup to IndexedDB
-  saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
-  // reset
-  journalForm.reset(); pendingImage=null; dropzone.textContent='Buraya sürükle veya seç'; countEl.textContent='(0/2000)';
+  saveCurrentJournals(arr);
+  // backup to IndexedDB
+  idbSave('backup_' + dbState.current, { users: dbState.users, current: dbState.current }).catch(()=>{});
+  // reset form
+  journalForm.reset(); pendingImage = null; dropzone.textContent = 'Fotoğrafı sürükle & bırak ya da seç'; $('#char-count').textContent='(0/2000)';
   renderAll();
 });
 
-/* render & bind actions */
-function renderAll(){
-  renderJournals();
-  renderCalendar(); renderStats();
+/* helper to parse tags */
+function parseTags(str){
+  return (str || '').split(',').map(s => s.trim()).filter(Boolean).map(t => t.startsWith('#') ? t.toLowerCase() : '#' + t.toLowerCase());
 }
 
+/* render functions (search/filter/sort) */
 function renderJournals(){
-  const q = searchInput.value.trim().toLowerCase();
-  const catFilter = filterCategory.value.trim().toLowerCase();
-  const tagFilter = filterTag.value.trim().toLowerCase();
-  const s = sortBy.value;
-  const arr = (journalsFor(appState.current) || []).slice();
-
-  const filtered = arr.filter(e=>{
-    const hay = (e.title + ' ' + e.note + ' ' + (e.tags||[]).join(' ') + ' ' + (e.category||'')).toLowerCase();
+  const q = (searchInput.value || '').toLowerCase().trim();
+  const tagF = (filterTag.value || '').toLowerCase().trim();
+  const catF = (filterCategory.value || '').toLowerCase().trim();
+  let list = currentJournals().slice();
+  // filter
+  list = list.filter(e => {
+    const hay = (e.title + ' ' + e.note + ' ' + (e.tags || []).join(' ') + ' ' + (e.category || '')).toLowerCase();
     if(q && !hay.includes(q)) return false;
-    if(catFilter && !(e.category||'').toLowerCase().includes(catFilter)) return false;
-    if(tagFilter && !(e.tags||[]).includes(tagFilter.startsWith('#')?tagFilter:'#'+tagFilter)) return false;
+    if(tagF) {
+      const nf = tagF.startsWith('#') ? tagF : '#' + tagF;
+      if(!(e.tags || []).includes(nf)) return false;
+    }
+    if(catF && !(e.category || '').toLowerCase().includes(catF)) return false;
     return true;
   });
-
-  filtered.sort((a,b)=>{
-    if(s==='date-desc') return new Date(b.dateISO)-new Date(a.dateISO);
-    if(s==='date-asc') return new Date(a.dateISO)-new Date(b.dateISO);
-    if(s==='title-asc') return a.title.localeCompare(b.title,'tr');
-    if(s==='fav-first') return (b.favorite===true)-(a.favorite===true) || (new Date(b.dateISO)-new Date(a.dateISO));
+  // sort
+  const s = sortBy.value;
+  list.sort((a,b) => {
+    if(s === 'date-desc') return new Date(b.dateISO) - new Date(a.dateISO);
+    if(s === 'date-asc') return new Date(a.dateISO) - new Date(b.dateISO);
+    if(s === 'title-asc') return a.title.localeCompare(b.title,'tr');
+    if(s === 'fav-first') return (b.favorite === true) - (a.favorite === true) || (new Date(b.dateISO) - new Date(a.dateISO));
     return 0;
   });
 
   journalsList.innerHTML = '';
-  filtered.forEach(e=>{
-    const li = document.createElement('li'); li.className='entry';
+  list.forEach((e, idx) => {
+    const li = document.createElement('li'); li.className = 'journal-entry';
     li.innerHTML = `
       <header>
         <div>
           <h3>${sanitize(e.title)}</h3>
-          <div class="hint">${sanitize(e.dateText)} ${e.category? '· '+sanitize(e.category):''}</div>
-          <div class="chips">${(e.tags||[]).map(t=>`<span class="chip">${sanitize(t)}</span>`).join('')} ${e.favorite?'<span class="chip">⭐ Favori</span>':''}</div>
+          <div class="meta">${sanitize(e.dateText)} ${e.category ? '· ' + sanitize(e.category) : ''}</div>
+          <div class="chips">${(e.tags || []).map(t => `<span class="chip">${sanitize(t)}</span>`).join('')} ${e.favorite ? '<span class="chip">⭐ Favori</span>' : ''}</div>
         </div>
-        <div class="actions">
+        <div style="display:flex;gap:8px; align-items:center;">
           <button class="btn small ghost" data-act="edit" data-id="${e.id}">✏️</button>
-          <button class="btn small" data-act="fav" data-id="${e.id}">${e.favorite?'⭐':'☆'}</button>
+          <button class="btn small" data-act="fav" data-id="${e.id}">${e.favorite ? '⭐' : '☆'}</button>
           <button class="btn small ghost" data-act="share" data-id="${e.id}">🔗</button>
-          <button class="btn small" data-act="del" data-id="${e.id}">🗑️</button>
         </div>
       </header>
-      <div>${sanitize(e.note).replace(/\n/g ,'<br>')}</div>
-      ${e.photo ? `<img src="${e.photo}" style="border-radius:10px;max-height:200px;object-fit:cover;margin-top:8px">` : ''}
+      <div class="content">${sanitize(e.note).replace(/\n/g,'<br>')}</div>
+      ${e.photo ? `<img src="${e.photo}" alt="Günlük fotoğrafı" class="journal-image">` : ''}
+      <button class="delete-btn" data-act="del" data-id="${e.id}">Sil</button>
     `;
     journalsList.appendChild(li);
   });
 
-  // bind
-  journalsList.querySelectorAll('[data-act]').forEach(btn=>{
-    btn.onclick = ()=> {
-      const id = btn.getAttribute('data-id');
-      const act = btn.getAttribute('data-act');
-      if(act==='del') deleteEntry(id);
-      else if(act==='edit') editEntry(id);
-      else if(act==='fav') toggleFav(id);
-      else if(act==='share') shareEntry(id);
-    };
+  // bind actions
+  journalsList.querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+      if(act === 'del') confirmDelete(id);
+      if(act === 'edit') openEditModal(id);
+      if(act === 'fav') toggleFavorite(id);
+      if(act === 'share') shareEntry(id);
+    });
   });
 }
 
-/* actions */
-function deleteEntry(id){
+/* delete with confirmation */
+function confirmDelete(id){
   showModal({
-    title:'Silmek istediğine emin misin?',
-    body:'Bu işlem geri alınamaz.',
-    confirmText:'Evet sil',
-    confirmClass:'danger',
-    onConfirm: ()=>{
-      const arr = journalsFor(appState.current).filter(x=>x.id!==id);
-      setJournalsFor(appState.current, arr);
-      saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+    title: 'Kaydı sil',
+    body: '<p>Bu kaydı silmek istediğine emin misin? Bu işlem geri alınamaz.</p>',
+    confirmText: 'Evet, sil',
+    confirmClass: 'danger',
+    onConfirm: () => {
+      const arr = currentJournals().filter(x => x.id !== id);
+      saveCurrentJournals(arr);
+      idbSave('backup_' + dbState.current, { users: dbState.users, current: dbState.current }).catch(()=>{});
       renderAll();
     }
   });
 }
 
-function toggleFav(id){
-  const arr = journalsFor(appState.current);
-  const i = arr.findIndex(x=>x.id===id); if(i<0) return;
-  arr[i].favorite = !arr[i].favorite;
-  setJournalsFor(appState.current, arr);
-  renderAll();
+/* toggle favorite */
+function toggleFavorite(id){
+  const arr = currentJournals();
+  const ix = arr.findIndex(x => x.id === id);
+  if(ix < 0) return;
+  arr[ix].favorite = !arr[ix].favorite;
+  saveCurrentJournals(arr);
+  renderJournals();
 }
 
+/* share entry (Web Share API fallback clipboard) */
 function shareEntry(id){
-  const e = journalsFor(appState.current).find(x=>x.id===id);
-  if(!e) return;
-  // create text
-  const text = `Günlük: ${e.title}\n${e.dateText}\n\n${e.note}\n\nEtiketler: ${(e.tags||[]).join(', ')}\nKategori: ${e.category||'-'}`;
+  const entry = currentJournals().find(x => x.id === id);
+  if(!entry) return;
+  const text = `${entry.title}\n${entry.dateText}\n\n${entry.note}\n\nEtiketler: ${(entry.tags || []).join(', ')}\nKategori: ${entry.category || '-'}`;
   if(navigator.share){
-    navigator.share({title:e.title,text}).catch(()=>alert('Paylaşım iptal edildi'));
+    navigator.share({ title: entry.title, text }).catch(()=>{});
   } else {
-    // fallback: copy to clipboard
     navigator.clipboard.writeText(text).then(()=> alert('Günlük metni panoya kopyalandı'));
   }
 }
 
-function editEntry(id){
-  const e = journalsFor(appState.current).find(x=>x.id===id);
-  if(!e) return;
+/* edit modal */
+function openEditModal(id){
+  const entry = currentJournals().find(x => x.id === id);
+  if(!entry) return;
   showModal({
-    title:'Kaydı Düzenle',
+    title: 'Kaydı Düzenle',
     body: `
-      <div style="display:grid;gap:8px">
-        <label>Başlık</label><input id="edit-title" value="${sanitize(e.title)}">
-        <label>Kategori</label><input id="edit-category" value="${sanitize(e.category||'')}">
-        <label>Etiketler</label><input id="edit-tags" value="${sanitize((e.tags||[]).join(', '))}">
-        <label>Not</label><textarea id="edit-note" maxlength="2000">${sanitize(e.note)}</textarea>
-        <label>Fotoğraf (yeni seçersen eskisi değiştirilir)</label><input id="edit-photo" type="file" accept="image/*">
-        ${e.photo ? `<div style="margin-top:6px"><img src="${e.photo}" style="max-height:120px;border-radius:8px"></div>` : ''}
+      <div style="display:grid; gap:8px">
+        <label>Başlık</label><input id="edit-title" value="${sanitize(entry.title)}"/>
+        <label>Kategori</label><input id="edit-category" value="${sanitize(entry.category || '')}"/>
+        <label>Etiketler (virgülle)</label><input id="edit-tags" value="${sanitize((entry.tags || []).join(', '))}"/>
+        <label>Not</label><textarea id="edit-note" maxlength="2000">${sanitize(entry.note)}</textarea>
+        <label>Fotoğraf (yeni seçersen eskisi değişir)</label><input id="edit-photo" type="file" accept="image/*"/>
+        ${entry.photo ? `<div style="margin-top:8px"><img src="${entry.photo}" style="max-width:100%; border-radius:8px"></div>` : ''}
       </div>
     `,
-    confirmText:'Kaydet',
-    onConfirm: async ()=>{
-      const arr = journalsFor(appState.current);
-      const idx = arr.findIndex(x=>x.id===id); if(idx<0) return;
-      arr[idx].title = $('#edit-title').value.trim();
-      arr[idx].category = $('#edit-category').value.trim();
-      arr[idx].tags = parseTags($('#edit-tags').value);
-      arr[idx].note = $('#edit-note').value;
+    confirmText: 'Kaydet',
+    onConfirm: async () => {
+      const arr = currentJournals();
+      const ix = arr.findIndex(x => x.id === id);
+      if(ix < 0) return;
+      arr[ix].title = $('#edit-title').value.trim();
+      arr[ix].category = $('#edit-category').value.trim();
+      arr[ix].tags = parseTags($('#edit-tags').value);
+      arr[ix].note = $('#edit-note').value;
       const nf = $('#edit-photo').files?.[0];
-      if(nf) arr[idx].photo = await toBase64(nf);
-      setJournalsFor(appState.current, arr);
-      saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+      if(nf) arr[ix].photo = await toBase64(nf);
+      saveCurrentJournals(arr);
+      idbSave('backup_' + dbState.current, { users: dbState.users, current: dbState.current }).catch(()=>{});
       renderAll();
     }
   });
 }
 
-/* -------------------------
-   Calendar
---------------------------*/
-function renderCalendar(date=new Date()){
+/* ----------------- Search/filters events ----------------- */
+[searchInput, filterTag, filterCategory].forEach(el => el.addEventListener('input', renderJournals));
+sortBy.addEventListener('change', renderJournals);
+
+/* ----------------- Export / Import / Print ----------------- */
+exportJSONBtn.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({ users: dbState.users, current: dbState.current, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `gunlugum_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+});
+importJSONFile.addEventListener('change', async e => {
+  const f = e.target.files?.[0]; if(!f) return;
+  try{
+    const txt = await f.text(); const obj = JSON.parse(txt);
+    if(obj.users){ dbState.users = obj.users; dbState.current = obj.current || null; persist(); alert('İçe aktarma tamamlandı'); renderAuth(); }
+    else alert('Geçersiz dosya');
+  }catch(err){ alert('JSON okunamadı'); }
+  importJSONFile.value = '';
+});
+printBtn.addEventListener('click', () => window.print());
+
+exportEntryBtn.addEventListener('click', () => {
+  if(!dbState.current) return alert('Önce giriş yapın');
+  const payload = {
+    title: titleInput.value.trim(),
+    note: noteInput.value,
+    tags: parseTags(tagsInput.value),
+    category: categoryInput.value.trim(),
+    mood: moodSelect.value,
+    photo: pendingImage
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `entry_${new Date().toISOString().slice(0,10)}.json`; a.click();
+});
+
+/* export all quick backup */
+exportAllBtn.addEventListener('click', async () => {
+  if(!dbState.current) return alert('Giriş yapın');
+  await idbSave('backup_' + dbState.current, { users: dbState.users, current: dbState.current });
+  alert('IndexedDB yedeği alındı (tarayıcıda saklanır).');
+});
+
+/* ----------------- Calendar & Stats ----------------- */
+function renderCalendarView(){
   calendarEl.innerHTML = '';
-  const year = date.getFullYear(), month = date.getMonth();
-  const first = new Date(year, month, 1); const startDay = first.getDay(); // 0-6 (Sun)
-  // adjust to Monday-first maybe? keep Sunday-based as fine.
-  // days in month
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const first = new Date(year, month, 1);
+  const startDay = first.getDay(); // 0-6 Sun-Sat
   const daysInMonth = new Date(year, month+1, 0).getDate();
-  // previous month's tail
-  const prevDays = startDay;
-  const totalCells = prevDays + daysInMonth;
-  const rows = Math.ceil(totalCells/7) * 7;
+  const prevEmpty = startDay; // cells before first
+  const total = prevEmpty + daysInMonth;
+  const rows = Math.ceil(total / 7) * 7;
+  const entries = currentJournals() || [];
 
-  // build days array
-  const days = [];
   for(let i=0;i<rows;i++){
-    const dayNum = i - prevDays + 1;
-    const inMonth = dayNum>=1 && dayNum<=daysInMonth;
-    const d = inMonth ? new Date(year, month, dayNum) : null;
-    days.push({inMonth,d});
-  }
-
-  const entries = journalsFor(appState.current)||[];
-
-  days.forEach((cell, idx)=>{
-    const el = document.createElement('div'); el.className='cal-day'+(cell.inMonth?'':' out');
-    if(cell.inMonth){
-      el.innerHTML = `<div style="font-weight:700">${cell.d.getDate()}</div>`;
-      // find entries for this day
-      const dayStr = cell.d.toISOString().slice(0,10);
-      const dayEntries = entries.filter(en => en.dateISO.slice(0,10) === dayStr);
-      dayEntries.slice(0,3).forEach((en,i)=>{
-        const span = document.createElement('div'); span.style.fontSize='.78rem'; span.style.marginTop='6px';
-        span.textContent = en.title.length>24?en.title.slice(0,21)+'...':en.title;
+    const dayNum = i - prevEmpty + 1;
+    const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (inMonth ? '' : ' out');
+    if(inMonth){
+      const d = new Date(year, month, dayNum);
+      el.innerHTML = `<div style="font-weight:700">${d.getDate()}</div>`;
+      const dayStr = d.toISOString().slice(0,10);
+      const items = entries.filter(en => en.dateISO.slice(0,10) === dayStr);
+      items.slice(0,3).forEach(it => {
+        const span = document.createElement('div'); span.style.fontSize = '.82rem'; span.style.marginTop='6px';
+        span.textContent = it.title.length > 22 ? it.title.slice(0,19) + '...' : it.title;
         el.appendChild(span);
       });
-      if(dayEntries.length>0){
-        const dot = document.createElement('div'); dot.className='dot'; dot.style.background = '#ffd54f';
-        el.appendChild(dot);
-      }
-      el.style.cursor='pointer';
-      el.addEventListener('click', ()=> {
-        // show list of entries in a modal
-        const listHtml = dayEntries.map(en=>`<div style="margin-bottom:8px"><strong>${sanitize(en.title)}</strong><div class="hint">${sanitize(en.dateText)}</div><div>${sanitize(en.note).slice(0,200)}${en.note.length>200?'...':''}</div></div>`).join('') || '<div class="hint">O gün kayıt yok</div>';
-        showModal({ title: cell.d.toLocaleDateString('tr-TR'), body: listHtml, confirmText:'Kapat' });
+      if(items.length) el.appendChild(Object.assign(document.createElement('div'), { className: 'dot' }));
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => {
+        showModal({ title: d.toLocaleDateString('tr-TR'), body: items.length ? items.map(it => `<p><strong>${sanitize(it.title)}</strong><br>${sanitize(it.note).slice(0,200)}${it.note.length>200?'...':''}</p>`).join('') : '<p class="hint">O gün kayıt yok</p>' , confirmText: 'Kapat' });
       });
     }
     calendarEl.appendChild(el);
-  });
-}
-
-/* -------------------------
-   Stats (simple canvas charts)
---------------------------*/
-function renderStats(){
-  const entries = journalsFor(appState.current) || [];
-  statCount.textContent = entries.length;
-
-  // categories count
-  const catCounts = {};
-  entries.forEach(e=>{
-    const c = (e.category||'diğer').toLowerCase() || 'diğer';
-    catCounts[c] = (catCounts[c]||0)+1;
-  });
-  const cats = Object.keys(catCounts);
-  // draw horizontal bars
-  drawBarChart(chartCats, cats, cats.map(c=>catCounts[c]));
-
-  // time series last 30 days
-  const last30 = [];
-  for(let i=29;i>=0;i--){
-    const d = new Date(); d.setDate(d.getDate()-i);
-    last30.push(d.toISOString().slice(0,10));
   }
-  const counts30 = last30.map(day => entries.filter(e=> e.dateISO.slice(0,10)===day).length);
-  drawLineChart(chartTime, last30.map(d=>d.slice(5)), counts30);
 }
 
-/* simple drawing functions */
+function renderStats(){
+  const entries = currentJournals() || [];
+  statCount.textContent = entries.length;
+  // categories distribution
+  const counts = {};
+  entries.forEach(e => { const c = (e.category || 'diğer').toLowerCase(); counts[c] = (counts[c]||0) + 1; });
+  drawBarChart($('#cats-chart'), Object.keys(counts), Object.values(counts));
+  // last 30 days
+  const last30 = []; for(let i=29;i>=0;i--){ const d = new Date(); d.setDate(d.getDate()-i); last30.push(d.toISOString().slice(0,10)); }
+  const counts30 = last30.map(day => entries.filter(e => e.dateISO.slice(0,10) === day).length);
+  drawLineChart($('#time-chart'), last30.map(s=>s.slice(5)), counts30);
+}
+
+/* simple charts with canvas */
 function drawBarChart(canvas, labels, values){
   const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
   ctx.clearRect(0,0,w,h);
   const max = Math.max(...values,1);
-  const pad=30; const barH = Math.min(28, (h - pad*2) / labels.length);
-  labels.forEach((lab,i)=>{
-    const x = pad; const y = pad + i*(barH+8);
+  const pad = 30; const barH = Math.max(18, (h - pad*2) / Math.max(1, labels.length));
+  labels.forEach((lab, i) => {
+    const x = pad; const y = pad + i*(barH+6);
     const val = values[i];
-    const barW = ((w - pad*2) * (val/max));
+    const barW = (w - pad*2) * (val/max);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#5C6BC0';
     ctx.fillRect(x, y, barW, barH);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#37474F';
-    ctx.font = '13px Poppins';
-    ctx.fillText(`${lab} (${val})`, x + Math.max(6,barW+6), y + barH - 8);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#263238';
+    ctx.font = '12px Poppins';
+    ctx.fillText(`${lab} (${val})`, x + Math.max(6, barW+6), y + barH - 6);
   });
 }
 
 function drawLineChart(canvas, labels, values){
-  const ctx = canvas.getContext('2d'); const w=canvas.width, h=canvas.height;
+  const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
   ctx.clearRect(0,0,w,h);
   const max = Math.max(...values,1);
-  const left=40, right=10, top=10, bottom=30;
+  const left = 30, right = 10, top = 12, bottom = 28;
   // axes
-  ctx.strokeStyle = '#ccc'; ctx.beginPath(); ctx.moveTo(left,top); ctx.lineTo(left,h-bottom); ctx.lineTo(w-right,h-bottom); ctx.stroke();
-  // points
-  const usableW = w - left - right;
-  const usableH = h - top - bottom;
-  ctx.beginPath(); values.forEach((v,i)=>{
-    const x = left + (i/(values.length-1||1))*usableW;
-    const y = top + (1 - v/max) * usableH;
+  ctx.strokeStyle = '#ddd'; ctx.beginPath(); ctx.moveTo(left, top); ctx.lineTo(left, h-bottom); ctx.lineTo(w-right, h-bottom); ctx.stroke();
+  // line
+  ctx.beginPath();
+  values.forEach((v,i) => {
+    const x = left + (i/(values.length-1||1)) * (w - left - right);
+    const y = top + (1 - (v/max)) * (h - top - bottom);
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#7986CB'; ctx.lineWidth=2; ctx.stroke();
+  });
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-2') || '#7986CB'; ctx.lineWidth = 2; ctx.stroke();
 }
 
-/* -------------------------
-   Modal helper
---------------------------*/
-function showModal({title, body='', confirmText='Tamam', cancelText='İptal', onConfirm, confirmClass='' }){
+/* ----------------- Modal helper ----------------- */
+function showModal({ title='', body='', confirmText='Tamam', cancelText='İptal', onConfirm=null, confirmClass='' }){
+  modalRoot.style.display = 'block';
   modalRoot.innerHTML = `
     <div class="modal-backdrop">
       <div class="modal">
-        <h3>${title}</h3>
-        <div style="margin:10px 0">${body}</div>
-        <div style="display:flex;justify-content:flex-end;gap:8px">
-          <button id="m-cancel" class="btn ghost small">${cancelText}</button>
-          <button id="m-ok" class="btn small ${confirmClass}">${confirmText}</button>
+        <h3 style="margin:0 0 10px">${title}</h3>
+        <div style="margin-bottom:14px">${body}</div>
+        <div style="display:flex; justify-content:flex-end; gap:8px">
+          <button id="modal-cancel" class="btn ghost small">${cancelText}</button>
+          <button id="modal-ok" class="btn small ${confirmClass}">${confirmText}</button>
         </div>
       </div>
-    </div>`;
-  modalRoot.classList.remove('hidden');
-  $('#m-cancel').addEventListener('click', ()=> { modalRoot.classList.add('hidden'); modalRoot.innerHTML=''; });
-  $('#m-ok').addEventListener('click', ()=> { modalRoot.classList.add('hidden'); modalRoot.innerHTML=''; onConfirm && onConfirm(); });
+    </div>
+  `;
+  $('#modal-cancel').addEventListener('click', closeModal);
+  $('#modal-ok').addEventListener('click', () => { closeModal(); if(onConfirm) onConfirm(); });
+  function closeModal(){ modalRoot.style.display='none'; modalRoot.innerHTML=''; }
 }
 
-/* -------------------------
-   Import / Export / Print
---------------------------*/
-exportJSON.addEventListener('click', ()=>{
-  const data = {users:users(), current: appState.current, exportedAt: new Date().toISOString()};
-  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `gunlugum-export-${new Date().toISOString().slice(0,10)}.json`; a.click();
-});
-
-importJSON.addEventListener('change', async e=>{
-  const f = e.target.files?.[0]; if(!f) return;
-  try{
-    const t = await f.text(); const obj = JSON.parse(t);
-    if(obj.users){ appState.users = obj.users; appState.current = obj.current || null; saveAppState(); alert('İçe aktarma tamamlandı'); checkAuth(); }
-    else alert('Uygun JSON değil.');
-  }catch(err){ alert('JSON okunamadı'); }
-  importJSON.value = '';
-});
-
-printBtn.addEventListener('click', ()=> window.print());
-
-/* export single entry */
-exportEntryBtn.addEventListener('click', ()=>{
-  if(!appState.current) return alert('Giriş yap');
-  if(!titleInput.value.trim()) return alert('Önce bir kayıt yapın veya başlık girin');
-  const e = {
-    title: titleInput.value.trim(),
-    note: noteInput.value,
-    tags: parseTags(tagsInput.value),
-    category: pickCategory(),
-    mood: mood.value,
-    photo: pendingImage
-  };
-  const blob = new Blob([JSON.stringify(e,null,2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `entry-${new Date().toISOString().slice(0,10)}.json`; a.click();
-});
-
-/* -------------------------
-   Reminders (Notification API)
---------------------------*/
-let reminderEnabled = false;
-function askNotificationPermission(){
-  if(!('Notification' in window)) return Promise.resolve('denied');
-  return Notification.requestPermission();
-}
-toggleReminder.addEventListener('click', async ()=>{
-  if(!appState.current) return alert('Giriş yapın');
+/* ----------------- Reminder Notifications ----------------- */
+async function askNotificationPermission(){ if(!('Notification' in window)) return 'denied'; return Notification.requestPermission(); }
+let reminderInterval = null;
+toggleReminderBtn.addEventListener('click', async () => {
+  if(!dbState.current) return alert('Önce giriş yapın');
   const perm = await askNotificationPermission();
-  if(perm !== 'granted') return alert('Bildirim izni gerekli');
-  reminderEnabled = !reminderEnabled;
-  toggleReminder.textContent = reminderEnabled ? '⏰ Kapattır' : '⏰ Aktif Et';
-  localStorage.setItem('reminder_enabled_'+appState.current, reminderEnabled ? '1':'0');
-  localStorage.setItem('reminder_time_'+appState.current, remTime.value || '');
-  scheduleReminder();
+  if(perm !== 'granted') return alert('Bildirim izni gerekiyor');
+  const enabled = localStorage.getItem('reminder_'+dbState.current) === '1';
+  if(enabled){ localStorage.setItem('reminder_'+dbState.current, '0'); toggleReminderBtn.textContent='⏰ Aktif Et'; clearInterval(reminderInterval); }
+  else { localStorage.setItem('reminder_'+dbState.current, '1'); toggleReminderBtn.textContent='⏰ Kapat'; scheduleReminder(); }
 });
-
 function scheduleReminder(){
-  // simple: while app açık, check every minute
-  clearInterval(window.__reminderInterval);
-  if(!appState.current) return;
-  reminderEnabled = localStorage.getItem('reminder_enabled_'+appState.current) === '1';
-  if(!reminderEnabled) return;
-  const time = localStorage.getItem('reminder_time_'+appState.current) || remTime.value;
-  if(!time) return;
-  window.__reminderInterval = setInterval(()=>{
-    const now = new Date(); const hh = String(now.getHours()).padStart(2,'0'); const mm = String(now.getMinutes()).padStart(2,'0');
-    if(`${hh}:${mm}` === time){
-      new Notification('Günlük hatırlatıcısı', {body:'Bugün bir günlük yazmayı düşün :)'});
-    }
+  clearInterval(reminderInterval);
+  if(!dbState.current) return;
+  if(localStorage.getItem('reminder_'+dbState.current) !== '1') return;
+  const time = reminderTime.value;
+  if(!time) return alert('Hatırlatma için saat seçin');
+  reminderInterval = setInterval(()=>{
+    const now = new Date(); const hh = String(now.getHours()).padStart(2,'0'), mm = String(now.getMinutes()).padStart(2,'0');
+    if(`${hh}:${mm}` === time){ new Notification('Günlük hatırlatıcısı', { body: 'Bugün bir günlüğünü yazmayı unutma :)' }); }
   }, 60*1000);
 }
+function loadReminderPref(){
+  if(!dbState.current) return;
+  reminderTime.value = localStorage.getItem('reminder_time_'+dbState.current) || '';
+  const en = localStorage.getItem('reminder_'+dbState.current) === '1';
+  toggleReminderBtn.textContent = en ? '⏰ Kapat' : '⏰ Aktif Et';
+  if(en) scheduleReminder();
+}
+reminderTime.addEventListener('change', ()=> { if(dbState.current) localStorage.setItem('reminder_time_'+dbState.current, reminderTime.value); });
 
-/* load reminder pref on login */
-remTime.addEventListener('change', ()=> {
-  if(appState.current) localStorage.setItem('reminder_time_'+appState.current, remTime.value || '');
+/* ----------------- Utilities: parse tags safe ----------------- */
+/* Already defined parseTags above */
+
+/* ----------------- Render all (Journals + Calendar + Stats) ----------------- */
+function renderAll(){ renderJournals(); renderCalendarView(); renderStats(); }
+
+/* on first load behavior */
+document.addEventListener('DOMContentLoaded', () => {
+  renderAuth();
+  // attach events that rely on DOM
 });
 
-/* -------------------------
-   Small helpers
---------------------------*/
-function initDefaults(){
-  // auto create example user for demo (optional)
-  if(!Object.keys(appState.users).length){
-    // no demo user by default
-  }
-}
-initDefaults();
+/* ----------------- Keyboard shortcuts ----------------- */
+document.addEventListener('keydown', e => { if(e.ctrlKey && e.key.toLowerCase() === 'f'){ e.preventDefault(); searchInput.focus(); } });
 
-/* -------------------------
-   UI events
---------------------------*/
+/* ----------------- Share / Clipboard helpers already present ----------------- */
+
+/* ----------------- Small helpers for UX polish ----------------- */
 searchInput.addEventListener('input', renderJournals);
-filterCategory.addEventListener('input', renderJournals);
 filterTag.addEventListener('input', renderJournals);
+filterCategory.addEventListener('input', renderJournals);
 sortBy.addEventListener('change', renderJournals);
 
-toggleCalendar.addEventListener('click', ()=> { calendarCard.classList.toggle('hidden'); });
-toggleStats.addEventListener('click', ()=> { statsCard.classList.toggle('hidden'); renderStats(); });
+/* Save periodic backup to IndexedDB while logged in */
+setInterval(()=>{ if(dbState.current) idbSave('backup_' + dbState.current, { users: dbState.users, current: dbState.current }).catch(()=>{}); }, 60*1000);
 
-/* -------------------------
-   Auto-backup (local IndexedDB) every 60s while logged in
---------------------------*/
-setInterval(()=> {
-  if(appState.current) {
-    saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+/* Initialize: ensure UI updated */
+renderAuth();
+
+/* Make sure exports/imports and other buttons are bound even if DOM loaded earlier */
+(function bindMisc(){
+  exportAllBtn.addEventListener('click', async () => {
+    if(!dbState.current) return alert('Giriş yapın');
+    const blob = new Blob([JSON.stringify({ users: dbState.users, current: dbState.current, ts: new Date().toISOString() }, null, 2)], { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `gunlugum_export_${new Date().toISOString().slice(0,10)}.json`; a.click();
+  });
+})();
+
+/* ----------------- Extra: load previously saved backup into memory if any (non-destructive) ----------------- */
+(async function loadBackupOnStart(){
+  if(dbState.current){
+    const b = await idbGet('backup_' + dbState.current);
+    // do not auto-override; we simply keep it available if user wants (debug)
+    window.__diary_backup = b;
   }
-}, 60*1000);
-
-/* -------------------------
-   Start
---------------------------*/
-checkAuth();
-scheduleReminder();
-
-/* keyboard shortcut */
-document.addEventListener('keydown', e=>{
-  if(e.ctrlKey && e.key==='f'){ e.preventDefault(); searchInput.focus(); }
-});
-
-/* very small helper for testing: open modal to show backups */
-window.__debug = { appState };
-
-/* initial render hooks */
-if(appState.current){
-  // load reminder prefs
-  remTime.value = localStorage.getItem('reminder_time_'+appState.current) || '';
-  reminderEnabled = localStorage.getItem('reminder_enabled_'+appState.current) === '1';
-  toggleReminder.textContent = reminderEnabled ? '⏰ Kapattır':'⏰ Aktif Et';
-}
-
-/* Expose showModal small helper to console if needed */
-window.showModal = showModal;
+})();
 
 </script>
 </body>
