@@ -1,716 +1,805 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Benim Günlüğüm — Gelişmiş</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Benim Günlüğüm — Tam Gelişmiş</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#5C6BC0; --accent:#7986CB; --bg:#ECEFF1; --card:#fff; --text:#37474F;
+    --muted:#607d8b; --danger:#EF5350; --success:#2e7d32; --border:#B0BEC5; --shadow:rgba(0,0,0,.08);
+  }
+  :root.dark{ --bg:#0f172a; --card:#111827; --text:#cbd5e1; --muted:#94a3b8; --primary:#818cf8; --accent:#6366f1; --border:#334155; --shadow:rgba(0,0,0,.45); }
 
-  <style>
-    :root{
-      --primary: #5C6BC0;
-      --primary-2: #7986CB;
-      --bg: #ECEFF1;
-      --card: #fff;
-      --text: #37474F;
-      --heading: #1A237E;
-      --border: #B0BEC5;
-      --shadow: rgba(0,0,0,.08);
-      --danger: #EF5350;
-      --success: #2e7d32;
-      --muted: #607d8b;
-    }
-    /* Dark theme */
-    :root.dark{
-      --bg:#0f172a;
-      --card:#111827;
-      --text:#cbd5e1;
-      --heading:#a5b4fc;
-      --border:#334155;
-      --shadow: rgba(0,0,0,.4);
-      --primary:#818cf8;
-      --primary-2:#6366f1;
-      --danger:#ef4444;
-      --muted:#94a3b8;
-    }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{font-family:'Poppins',sans-serif;margin:0;padding:20px;background:var(--bg);color:var(--text);display:flex;justify-content:center}
+  .container{width:100%;max-width:1100px;display:grid;gap:22px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 8px 20px var(--shadow)}
+  h1,h2{margin:0;color:var(--primary)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; padding:20px;
-      font-family:'Poppins',sans-serif;
-      background:var(--bg); color:var(--text);
-      display:flex; align-items:center; justify-content:center;
-    }
-    .container{width:100%; max-width:1000px; display:grid; gap:28px}
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      box-shadow:0 8px 20px var(--shadow);
-      padding:24px;
-      transition:transform .25s ease, background .25s ease, border-color .25s ease;
-    }
-    .card:hover{ transform:translateY(-3px) }
-    h1,h2{ color:var(--heading); margin:0 0 18px; text-align:center}
-    h1 span.badge{
-      display:inline-block; font-size:.7rem; font-weight:600;
-      background:var(--primary); color:#fff; padding:3px 8px; border-radius:999px; margin-left:8px
-    }
-
-    form{ display:grid; gap:14px }
-    .row{ display:grid; gap:12px; grid-template-columns:1fr 1fr }
-    @media (max-width:700px){ .row{grid-template-columns:1fr} }
-
-    label{font-weight:600; color:var(--heading); margin-bottom:6px}
-    input, textarea, select{
-      width:100%; padding:12px 12px;
-      border:1px solid var(--border); border-radius:10px;
-      background:transparent; color:inherit; font-size:1rem;
-      transition:border-color .2s ease, background .2s ease;
-    }
-    input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--primary) }
-    textarea{ min-height:120px; resize:vertical }
-    .hint{font-size:.85rem; color:var(--muted)}
-
-    .btn{
-      appearance:none; border:none; border-radius:10px;
-      padding:12px 18px; font-weight:700; cursor:pointer; font-size:1rem;
-      transition:transform .06s ease, background .2s ease, opacity .2s;
-      background:var(--primary); color:#fff;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    }
-    .btn.secondary{ background:var(--primary-2) }
-    .btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--border) }
-    .btn.danger{ background:var(--danger) }
-    .btn.success{ background:var(--success) }
-    .btn:active{ transform:translateY(1px) }
-    .btn.small{ padding:8px 12px; font-size:.9rem; border-radius:8px }
-
-    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center }
-
-    /* Auth */
-    .auth-switch{text-align:center; font-size:.95rem}
-    .auth-switch a{ color:var(--primary); font-weight:700; text-decoration:none }
-    .auth-switch a:hover{ text-decoration:underline }
-
-    /* Password toggle */
-    .pw-wrap{ position:relative }
-    .pw-toggle{
-      position:absolute; right:10px; top:50%; transform:translateY(-50%);
-      font-size:.9rem; cursor:pointer; color:var(--muted); user-select:none
-    }
-
-    /* Journals grid */
-    #journals-list{
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-      gap:18px; list-style:none; padding:0; margin:0
-    }
-    .entry{
-      background:var(--card); border:1px solid var(--border); border-radius:16px;
-      box-shadow:0 4px 12px var(--shadow);
-      padding:18px; display:flex; flex-direction:column; gap:10px; position:relative;
-      animation:fadeIn .25s ease both;
-    }
-    @keyframes fadeIn{ from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none} }
-    .entry header{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-      border-bottom:2px solid var(--primary); padding-bottom:8px
-    }
-    .entry h3{ margin:0; font-size:1.1rem; color:var(--heading)}
-    .entry .meta{ font-size:.8rem; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap }
-    .entry .content{ line-height:1.6 }
-    .entry img{ width:100%; height:auto; border-radius:12px; margin-top:8px; object-fit:cover; box-shadow:0 2px 5px var(--shadow) }
-    .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px }
-    .chip{
-      font-size:.75rem; padding:4px 8px; border-radius:999px; border:1px solid var(--border);
-      color:var(--muted)
-    }
-    .entry .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px }
-
-    /* Drag & drop */
-    .dropzone{
-      border:2px dashed var(--border); border-radius:12px; padding:14px; text-align:center;
-      transition:border-color .2s ease, background .2s ease;
-    }
-    .dropzone.drag{ border-color:var(--primary); background:rgba(0,0,0,.03) }
-
-    /* Search bar / filters */
-    .filters{ display:grid; gap:10px; grid-template-columns: 1.2fr .9fr .9fr .9fr .9fr }
-    @media(max-width:900px){ .filters{grid-template-columns:1fr 1fr} }
-    @media(max-width:600px){ .filters{grid-template-columns:1fr} }
-
-    .hidden{ display:none !important }
-
-    /* Modal */
-    .modal-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.4);
-      display:flex; align-items:center; justify-content:center; padding:20px; z-index:40
-    }
-    .modal{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; max-width:420px; width:100% }
-
-    /* Print */
-    @media print{
-      .no-print{ display:none !important }
-      body{ padding:0; background:#fff; color:#000 }
-      .card, .entry{ box-shadow:none; border-color:#ddd }
-    }
-  </style>
+  form{display:grid;gap:12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  label{font-weight:600;margin-bottom:6px;display:block}
+  input,textarea,select{padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:inherit}
+  textarea{min-height:110px;resize:vertical}
+  .btn{background:var(--primary);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+  .btn.small{padding:6px 10px;font-size:.9rem}
+  .hint{font-size:.85rem;color:var(--muted)}
+  #journals-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;list-style:none;padding:0;margin:0}
+  .entry{padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);box-shadow:0 4px 12px var(--shadow);display:flex;flex-direction:column;gap:8px}
+  .entry header{display:flex;justify-content:space-between;align-items:flex-start}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{background:transparent;border:1px solid var(--border);padding:4px 8px;border-radius:999px;font-size:.78rem;color:var(--muted)}
+  .actions{display:flex;gap:6px}
+  .dropzone{border:2px dashed var(--border);padding:10px;border-radius:8px;text-align:center}
+  .dropzone.drag{border-color:var(--primary)}
+  .hidden{display:none!important}
+  .flex{display:flex;gap:8px;align-items:center}
+  .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-day{padding:8px;border-radius:8px;text-align:right;border:1px solid transparent;min-height:70px;position:relative}
+  .cal-day.out{opacity:.25}
+  .cal-day .dot{width:8px;height:8px;border-radius:50%;position:absolute;left:6px;bottom:6px}
+  canvas{max-width:100%}
+  .stat-box{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:900px){.stat-box{grid-template-columns:1fr}}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60}
+  .modal{background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--border);max-width:640px;width:100%}
+  .no-print{display:block}
+  @media(print){.no-print{display:none!important}}
+</style>
 </head>
 <body>
-  <div class="container">
-    <!-- THEME & TOP BAR -->
-    <div class="card no-print" id="topbar">
-      <div class="toolbar" style="justify-content:space-between; gap:14px">
-        <div style="display:flex; gap:10px; align-items:center">
-          <button id="theme-toggle" class="btn ghost small" title="Tema değiştir (Dark/Light)">🌗 Tema</button>
-          <button id="install-btn" class="btn ghost small hidden" title="Uygulamayı yükle (PWA)">⬇️ Yükle</button>
-        </div>
-        <div>
-          <button id="export-json" class="btn small">📤 JSON Dışa Aktar</button>
-          <label class="btn ghost small" for="import-json-input" title="JSON içe aktar">📥 JSON İçe Aktar</label>
-          <input id="import-json-input" type="file" accept="application/json" class="hidden" />
-          <button id="print-btn" class="btn ghost small" title="PDF olarak yazdır">🖨️ Yazdır / PDF</button>
-        </div>
+<div class="container">
+
+  <!-- TOP: theme, export/import, reminder -->
+  <div class="card no-print">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="flex">
+        <button id="theme-toggle" class="btn small">🌗 Tema</button>
+        <button id="export-json" class="btn small">📤 JSON Dışa Aktar</button>
+        <label for="import-json" class="btn small ghost" style="cursor:pointer">📥 JSON İçe Aktar</label>
+        <input id="import-json" type="file" accept="application/json" class="hidden">
+        <button id="print-btn" class="btn small ghost">🖨 Yazdır / PDF</button>
       </div>
-    </div>
-
-    <!-- AUTH -->
-    <div id="auth-container">
-      <div id="login-section" class="card">
-        <h2>Giriş Yap</h2>
-        <form id="login-form">
-          <div>
-            <label for="login-username">Kullanıcı Adı</label>
-            <input type="text" id="login-username" required autocomplete="username">
-          </div>
-          <div class="pw-wrap">
-            <label for="login-password">Şifre</label>
-            <input type="password" id="login-password" required autocomplete="current-password">
-            <span class="pw-toggle" data-target="login-password">👁️</span>
-          </div>
-          <div class="toolbar" style="justify-content:space-between">
-            <button type="submit" class="btn">Giriş Yap</button>
-            <button type="button" id="show-register" class="btn ghost">Kayıt Ol</button>
-          </div>
-          <p class="auth-switch">Hesabın yok mu? <a href="#" id="to-register">Kayıt ol</a></p>
-        </form>
+      <div class="flex">
+        <label class="hint" style="margin-right:8px">Günlük hatırlatıcı:</label>
+        <input type="time" id="reminder-time">
+        <button id="toggle-reminder" class="btn small ghost">⏰ Aktif Et</button>
       </div>
-
-      <div id="register-section" class="card hidden">
-        <h2>Kayıt Ol</h2>
-        <form id="register-form" autocomplete="off">
-          <div>
-            <label for="register-username">Kullanıcı Adı</label>
-            <input type="text" id="register-username" required autocomplete="off">
-          </div>
-          <div class="pw-wrap">
-            <label for="register-password">Şifre</label>
-            <input type="password" id="register-password" required autocomplete="new-password" minlength="6" placeholder="En az 6 karakter">
-            <span class="pw-toggle" data-target="register-password">👁️</span>
-            <div class="hint">Şifreler yerelde **hash**’lenerek saklanır (SHA-256).</div>
-          </div>
-          <div class="toolbar" style="justify-content:space-between">
-            <button type="submit" class="btn success">Kayıt Ol</button>
-            <button type="button" id="show-login" class="btn ghost">Giriş Yap</button>
-          </div>
-          <p class="auth-switch">Zaten hesabın var mı? <a href="#" id="to-login">Giriş yap</a></p>
-        </form>
-      </div>
-    </div>
-
-    <!-- APP -->
-    <div id="app-container" class="hidden">
-      <h1>Hoş Geldin, <span id="username-display"></span>! <span class="badge">Beta</span></h1>
-
-      <div class="card no-print">
-        <form id="journal-form">
-          <div class="row">
-            <div>
-              <label for="title">Başlık</label>
-              <input type="text" id="title" placeholder="Günün başlığı" required />
-            </div>
-            <div>
-              <label for="mood">Ruh Hali</label>
-              <select id="mood" title="Ruh hali seç">
-                <option value="">—</option>
-                <option>😀 Mutlu</option>
-                <option>😌 Sakin</option>
-                <option>😴 Yorgun</option>
-                <option>😕 Kafası Karışık</option>
-                <option>😔 Üzgün</option>
-                <option>😤 Sinirli</option>
-                <option>🤩 Heyecanlı</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label for="note">Notlar <span id="char-count" class="hint">(0/2000)</span></label>
-            <textarea id="note" maxlength="2000" placeholder="Bugün neler oldu?"></textarea>
-          </div>
-
-          <div>
-            <label for="tags">Etiketler (virgülle ayır)</label>
-            <input id="tags" placeholder="#iş, #tatil, #aile" />
-          </div>
-
-          <div>
-            <label for="photo">Fotoğraf Yükle</label>
-            <div id="dropzone" class="dropzone">Dosyanı buraya sürükle & bırak ya da aşağıdan seç</div>
-            <input type="file" id="photo" accept="image/*" />
-          </div>
-
-          <div class="toolbar">
-            <button type="submit" class="btn">Kaydı Ekle</button>
-            <button type="button" id="logout-btn" class="btn ghost">Çıkış Yap</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- FILTERS & TOOLS -->
-      <div class="card no-print">
-        <div class="filters">
-          <input id="search" placeholder="Başlık/Not içinde ara…" />
-          <input id="filter-tag" placeholder="Etiket filtre (#iş gibi)" />
-          <input id="filter-date-from" type="date" title="Başlangıç tarihi" />
-          <input id="filter-date-to" type="date" title="Bitiş tarihi" />
-          <select id="sort-by" title="Sıralama">
-            <option value="date-desc">Tarih ↓ (Yeni→Eski)</option>
-            <option value="date-asc">Tarih ↑ (Eski→Yeni)</option>
-            <option value="title-asc">Başlık A→Z</option>
-            <option value="title-desc">Başlık Z→A</option>
-            <option value="fav-first">Favoriler önce</option>
-          </select>
-        </div>
-      </div>
-
-      <ul id="journals-list"></ul>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal-root" class="hidden"></div>
+  <!-- AUTH (simple) -->
+  <div id="auth-container" class="card">
+    <h2>Giriş / Kayıt</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <form id="login-form">
+        <label>Kullanıcı</label><input id="login-username" autocomplete="username">
+        <label>Şifre</label><input id="login-password" type="password" autocomplete="current-password">
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" type="submit">Giriş</button>
+          <button id="show-register" class="btn ghost" type="button">Kayıt Ol</button>
+        </div>
+      </form>
 
-  <script>
-    /************** UTIL **************/
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => Array.from(document.querySelectorAll(sel));
-    const toBase64 = file => new Promise((res,reject)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=reject; r.readAsDataURL(file) });
-    const sha256 = async (text) => {
-      const enc = new TextEncoder().encode(text);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    };
-    const formatDateTR = (d) => d.toLocaleDateString('tr-TR', { day:'2-digit', month:'long', year:'numeric' }) + ' ' + d.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+      <form id="register-form" class="hidden">
+        <label>Kullanıcı</label><input id="register-username">
+        <label>Şifre</label><input id="register-password" type="password" minlength="6" placeholder="En az 6 karakter">
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" type="submit">Kayıt</button>
+          <button id="show-login" class="btn ghost" type="button">Giriş</button>
+        </div>
+        <div class="hint">Şifreler SHA-256 ile hash'lenerek yerelde saklanır.</div>
+      </form>
+    </div>
+  </div>
 
-    const storage = {
-      get users(){ return JSON.parse(localStorage.getItem('users_v2')||'{}') },
-      set users(v){ localStorage.setItem('users_v2', JSON.stringify(v)) },
-      get current(){ return JSON.parse(localStorage.getItem('logged_user')||'null') },
-      set current(v){ localStorage.setItem('logged_user', JSON.stringify(v)) },
-      exportAll(){ return { users: this.users, current: this.current, exportedAt: new Date().toISOString() } },
-      importAll(obj){ if(obj && obj.users){ this.users = obj.users; this.current = obj.current ?? null } }
-    };
+  <!-- MAIN APP -->
+  <div id="app-container" class="card hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1>Hoşgeldin, <span id="username-display"></span></h1>
+      <div class="flex">
+        <button id="logout-btn" class="btn ghost small">Çıkış</button>
+      </div>
+    </div>
 
-    /************** THEME **************/
-    const themeToggle = $('#theme-toggle');
-    const applyTheme = (t)=>{ document.documentElement.classList.toggle('dark', t==='dark'); localStorage.setItem('theme', t) };
-    const savedTheme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
-    applyTheme(savedTheme);
-    themeToggle.addEventListener('click', ()=> applyTheme(document.documentElement.classList.contains('dark') ? 'light':'dark'));
-
-    /************** PWA (inline manifest + SW) **************/
-    (function setupPWA(){
-      // Create manifest dynamically
-      const manifest = {
-        name:"Benim Günlüğüm",
-        short_name:"Günlük",
-        start_url:".",
-        display:"standalone",
-        background_color:"#111827",
-        theme_color:"#818cf8",
-        icons:[]
-      };
-      const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-      const link = document.createElement('link');
-      link.rel='manifest'; link.href = URL.createObjectURL(blob);
-      document.head.appendChild(link);
-
-      // Register service worker from blob (cache-only shell)
-      const swCode = `
-        const CACHE='diary-cache-v1';
-        self.addEventListener('install', e=>{
-          e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./'])));
-          self.skipWaiting();
-        });
-        self.addEventListener('activate', e=> e.waitUntil(self.clients.claim()));
-        self.addEventListener('fetch', e=>{
-          e.respondWith(
-            caches.match(e.request).then(r=> r || fetch(e.request).then(resp=>{
-              return caches.open(CACHE).then(c=>{ c.put(e.request, resp.clone()); return resp; });
-            }).catch(()=>r))
-          );
-        });
-      `;
-      const swBlob = new Blob([swCode], {type:'text/javascript'});
-      const swURL = URL.createObjectURL(swBlob);
-      if('serviceWorker' in navigator){ navigator.serviceWorker.register(swURL).catch(()=>{}); }
-
-      // Install prompt (if supported)
-      let deferred;
-      const installBtn = $('#install-btn');
-      window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferred = e; installBtn.classList.remove('hidden'); });
-      installBtn.addEventListener('click', async ()=>{
-        if(deferred){ deferred.prompt(); deferred = null; installBtn.classList.add('hidden'); }
-      });
-    })();
-
-    /************** ELEMENTS **************/
-    const authContainer = $('#auth-container');
-    const appContainer = $('#app-container');
-    const loginForm = $('#login-form');
-    const registerForm = $('#register-form');
-    const showRegisterBtn = $('#show-register');
-    const showLoginBtn = $('#show-login');
-    const toRegister = $('#to-register');
-    const toLogin = $('#to-login');
-    const logoutBtn = $('#logout-btn');
-    const usernameDisplay = $('#username-display');
-    const journalForm = $('#journal-form');
-    const titleInput = $('#title');
-    const noteInput = $('#note');
-    const tagsInput = $('#tags');
-    const moodSelect = $('#mood');
-    const photoInput = $('#photo');
-    const dropzone = $('#dropzone');
-    const journalsList = $('#journals-list');
-    const charCount = $('#char-count');
-    const searchInput = $('#search');
-    const filterTag = $('#filter-tag');
-    const filterFrom = $('#filter-date-from');
-    const filterTo = $('#filter-date-to');
-    const sortBy = $('#sort-by');
-    const exportBtn = $('#export-json');
-    const importInput = $('#import-json-input');
-    const printBtn = $('#print-btn');
-    const modalRoot = $('#modal-root');
-
-    /************** PASSWORD TOGGLE **************/
-    $$('.pw-toggle').forEach(t=>{
-      t.addEventListener('click', ()=>{
-        const target = document.getElementById(t.dataset.target);
-        if(!target) return;
-        target.type = target.type === 'password' ? 'text':'password';
-        t.textContent = target.type === 'password' ? '👁️' : '🙈';
-      })
-    });
-
-    /************** STATE **************/
-    let users = storage.users;
-    let currentUser = storage.current;
-
-    const saveUsers = () => { storage.users = users; };
-    const setCurrent = (u) => { currentUser = u; storage.current = u; };
-
-    const getJournals = () => users[currentUser]?.journals || [];
-    const setJournals = (arr) => { users[currentUser].journals = arr; saveUsers(); };
-
-    /************** AUTH **************/
-    function checkAuth(){
-      if(currentUser){
-        authContainer.classList.add('hidden');
-        appContainer.classList.remove('hidden');
-        usernameDisplay.textContent = currentUser;
-        renderJournals();
-      }else{
-        authContainer.classList.remove('hidden');
-        appContainer.classList.add('hidden');
-      }
-    }
-
-    registerForm?.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const username = $('#register-username').value.trim();
-      const pw = $('#register-password').value;
-      if(!username) return alert('Kullanıcı adı boş olamaz.');
-      if(users[username]) return alert('Bu kullanıcı adı zaten alınmış!');
-      const pwHash = await sha256(pw);
-      users[username] = { pwHash, journals: [], profile: { avatar:null } };
-      saveUsers();
-      alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
-      $('#register-section').classList.add('hidden');
-      $('#login-section').classList.remove('hidden');
-      $('#login-username').value = username;
-    });
-
-    loginForm?.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const u = $('#login-username').value.trim();
-      const p = $('#login-password').value;
-      if(!users[u]) return alert('Kullanıcı bulunamadı.');
-      const ok = users[u].pwHash === await sha256(p);
-      if(!ok) return alert('Kullanıcı adı veya şifre yanlış!');
-      setCurrent(u); checkAuth();
-    });
-
-    logoutBtn.addEventListener('click', ()=>{ setCurrent(null); checkAuth(); });
-
-    showRegisterBtn.addEventListener('click', ()=>{ $('#login-section').classList.add('hidden'); $('#register-section').classList.remove('hidden'); });
-    showLoginBtn.addEventListener('click', ()=>{ $('#register-section').classList.add('hidden'); $('#login-section').classList.remove('hidden'); });
-    toRegister.addEventListener('click', (e)=>{ e.preventDefault(); showRegisterBtn.click(); });
-    toLogin.addEventListener('click', (e)=>{ e.preventDefault(); showLoginBtn.click(); });
-
-    /************** JOURNAL CRUD **************/
-    function sanitize(str){ return (str||'').replace(/[<>&]/g, c=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[c])) }
-    function parseTags(input){
-      return (input||'')
-        .split(',').map(s=>s.trim()).filter(Boolean)
-        .map(t=> t.startsWith('#') ? t.toLowerCase() : ('#'+t.toLowerCase()));
-    }
-
-    let pendingImage = null; // base64 from drop or file
-
-    dropzone.addEventListener('dragover', (e)=>{ e.preventDefault(); dropzone.classList.add('drag') });
-    dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
-    dropzone.addEventListener('drop', async (e)=>{
-      e.preventDefault(); dropzone.classList.remove('drag');
-      const f = e.dataTransfer.files?.[0];
-      if(f && f.type.startsWith('image/')) pendingImage = await toBase64(f);
-      dropzone.textContent = f ? `Yüklendi: ${f.name}` : 'Dosya okunamadı';
-    });
-
-    photoInput.addEventListener('change', async ()=>{
-      const f = photoInput.files?.[0];
-      if(f) pendingImage = await toBase64(f);
-    });
-
-    noteInput.addEventListener('input', ()=>{
-      charCount.textContent = `(${noteInput.value.length}/2000)`;
-    });
-
-    journalForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const now = new Date();
-      const entry = {
-        id: crypto.randomUUID(),
-        title: titleInput.value.trim(),
-        note: noteInput.value.trim(),
-        dateISO: now.toISOString(),
-        dateText: formatDateTR(now),
-        tags: parseTags(tagsInput.value),
-        mood: moodSelect.value || '',
-        photo: pendingImage,
-        favorite: false
-      };
-      if(!entry.title) return alert('Başlık gerekli.');
-      const all = getJournals();
-      all.push(entry);
-      setJournals(all);
-      // reset
-      journalForm.reset(); pendingImage=null; dropzone.textContent='Dosyanı buraya sürükle & bırak ya da aşağıdan seç'; charCount.textContent='(0/2000)';
-      renderJournals();
-    });
-
-    function renderJournals(){
-      const q = searchInput.value.toLowerCase().trim();
-      const tagFilter = (filterTag.value||'').toLowerCase().trim();
-      const df = filterFrom.value ? new Date(filterFrom.value) : null;
-      const dt = filterTo.value ? new Date(filterTo.value) : null;
-      let list = [...getJournals()];
-
-      // filter
-      list = list.filter(e=>{
-        const hay = (e.title+' '+e.note+' '+(e.tags||[]).join(' ')).toLowerCase();
-        if(q && !hay.includes(q)) return false;
-        if(tagFilter && !(e.tags||[]).includes(tagFilter.startsWith('#') ? tagFilter : '#'+tagFilter)) return false;
-        if(df && new Date(e.dateISO) < df) return false;
-        if(dt && new Date(e.dateISO) > new Date(dt.getTime()+24*3600*1000-1)) return false; // inclusive
-        return true;
-      });
-
-      // sort
-      const s = sortBy.value;
-      list.sort((a,b)=>{
-        if(s==='date-desc') return new Date(b.dateISO)-new Date(a.dateISO);
-        if(s==='date-asc') return new Date(a.dateISO)-new Date(b.dateISO);
-        if(s==='title-asc') return a.title.localeCompare(b.title,'tr');
-        if(s==='title-desc') return b.title.localeCompare(a.title,'tr');
-        if(s==='fav-first') return (b.favorite===true)-(a.favorite===true) || (new Date(b.dateISO)-new Date(a.dateISO));
-        return 0;
-      });
-
-      journalsList.innerHTML = '';
-      list.forEach(e=>{
-        const li = document.createElement('li');
-        li.className='entry';
-        li.innerHTML = `
-          <header>
-            <div>
-              <h3>${sanitize(e.title)}</h3>
-              <div class="meta">
-                <span>📅 ${sanitize(e.dateText)}</span>
-                ${e.mood ? `<span>${sanitize(e.mood)}</span>`:''}
-              </div>
-              <div class="chips">
-                ${(e.tags||[]).map(t=>`<span class="chip">${sanitize(t)}</span>`).join('')}
-                ${e.favorite? `<span class="chip">⭐ Favori</span>`:''}
-              </div>
-            </div>
-            <div class="actions">
-              <button class="btn ghost small" data-act="edit" data-id="${e.id}" title="Düzenle">✏️</button>
-              <button class="btn small ${e.favorite?'secondary':'ghost'}" data-act="fav" data-id="${e.id}" title="Favori">⭐</button>
-              <button class="btn danger small" data-act="del" data-id="${e.id}" title="Sil">🗑️</button>
-            </div>
-          </header>
-          <div class="content">
-            <p>${sanitize(e.note).replace(/\n/g,'<br>')}</p>
-            ${e.photo ? `<img src="${e.photo}" alt="Günlük fotoğrafı">` : ''}
-          </div>
-        `;
-        journalsList.appendChild(li);
-      });
-
-      // bind actions
-      journalsList.querySelectorAll('[data-act]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const id = btn.getAttribute('data-id');
-          const act = btn.getAttribute('data-act');
-          if(act==='del') confirmDelete(id);
-          else if(act==='edit') openEdit(id);
-          else if(act==='fav') toggleFav(id);
-        });
-      });
-    }
-
-    function toggleFav(id){
-      const all = getJournals();
-      const idx = all.findIndex(x=>x.id===id);
-      if(idx<0) return;
-      all[idx].favorite = !all[idx].favorite;
-      setJournals(all);
-      renderJournals();
-    }
-
-    function confirmDelete(id){
-      showModal({
-        title:'Kaydı sil',
-        body:'Bu kaydı silmek istediğine emin misin? Bu işlem geri alınamaz.',
-        confirmText:'Evet, sil',
-        confirmClass:'danger',
-        onConfirm: ()=>{
-          const all = getJournals().filter(x=>x.id!==id);
-          setJournals(all);
-          renderJournals();
-        }
-      });
-    }
-
-    function openEdit(id){
-      const e = getJournals().find(x=>x.id===id);
-      if(!e) return;
-      showModal({
-        title:'Kaydı Düzenle',
-        body: `
-          <div class="row">
-            <div>
-              <label>Başlık</label>
-              <input id="edit-title" value="${sanitize(e.title)}">
-            </div>
-            <div>
-              <label>Ruh Hali</label>
-              <select id="edit-mood">
-                <option ${!e.mood?'selected':''}></option>
-                ${['😀 Mutlu','😌 Sakin','😴 Yorgun','😕 Kafası Karışık','😔 Üzgün','😤 Sinirli','🤩 Heyecanlı'].map(m=>`<option ${e.mood===m?'selected':''}>${m}</option>`).join('')}
-              </select>
-            </div>
+    <!-- ENTRY FORM -->
+    <div class="card">
+      <form id="journal-form">
+        <div class="row">
+          <div>
+            <label>Başlık</label><input id="title" required>
           </div>
           <div>
-            <label>Not</label>
-            <textarea id="edit-note" maxlength="2000">${sanitize(e.note)}</textarea>
-          </div>
-          <div>
-            <label>Etiketler</label>
-            <input id="edit-tags" value="${sanitize((e.tags||[]).join(', '))}">
-          </div>
-          <div>
-            <label>Fotoğraf</label>
-            <input id="edit-photo" type="file" accept="image/*">
-            ${e.photo? `<img src="${e.photo}" style="margin-top:8px; max-height:150px; border-radius:8px">`:''}
-          </div>
-        `,
-        confirmText:'Kaydet',
-        onConfirm: async ()=>{
-          const all = getJournals();
-          const idx = all.findIndex(x=>x.id===id); if(idx<0) return;
-          const nf = $('#edit-photo').files?.[0];
-          all[idx].title = $('#edit-title').value.trim();
-          all[idx].note = $('#edit-note').value.trim();
-          all[idx].tags = parseTags($('#edit-tags').value);
-          all[idx].mood = $('#edit-mood').value || '';
-          if(nf) all[idx].photo = await toBase64(nf);
-          setJournals(all);
-          renderJournals();
-        }
-      });
-    }
-
-    /************** SEARCH / FILTER EVENTS **************/
-    [searchInput, filterTag, filterFrom, filterTo, sortBy].forEach(el=> el.addEventListener('input', renderJournals));
-
-    /************** EXPORT / IMPORT / PRINT **************/
-    exportBtn.addEventListener('click', ()=>{
-      const data = storage.exportAll();
-      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `gunlugum-${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
-
-    importInput.addEventListener('change', async ()=>{
-      const f = importInput.files?.[0]; if(!f) return;
-      try{
-        const text = await f.text();
-        const obj = JSON.parse(text);
-        storage.importAll(obj);
-        users = storage.users; currentUser = storage.current;
-        alert('İçe aktarma tamamlandı.');
-        checkAuth();
-      }catch(err){ alert('JSON okunamadı.'); }
-      importInput.value = '';
-    });
-
-    printBtn.addEventListener('click', ()=> window.print());
-
-    /************** MODAL **************/
-    function showModal({title, body, confirmText='Tamam', cancelText='İptal', onConfirm, confirmClass='secondary'}){
-      modalRoot.innerHTML = `
-        <div class="modal-backdrop">
-          <div class="modal">
-            <h3 style="margin:0 0 10px; color:var(--heading)">${title}</h3>
-            <div class="body" style="margin:8px 0 14px">${body}</div>
-            <div style="display:flex; gap:10px; justify-content:flex-end">
-              <button class="btn ghost" id="m-cancel">${cancelText}</button>
-              <button class="btn ${confirmClass}" id="m-ok">${confirmText}</button>
-            </div>
+            <label>Kategori</label>
+            <select id="category">
+              <option value="">— Seç veya yeni ekle —</option>
+              <option>kişisel</option>
+              <option>iş</option>
+              <option>seyahat</option>
+              <option>sağlık</option>
+            </select>
+            <input id="category-custom" placeholder="Özel kategori ekle (isteğe bağlı)" style="margin-top:8px">
           </div>
         </div>
-      `;
-      modalRoot.classList.remove('hidden');
-      $('#m-cancel').addEventListener('click', closeModal);
-      $('#m-ok').addEventListener('click', ()=>{ closeModal(); onConfirm && onConfirm(); });
-      function closeModal(){ modalRoot.classList.add('hidden'); modalRoot.innerHTML=''; }
+
+        <div>
+          <label>Not <span id="count" class="hint">(0/2000)</span></label>
+          <textarea id="note" maxlength="2000"></textarea>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Etiketler (virgülle)</label><input id="tags" placeholder="#iş,#tatil">
+          </div>
+          <div>
+            <label>Ruh Hali</label>
+            <select id="mood">
+              <option value="">—</option><option>😀 Mutlu</option><option>😌 Sakin</option><option>😔 Üzgün</option><option>😤 Sinirli</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label>Fotoğraf</label>
+          <div id="dropzone" class="dropzone">Buraya sürükle veya seç</div>
+          <input id="photo" type="file" accept="image/*">
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn" type="submit">Kaydı Ekle</button>
+          <button id="export-entry" type="button" class="btn ghost">Bu kaydı JSON olarak dışa aktarma</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- FILTERS + TOOLS -->
+    <div class="card no-print">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input id="search" placeholder="Başlık veya not içinde ara…" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border)">
+        <input id="filter-category" placeholder="Kategori filtre" style="padding:8px;border-radius:8px;border:1px solid var(--border)">
+        <input id="filter-tag" placeholder="Etiket filtre (#iş gibi)" style="padding:8px;border-radius:8px;border:1px solid var(--border)">
+        <select id="sort-by" style="padding:8px;border-radius:8px;border:1px solid var(--border)">
+          <option value="date-desc">Tarih ↓</option>
+          <option value="date-asc">Tarih ↑</option>
+          <option value="title-asc">Başlık A→Z</option>
+          <option value="fav-first">Favori önce</option>
+        </select>
+        <button id="toggle-calendar" class="btn ghost small">📅 Takvim</button>
+        <button id="toggle-stats" class="btn ghost small">📊 İstatistikler</button>
+      </div>
+    </div>
+
+    <!-- calendar + stats -->
+    <div id="calendar-card" class="card hidden no-print">
+      <h3>Takvim</h3>
+      <div id="calendar" class="calendar"></div>
+    </div>
+
+    <div id="stats-card" class="card hidden no-print">
+      <h3>İstatistikler</h3>
+      <div class="stat-box">
+        <div>
+          <h4>Kayit sayısı: <span id="stat-count">0</span></h4>
+          <canvas id="chart-cats" width="400" height="200"></canvas>
+        </div>
+        <div>
+          <h4>Son 30 gün dağılımı</h4>
+          <canvas id="chart-time" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journals -->
+    <ul id="journals-list"></ul>
+
+  </div>
+</div>
+
+<!-- modal root -->
+<div id="modal-root" class="hidden"></div>
+
+<script>
+/* -------------------------
+   Utilities
+--------------------------*/
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const toBase64 = file => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+
+const sha256 = async txt => {
+  const data = new TextEncoder().encode(txt);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+};
+
+function sanitize(str=''){ return String(str).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+
+/* -------------------------
+   Simple IndexedDB wrapper
+--------------------------*/
+const DB_NAME='diary_db_v1', DB_STORE='backups';
+function openDB(){ return new Promise((res,rej)=>{
+  const r = indexedDB.open(DB_NAME,1);
+  r.onupgradeneeded = ()=> r.result.createObjectStore(DB_STORE,{keyPath:'id'});
+  r.onsuccess = ()=> res(r.result);
+  r.onerror = ()=> rej(r.error);
+});}
+async function saveBackup(id, data){
+  const db = await openDB();
+  return new Promise((res,rej)=>{
+    const tx = db.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).put({id, data, ts:new Date().toISOString()});
+    tx.oncomplete = ()=> res();
+    tx.onerror = ()=> rej(tx.error);
+  });
+}
+async function getBackup(id){
+  const db = await openDB();
+  return new Promise((res,rej)=>{
+    const tx = db.transaction(DB_STORE,'readonly');
+    const rq = tx.objectStore(DB_STORE).get(id);
+    rq.onsuccess = ()=> res(rq.result?.data ?? null);
+    rq.onerror = ()=> rej(rq.error);
+  });
+}
+
+/* -------------------------
+   Storage Model (users + current)
+--------------------------*/
+const storageKey = 'diary_app_v3';
+function loadData(){ return JSON.parse(localStorage.getItem(storageKey) || '{}'); }
+function saveData(obj){ localStorage.setItem(storageKey, JSON.stringify(obj)); }
+
+let appState = loadData();
+appState.users = appState.users || {}; // {username:{pwHash, journals:[]}}
+appState.current = appState.current || null;
+
+/* -------------------------
+   Elements
+--------------------------*/
+const authContainer = $('#auth-container');
+const appContainer = $('#app-container');
+const loginForm = $('#login-form');
+const registerForm = $('#register-form');
+const showRegisterBtn = $('#show-register'), showLoginBtn = $('#show-login');
+const loginUsername = $('#login-username'), loginPassword = $('#login-password');
+const registerUsername = $('#register-username'), registerPassword = $('#register-password');
+const usernameDisplay = $('#username-display'), logoutBtn = $('#logout-btn');
+
+const journalForm = $('#journal-form');
+const titleInput = $('#title'), noteInput = $('#note'), tagsInput = $('#tags');
+const photoInput = $('#photo'), dropzone = $('#dropzone');
+const categorySelect = $('#category'), categoryCustom = $('#category-custom'), mood = $('#mood');
+const journalsList = $('#journals-list');
+const countEl = $('#count');
+
+const searchInput = $('#search'), filterCategory = $('#filter-category'), filterTag = $('#filter-tag'), sortBy = $('#sort-by');
+const toggleCalendar = $('#toggle-calendar'), toggleStats = $('#toggle-stats');
+const calendarCard = $('#calendar-card'), calendarEl = $('#calendar');
+const statsCard = $('#stats-card'), statCount = $('#stat-count');
+const chartCats = $('#chart-cats'), chartTime = $('#chart-time');
+
+const themeToggle = $('#theme-toggle');
+const exportJSON = $('#export-json'), importJSON = $('#import-json'),
+      printBtn = $('#print-btn');
+const remTime = $('#reminder-time'), toggleReminder = $('#toggle-reminder');
+
+const modalRoot = $('#modal-root');
+const exportEntryBtn = $('#export-entry');
+
+/* -------------------------
+   Theme
+--------------------------*/
+const savedTheme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+document.documentElement.classList.toggle('dark', savedTheme==='dark');
+themeToggle.addEventListener('click', ()=> {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
+/* -------------------------
+   Auth
+--------------------------*/
+function saveAppState(){ saveData(appState); }
+function setCurrent(u){ appState.current = u; saveAppState(); }
+function users(){ return appState.users; }
+function journalsFor(u){ return (users()[u] && users()[u].journals) ? users()[u].journals : []; }
+function setJournalsFor(u, arr){ users()[u].journals = arr; saveAppState(); }
+
+function checkAuth(){
+  if(appState.current){
+    authContainer.classList.add('hidden'); appContainer.classList.remove('hidden');
+    usernameDisplay.textContent = appState.current;
+    renderAll();
+    // attempt to load backup if exists
+    getBackup('backup_'+appState.current).then(b=>{
+      if(b && Object.keys(users())[0]) {
+        // we don't auto-import, but store for possibility. (no action)
+      }
+    }).catch(()=>{});
+  } else {
+    authContainer.classList.remove('hidden'); appContainer.classList.add('hidden');
+  }
+}
+
+registerForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const u = registerUsername.value.trim();
+  const p = registerPassword.value;
+  if(!u || !p) return alert('Kullanıcı ve şifre gerekli');
+  if(users()[u]) return alert('Kullanıcı mevcut');
+  const h = await sha256(p);
+  users()[u] = { pwHash: h, journals: [] };
+  saveAppState();
+  alert('Kayıt başarılı. Giriş yapabilirsiniz.');
+  registerForm.classList.add('hidden'); loginForm.classList.remove('hidden');
+  loginUsername.value = u;
+});
+
+loginForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const u = loginUsername.value.trim(), p = loginPassword.value;
+  if(!users()[u]) return alert('Kullanıcı bulunamadı.');
+  const ok = users()[u].pwHash === await sha256(p);
+  if(!ok) return alert('Kullanıcı adı veya şifre yanlış');
+  setCurrent(u); checkAuth();
+});
+
+showRegisterBtn.addEventListener('click', ()=>{ loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); });
+showLoginBtn.addEventListener('click', ()=>{ registerForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
+logoutBtn.addEventListener('click', ()=>{ setCurrent(null); checkAuth(); });
+
+/* -------------------------
+   Entry CRUD + Editing + Tags/Categories
+--------------------------*/
+let pendingImage = null;
+
+dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', async e=>{ e.preventDefault(); dropzone.classList.remove('drag'); const f = e.dataTransfer.files?.[0]; if(f && f.type.startsWith('image/')){ pendingImage = await toBase64(f); dropzone.textContent = f.name } });
+
+photoInput.addEventListener('change', async ()=>{ const f = photoInput.files?.[0]; if(f) { pendingImage = await toBase64(f); dropzone.textContent = f.name } });
+
+noteInput.addEventListener('input', ()=> countEl.textContent = `(${noteInput.value.length}/2000)` );
+
+function parseTags(t){ return (t||'').split(',').map(s=>s.trim()).filter(Boolean).map(x=> x.startsWith('#')?x.toLowerCase():('#'+x.toLowerCase())); }
+function pickCategory(){ const custom = categoryCustom.value.trim(); return custom || categorySelect.value || ''; }
+
+journalForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(!appState.current) return alert('Giriş yapın');
+  const title = titleInput.value.trim();
+  if(!title) return alert('Başlık gerekli');
+  const now = new Date();
+  const entry = {
+    id: crypto.randomUUID(),
+    title,
+    note: noteInput.value,
+    dateISO: now.toISOString(),
+    dateText: now.toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'}) + ' ' + now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),
+    tags: parseTags(tagsInput.value),
+    category: pickCategory(),
+    mood: mood.value || '',
+    photo: pendingImage,
+    favorite: false
+  };
+  const arr = journalsFor(appState.current);
+  arr.push(entry);
+  setJournalsFor(appState.current, arr);
+  // auto-backup to IndexedDB
+  saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+  // reset
+  journalForm.reset(); pendingImage=null; dropzone.textContent='Buraya sürükle veya seç'; countEl.textContent='(0/2000)';
+  renderAll();
+});
+
+/* render & bind actions */
+function renderAll(){
+  renderJournals();
+  renderCalendar(); renderStats();
+}
+
+function renderJournals(){
+  const q = searchInput.value.trim().toLowerCase();
+  const catFilter = filterCategory.value.trim().toLowerCase();
+  const tagFilter = filterTag.value.trim().toLowerCase();
+  const s = sortBy.value;
+  const arr = (journalsFor(appState.current) || []).slice();
+
+  const filtered = arr.filter(e=>{
+    const hay = (e.title + ' ' + e.note + ' ' + (e.tags||[]).join(' ') + ' ' + (e.category||'')).toLowerCase();
+    if(q && !hay.includes(q)) return false;
+    if(catFilter && !(e.category||'').toLowerCase().includes(catFilter)) return false;
+    if(tagFilter && !(e.tags||[]).includes(tagFilter.startsWith('#')?tagFilter:'#'+tagFilter)) return false;
+    return true;
+  });
+
+  filtered.sort((a,b)=>{
+    if(s==='date-desc') return new Date(b.dateISO)-new Date(a.dateISO);
+    if(s==='date-asc') return new Date(a.dateISO)-new Date(b.dateISO);
+    if(s==='title-asc') return a.title.localeCompare(b.title,'tr');
+    if(s==='fav-first') return (b.favorite===true)-(a.favorite===true) || (new Date(b.dateISO)-new Date(a.dateISO));
+    return 0;
+  });
+
+  journalsList.innerHTML = '';
+  filtered.forEach(e=>{
+    const li = document.createElement('li'); li.className='entry';
+    li.innerHTML = `
+      <header>
+        <div>
+          <h3>${sanitize(e.title)}</h3>
+          <div class="hint">${sanitize(e.dateText)} ${e.category? '· '+sanitize(e.category):''}</div>
+          <div class="chips">${(e.tags||[]).map(t=>`<span class="chip">${sanitize(t)}</span>`).join('')} ${e.favorite?'<span class="chip">⭐ Favori</span>':''}</div>
+        </div>
+        <div class="actions">
+          <button class="btn small ghost" data-act="edit" data-id="${e.id}">✏️</button>
+          <button class="btn small" data-act="fav" data-id="${e.id}">${e.favorite?'⭐':'☆'}</button>
+          <button class="btn small ghost" data-act="share" data-id="${e.id}">🔗</button>
+          <button class="btn small" data-act="del" data-id="${e.id}">🗑️</button>
+        </div>
+      </header>
+      <div>${sanitize(e.note).replace(/\n/g ,'<br>')}</div>
+      ${e.photo ? `<img src="${e.photo}" style="border-radius:10px;max-height:200px;object-fit:cover;margin-top:8px">` : ''}
+    `;
+    journalsList.appendChild(li);
+  });
+
+  // bind
+  journalsList.querySelectorAll('[data-act]').forEach(btn=>{
+    btn.onclick = ()=> {
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+      if(act==='del') deleteEntry(id);
+      else if(act==='edit') editEntry(id);
+      else if(act==='fav') toggleFav(id);
+      else if(act==='share') shareEntry(id);
+    };
+  });
+}
+
+/* actions */
+function deleteEntry(id){
+  showModal({
+    title:'Silmek istediğine emin misin?',
+    body:'Bu işlem geri alınamaz.',
+    confirmText:'Evet sil',
+    confirmClass:'danger',
+    onConfirm: ()=>{
+      const arr = journalsFor(appState.current).filter(x=>x.id!==id);
+      setJournalsFor(appState.current, arr);
+      saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+      renderAll();
     }
+  });
+}
 
-    /************** INIT **************/
-    checkAuth();
+function toggleFav(id){
+  const arr = journalsFor(appState.current);
+  const i = arr.findIndex(x=>x.id===id); if(i<0) return;
+  arr[i].favorite = !arr[i].favorite;
+  setJournalsFor(appState.current, arr);
+  renderAll();
+}
 
-    // Küçük kalite: klavye kısayolları
-    document.addEventListener('keydown', (e)=>{
-      if(e.ctrlKey && e.key.toLowerCase()==='f'){ e.preventDefault(); searchInput.focus(); }
-    });
-  </script>
+function shareEntry(id){
+  const e = journalsFor(appState.current).find(x=>x.id===id);
+  if(!e) return;
+  // create text
+  const text = `Günlük: ${e.title}\n${e.dateText}\n\n${e.note}\n\nEtiketler: ${(e.tags||[]).join(', ')}\nKategori: ${e.category||'-'}`;
+  if(navigator.share){
+    navigator.share({title:e.title,text}).catch(()=>alert('Paylaşım iptal edildi'));
+  } else {
+    // fallback: copy to clipboard
+    navigator.clipboard.writeText(text).then(()=> alert('Günlük metni panoya kopyalandı'));
+  }
+}
+
+function editEntry(id){
+  const e = journalsFor(appState.current).find(x=>x.id===id);
+  if(!e) return;
+  showModal({
+    title:'Kaydı Düzenle',
+    body: `
+      <div style="display:grid;gap:8px">
+        <label>Başlık</label><input id="edit-title" value="${sanitize(e.title)}">
+        <label>Kategori</label><input id="edit-category" value="${sanitize(e.category||'')}">
+        <label>Etiketler</label><input id="edit-tags" value="${sanitize((e.tags||[]).join(', '))}">
+        <label>Not</label><textarea id="edit-note" maxlength="2000">${sanitize(e.note)}</textarea>
+        <label>Fotoğraf (yeni seçersen eskisi değiştirilir)</label><input id="edit-photo" type="file" accept="image/*">
+        ${e.photo ? `<div style="margin-top:6px"><img src="${e.photo}" style="max-height:120px;border-radius:8px"></div>` : ''}
+      </div>
+    `,
+    confirmText:'Kaydet',
+    onConfirm: async ()=>{
+      const arr = journalsFor(appState.current);
+      const idx = arr.findIndex(x=>x.id===id); if(idx<0) return;
+      arr[idx].title = $('#edit-title').value.trim();
+      arr[idx].category = $('#edit-category').value.trim();
+      arr[idx].tags = parseTags($('#edit-tags').value);
+      arr[idx].note = $('#edit-note').value;
+      const nf = $('#edit-photo').files?.[0];
+      if(nf) arr[idx].photo = await toBase64(nf);
+      setJournalsFor(appState.current, arr);
+      saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+      renderAll();
+    }
+  });
+}
+
+/* -------------------------
+   Calendar
+--------------------------*/
+function renderCalendar(date=new Date()){
+  calendarEl.innerHTML = '';
+  const year = date.getFullYear(), month = date.getMonth();
+  const first = new Date(year, month, 1); const startDay = first.getDay(); // 0-6 (Sun)
+  // adjust to Monday-first maybe? keep Sunday-based as fine.
+  // days in month
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  // previous month's tail
+  const prevDays = startDay;
+  const totalCells = prevDays + daysInMonth;
+  const rows = Math.ceil(totalCells/7) * 7;
+
+  // build days array
+  const days = [];
+  for(let i=0;i<rows;i++){
+    const dayNum = i - prevDays + 1;
+    const inMonth = dayNum>=1 && dayNum<=daysInMonth;
+    const d = inMonth ? new Date(year, month, dayNum) : null;
+    days.push({inMonth,d});
+  }
+
+  const entries = journalsFor(appState.current)||[];
+
+  days.forEach((cell, idx)=>{
+    const el = document.createElement('div'); el.className='cal-day'+(cell.inMonth?'':' out');
+    if(cell.inMonth){
+      el.innerHTML = `<div style="font-weight:700">${cell.d.getDate()}</div>`;
+      // find entries for this day
+      const dayStr = cell.d.toISOString().slice(0,10);
+      const dayEntries = entries.filter(en => en.dateISO.slice(0,10) === dayStr);
+      dayEntries.slice(0,3).forEach((en,i)=>{
+        const span = document.createElement('div'); span.style.fontSize='.78rem'; span.style.marginTop='6px';
+        span.textContent = en.title.length>24?en.title.slice(0,21)+'...':en.title;
+        el.appendChild(span);
+      });
+      if(dayEntries.length>0){
+        const dot = document.createElement('div'); dot.className='dot'; dot.style.background = '#ffd54f';
+        el.appendChild(dot);
+      }
+      el.style.cursor='pointer';
+      el.addEventListener('click', ()=> {
+        // show list of entries in a modal
+        const listHtml = dayEntries.map(en=>`<div style="margin-bottom:8px"><strong>${sanitize(en.title)}</strong><div class="hint">${sanitize(en.dateText)}</div><div>${sanitize(en.note).slice(0,200)}${en.note.length>200?'...':''}</div></div>`).join('') || '<div class="hint">O gün kayıt yok</div>';
+        showModal({ title: cell.d.toLocaleDateString('tr-TR'), body: listHtml, confirmText:'Kapat' });
+      });
+    }
+    calendarEl.appendChild(el);
+  });
+}
+
+/* -------------------------
+   Stats (simple canvas charts)
+--------------------------*/
+function renderStats(){
+  const entries = journalsFor(appState.current) || [];
+  statCount.textContent = entries.length;
+
+  // categories count
+  const catCounts = {};
+  entries.forEach(e=>{
+    const c = (e.category||'diğer').toLowerCase() || 'diğer';
+    catCounts[c] = (catCounts[c]||0)+1;
+  });
+  const cats = Object.keys(catCounts);
+  // draw horizontal bars
+  drawBarChart(chartCats, cats, cats.map(c=>catCounts[c]));
+
+  // time series last 30 days
+  const last30 = [];
+  for(let i=29;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    last30.push(d.toISOString().slice(0,10));
+  }
+  const counts30 = last30.map(day => entries.filter(e=> e.dateISO.slice(0,10)===day).length);
+  drawLineChart(chartTime, last30.map(d=>d.slice(5)), counts30);
+}
+
+/* simple drawing functions */
+function drawBarChart(canvas, labels, values){
+  const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const max = Math.max(...values,1);
+  const pad=30; const barH = Math.min(28, (h - pad*2) / labels.length);
+  labels.forEach((lab,i)=>{
+    const x = pad; const y = pad + i*(barH+8);
+    const val = values[i];
+    const barW = ((w - pad*2) * (val/max));
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#5C6BC0';
+    ctx.fillRect(x, y, barW, barH);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#37474F';
+    ctx.font = '13px Poppins';
+    ctx.fillText(`${lab} (${val})`, x + Math.max(6,barW+6), y + barH - 8);
+  });
+}
+
+function drawLineChart(canvas, labels, values){
+  const ctx = canvas.getContext('2d'); const w=canvas.width, h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const max = Math.max(...values,1);
+  const left=40, right=10, top=10, bottom=30;
+  // axes
+  ctx.strokeStyle = '#ccc'; ctx.beginPath(); ctx.moveTo(left,top); ctx.lineTo(left,h-bottom); ctx.lineTo(w-right,h-bottom); ctx.stroke();
+  // points
+  const usableW = w - left - right;
+  const usableH = h - top - bottom;
+  ctx.beginPath(); values.forEach((v,i)=>{
+    const x = left + (i/(values.length-1||1))*usableW;
+    const y = top + (1 - v/max) * usableH;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#7986CB'; ctx.lineWidth=2; ctx.stroke();
+}
+
+/* -------------------------
+   Modal helper
+--------------------------*/
+function showModal({title, body='', confirmText='Tamam', cancelText='İptal', onConfirm, confirmClass='' }){
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal">
+        <h3>${title}</h3>
+        <div style="margin:10px 0">${body}</div>
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button id="m-cancel" class="btn ghost small">${cancelText}</button>
+          <button id="m-ok" class="btn small ${confirmClass}">${confirmText}</button>
+        </div>
+      </div>
+    </div>`;
+  modalRoot.classList.remove('hidden');
+  $('#m-cancel').addEventListener('click', ()=> { modalRoot.classList.add('hidden'); modalRoot.innerHTML=''; });
+  $('#m-ok').addEventListener('click', ()=> { modalRoot.classList.add('hidden'); modalRoot.innerHTML=''; onConfirm && onConfirm(); });
+}
+
+/* -------------------------
+   Import / Export / Print
+--------------------------*/
+exportJSON.addEventListener('click', ()=>{
+  const data = {users:users(), current: appState.current, exportedAt: new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `gunlugum-export-${new Date().toISOString().slice(0,10)}.json`; a.click();
+});
+
+importJSON.addEventListener('change', async e=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  try{
+    const t = await f.text(); const obj = JSON.parse(t);
+    if(obj.users){ appState.users = obj.users; appState.current = obj.current || null; saveAppState(); alert('İçe aktarma tamamlandı'); checkAuth(); }
+    else alert('Uygun JSON değil.');
+  }catch(err){ alert('JSON okunamadı'); }
+  importJSON.value = '';
+});
+
+printBtn.addEventListener('click', ()=> window.print());
+
+/* export single entry */
+exportEntryBtn.addEventListener('click', ()=>{
+  if(!appState.current) return alert('Giriş yap');
+  if(!titleInput.value.trim()) return alert('Önce bir kayıt yapın veya başlık girin');
+  const e = {
+    title: titleInput.value.trim(),
+    note: noteInput.value,
+    tags: parseTags(tagsInput.value),
+    category: pickCategory(),
+    mood: mood.value,
+    photo: pendingImage
+  };
+  const blob = new Blob([JSON.stringify(e,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `entry-${new Date().toISOString().slice(0,10)}.json`; a.click();
+});
+
+/* -------------------------
+   Reminders (Notification API)
+--------------------------*/
+let reminderEnabled = false;
+function askNotificationPermission(){
+  if(!('Notification' in window)) return Promise.resolve('denied');
+  return Notification.requestPermission();
+}
+toggleReminder.addEventListener('click', async ()=>{
+  if(!appState.current) return alert('Giriş yapın');
+  const perm = await askNotificationPermission();
+  if(perm !== 'granted') return alert('Bildirim izni gerekli');
+  reminderEnabled = !reminderEnabled;
+  toggleReminder.textContent = reminderEnabled ? '⏰ Kapattır' : '⏰ Aktif Et';
+  localStorage.setItem('reminder_enabled_'+appState.current, reminderEnabled ? '1':'0');
+  localStorage.setItem('reminder_time_'+appState.current, remTime.value || '');
+  scheduleReminder();
+});
+
+function scheduleReminder(){
+  // simple: while app açık, check every minute
+  clearInterval(window.__reminderInterval);
+  if(!appState.current) return;
+  reminderEnabled = localStorage.getItem('reminder_enabled_'+appState.current) === '1';
+  if(!reminderEnabled) return;
+  const time = localStorage.getItem('reminder_time_'+appState.current) || remTime.value;
+  if(!time) return;
+  window.__reminderInterval = setInterval(()=>{
+    const now = new Date(); const hh = String(now.getHours()).padStart(2,'0'); const mm = String(now.getMinutes()).padStart(2,'0');
+    if(`${hh}:${mm}` === time){
+      new Notification('Günlük hatırlatıcısı', {body:'Bugün bir günlük yazmayı düşün :)'});
+    }
+  }, 60*1000);
+}
+
+/* load reminder pref on login */
+remTime.addEventListener('change', ()=> {
+  if(appState.current) localStorage.setItem('reminder_time_'+appState.current, remTime.value || '');
+});
+
+/* -------------------------
+   Small helpers
+--------------------------*/
+function initDefaults(){
+  // auto create example user for demo (optional)
+  if(!Object.keys(appState.users).length){
+    // no demo user by default
+  }
+}
+initDefaults();
+
+/* -------------------------
+   UI events
+--------------------------*/
+searchInput.addEventListener('input', renderJournals);
+filterCategory.addEventListener('input', renderJournals);
+filterTag.addEventListener('input', renderJournals);
+sortBy.addEventListener('change', renderJournals);
+
+toggleCalendar.addEventListener('click', ()=> { calendarCard.classList.toggle('hidden'); });
+toggleStats.addEventListener('click', ()=> { statsCard.classList.toggle('hidden'); renderStats(); });
+
+/* -------------------------
+   Auto-backup (local IndexedDB) every 60s while logged in
+--------------------------*/
+setInterval(()=> {
+  if(appState.current) {
+    saveBackup('backup_'+appState.current, {users:users(), current: appState.current}).catch(()=>{});
+  }
+}, 60*1000);
+
+/* -------------------------
+   Start
+--------------------------*/
+checkAuth();
+scheduleReminder();
+
+/* keyboard shortcut */
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.key==='f'){ e.preventDefault(); searchInput.focus(); }
+});
+
+/* very small helper for testing: open modal to show backups */
+window.__debug = { appState };
+
+/* initial render hooks */
+if(appState.current){
+  // load reminder prefs
+  remTime.value = localStorage.getItem('reminder_time_'+appState.current) || '';
+  reminderEnabled = localStorage.getItem('reminder_enabled_'+appState.current) === '1';
+  toggleReminder.textContent = reminderEnabled ? '⏰ Kapattır':'⏰ Aktif Et';
+}
+
+/* Expose showModal small helper to console if needed */
+window.showModal = showModal;
+
+</script>
 </body>
 </html>
