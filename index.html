@@ -3,50 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benim Gelişmiş Günlüğüm</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Benim Günlüğüm</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #66BB6A;
-            --background-color: #f0f2f5;
-            --card-bg-color: #ffffff;
-            --text-color: #333;
-            --heading-color: #2c3e50;
-            --border-color: #e0e0e0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
+            --primary-color: #5C6BC0; /* Mor tonu */
+            --secondary-color: #7986CB;
+            --background-color: #ECEFF1;
+            --card-bg-color: #fff;
+            --text-color: #37474F;
+            --heading-color: #1A237E;
+            --border-color: #B0BEC5;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --delete-color: #EF5350;
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
             padding: 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            min-height: 100vh;
         }
 
         .container {
             width: 100%;
-            max-width: 800px;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--heading-color);
-            margin-bottom: 30px;
+            max-width: 900px;
+            display: grid;
+            gap: 30px;
         }
 
         .card {
             background-color: var(--card-bg-color);
-            border-radius: 12px;
-            box-shadow: 0 6px 15px var(--shadow-color);
             padding: 30px;
-            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px var(--shadow-color);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--heading-color);
+            margin-bottom: 25px;
         }
 
         form {
@@ -60,49 +66,30 @@
         }
 
         label {
-            font-weight: 700;
+            font-weight: 600;
             margin-bottom: 8px;
             color: var(--heading-color);
         }
 
-        input[type="text"],
-        input[type="number"],
-        textarea {
-            width: 100%;
+        input, textarea {
             padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 1rem;
-            box-sizing: border-box;
             transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        textarea:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary-color);
         }
 
         textarea {
-            resize: vertical;
             min-height: 120px;
+            resize: vertical;
         }
-
-        input[type="file"] {
-            padding: 5px;
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .price-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        #submit-btn {
+        
+        button {
             background-color: var(--primary-color);
             color: white;
             padding: 14px 25px;
@@ -110,17 +97,17 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 1.1rem;
-            font-weight: 700;
+            font-weight: 600;
             transition: background-color 0.3s;
         }
 
-        #submit-btn:hover {
+        button:hover {
             background-color: var(--secondary-color);
         }
 
         #journals-list {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 25px;
             list-style: none;
             padding: 0;
@@ -129,9 +116,11 @@
         .journal-entry {
             background-color: var(--card-bg-color);
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
             box-shadow: 0 4px 10px var(--shadow-color);
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .journal-entry-header {
@@ -143,43 +132,35 @@
             margin-bottom: 15px;
         }
 
-        .journal-entry-header h2 {
+        .journal-entry-header h3 {
             margin: 0;
             color: var(--heading-color);
-            font-size: 1.4rem;
+            font-size: 1.2rem;
         }
 
         .journal-entry-header span {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #777;
         }
 
-        .journal-entry-content {
-            display: grid;
-            gap: 15px;
-        }
-
         .journal-entry-content p {
-            margin: 0;
+            margin: 0 0 10px 0;
             line-height: 1.6;
-        }
-
-        .journal-entry-content strong {
-            color: var(--primary-color);
         }
 
         .journal-image {
             max-width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
             height: auto;
-            display: block;
+            object-fit: cover;
+            box-shadow: 0 2px 5px var(--shadow-color);
         }
-
+        
         .delete-btn {
-            background-color: #dc3545;
-            color: white;
+            background-color: var(--delete-color);
             border: none;
+            color: white;
             padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
@@ -187,75 +168,209 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            opacity: 0.8;
-            transition: opacity 0.3s;
+            transition: background-color 0.3s;
         }
 
         .delete-btn:hover {
-            opacity: 1;
+            background-color: #C62828;
         }
+
+        #login-section, #register-section {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .toggle-form {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .toggle-form a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Günlük Kayıtlarım</h1>
-        
-        <div class="card">
-            <form id="journal-form">
-                <div class="form-group">
-                    <label for="title">Başlık</label>
-                    <input type="text" id="title" placeholder="Günün başlığını yazın" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="note">Notlar</label>
-                    <textarea id="note" placeholder="Bugün neler oldu? Ne aldın?"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Eşya Fiyatı</label>
-                    <div class="price-group">
-                        <input type="number" id="price" placeholder="Eşya fiyatını girin" min="0">
-                        <span>₺</span>
+        <div id="auth-container">
+            <div id="login-section" class="card">
+                <h2>Giriş Yap</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Kullanıcı Adı</label>
+                        <input type="text" id="login-username" required>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="login-password">Şifre</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit">Giriş Yap</button>
+                    <p class="toggle-form">Hesabın yok mu? <a href="#" id="show-register">Kayıt Ol</a></p>
+                </form>
+            </div>
 
-                <div class="form-group">
-                    <label for="photo">Fotoğraf Yükle</label>
-                    <input type="file" id="photo" accept="image/*">
-                </div>
-
-                <button type="submit" id="submit-btn">Kaydı Ekle</button>
-            </form>
+            <div id="register-section" class="card hidden">
+                <h2>Kayıt Ol</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">Kullanıcı Adı</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Şifre</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <button type="submit">Kayıt Ol</button>
+                    <p class="toggle-form">Zaten bir hesabın var mı? <a href="#" id="show-login">Giriş Yap</a></p>
+                </form>
+            </div>
         </div>
-        
-        <ul id="journals-list">
-            </ul>
+
+        <div id="app-container" class="hidden">
+            <h1>Hoş Geldin, <span id="username-display"></span>!</h1>
+            
+            <div class="card">
+                <form id="journal-form">
+                    <div class="form-group">
+                        <label for="title">Başlık</label>
+                        <input type="text" id="title" placeholder="Günün başlığını yazın" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="note">Notlar</label>
+                        <textarea id="note" placeholder="Bugün neler oldu? Ne aldın?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photo">Fotoğraf Yükle</label>
+                        <input type="file" id="photo" accept="image/*">
+                    </div>
+
+                    <button type="submit">Kaydı Ekle</button>
+                    <button type="button" id="logout-btn" style="background-color: #B0BEC5;">Çıkış Yap</button>
+                </form>
+            </div>
+            
+            <ul id="journals-list"></ul>
+        </div>
     </div>
 
     <script>
-        const form = document.getElementById('journal-form');
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const showRegisterBtn = document.getElementById('show-register');
+        const showLoginBtn = document.getElementById('show-login');
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameDisplay = document.getElementById('username-display');
+        const journalForm = document.getElementById('journal-form');
         const titleInput = document.getElementById('title');
         const noteInput = document.getElementById('note');
-        const priceInput = document.getElementById('price');
         const photoInput = document.getElementById('photo');
         const journalsList = document.getElementById('journals-list');
 
-        let journals = JSON.parse(localStorage.getItem('journals')) || [];
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
+
+        // AUTHENTICATION LOGIC
+        // ====================
+
+        function saveUsers() {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        function saveLoggedInUser(username) {
+            loggedInUser = username;
+            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+        }
+
+        function checkAuth() {
+            if (loggedInUser) {
+                authContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                usernameDisplay.textContent = loggedInUser;
+                renderJournals();
+            } else {
+                authContainer.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            }
+        }
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            if (users[username]) {
+                alert('Bu kullanıcı adı zaten alınmış!');
+                return;
+            }
+
+            users[username] = { password: password, journals: [] };
+            saveUsers();
+            alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+            document.getElementById('register-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (users[username] && users[username].password === password) {
+                saveLoggedInUser(username);
+                checkAuth();
+            } else {
+                alert('Kullanıcı adı veya şifre yanlış!');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            saveLoggedInUser(null);
+            checkAuth();
+        });
+
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('register-section').classList.remove('hidden');
+        });
+
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('register-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        });
+
+        // JOURNAL LOGIC
+        // =============
 
         function renderJournals() {
             journalsList.innerHTML = '';
-            journals.forEach((entry, index) => {
+            const userJournals = users[loggedInUser].journals;
+            userJournals.forEach((entry, index) => {
                 const li = document.createElement('li');
                 li.classList.add('journal-entry');
                 li.innerHTML = `
                     <div class="journal-entry-header">
-                        <h2>${entry.title}</h2>
+                        <h3>${entry.title}</h3>
                         <span>${entry.date}</span>
                     </div>
                     <div class="journal-entry-content">
-                        ${entry.price ? `<p><strong>Fiyat:</strong> ${entry.price} ₺</p>` : ''}
-                        ${entry.note ? `<p>${entry.note}</p>` : ''}
+                        <p>${entry.note}</p>
                         ${entry.photo ? `<img src="${entry.photo}" alt="Günlük fotoğrafı" class="journal-image">` : ''}
                     </div>
                     <button class="delete-btn" data-index="${index}">Sil</button>
@@ -269,14 +384,14 @@
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const index = e.target.getAttribute('data-index');
-                    journals.splice(index, 1);
-                    localStorage.setItem('journals', JSON.stringify(journals));
+                    users[loggedInUser].journals.splice(index, 1);
+                    saveUsers();
                     renderJournals();
                 });
             });
         }
 
-        form.addEventListener('submit', (e) => {
+        journalForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const today = new Date();
             const formattedDate = today.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -284,7 +399,6 @@
             const newEntry = {
                 title: titleInput.value,
                 note: noteInput.value,
-                price: priceInput.value,
                 date: formattedDate,
                 photo: null
             };
@@ -292,23 +406,23 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 newEntry.photo = e.target.result;
-                journals.push(newEntry);
-                localStorage.setItem('journals', JSON.stringify(journals));
+                users[loggedInUser].journals.push(newEntry);
+                saveUsers();
                 renderJournals();
-                form.reset(); // Formu sıfırla
+                journalForm.reset();
             };
 
             if (photoInput.files.length > 0) {
                 reader.readAsDataURL(photoInput.files[0]);
             } else {
-                journals.push(newEntry);
-                localStorage.setItem('journals', JSON.stringify(journals));
+                users[loggedInUser].journals.push(newEntry);
+                saveUsers();
                 renderJournals();
-                form.reset();
+                journalForm.reset();
             }
         });
 
-        document.addEventListener('DOMContentLoaded', renderJournals);
+        checkAuth();
     </script>
 </body>
 </html>
