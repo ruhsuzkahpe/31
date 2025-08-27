@@ -1,428 +1,472 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benim Günlüğüm</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #5C6BC0; /* Mor tonu */
-            --secondary-color: #7986CB;
-            --background-color: #ECEFF1;
-            --card-bg-color: #fff;
-            --text-color: #37474F;
-            --heading-color: #1A237E;
-            --border-color: #B0BEC5;
-            --shadow-color: rgba(0, 0, 0, 0.08);
-            --delete-color: #EF5350;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Benim Günlüğüm — Gelişmiş</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+  <style>
+    :root{
+      --primary: #5C6BC0;
+      --primary-2: #7986CB;
+      --bg: #ECEFF1;
+      --card: #fff;
+      --text: #37474F;
+      --heading: #1A237E;
+      --border: #B0BEC5;
+      --shadow: rgba(0,0,0,.08);
+      --danger: #EF5350;
+      --success: #2e7d32;
+      --muted: #607d8b;
+    }
+    /* Dark theme */
+    :root.dark{
+      --bg:#0f172a;
+      --card:#111827;
+      --text:#cbd5e1;
+      --heading:#a5b4fc;
+      --border:#334155;
+      --shadow: rgba(0,0,0,.4);
+      --primary:#818cf8;
+      --primary-2:#6366f1;
+      --danger:#ef4444;
+      --muted:#94a3b8;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            display: grid;
-            gap: 30px;
-        }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; padding:20px;
+      font-family:'Poppins',sans-serif;
+      background:var(--bg); color:var(--text);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .container{width:100%; max-width:1000px; display:grid; gap:28px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      box-shadow:0 8px 20px var(--shadow);
+      padding:24px;
+      transition:transform .25s ease, background .25s ease, border-color .25s ease;
+    }
+    .card:hover{ transform:translateY(-3px) }
+    h1,h2{ color:var(--heading); margin:0 0 18px; text-align:center}
+    h1 span.badge{
+      display:inline-block; font-size:.7rem; font-weight:600;
+      background:var(--primary); color:#fff; padding:3px 8px; border-radius:999px; margin-left:8px
+    }
 
-        .card {
-            background-color: var(--card-bg-color);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px var(--shadow-color);
-            transition: transform 0.3s ease;
-        }
+    form{ display:grid; gap:14px }
+    .row{ display:grid; gap:12px; grid-template-columns:1fr 1fr }
+    @media (max-width:700px){ .row{grid-template-columns:1fr} }
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+    label{font-weight:600; color:var(--heading); margin-bottom:6px}
+    input, textarea, select{
+      width:100%; padding:12px 12px;
+      border:1px solid var(--border); border-radius:10px;
+      background:transparent; color:inherit; font-size:1rem;
+      transition:border-color .2s ease, background .2s ease;
+    }
+    input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--primary) }
+    textarea{ min-height:120px; resize:vertical }
+    .hint{font-size:.85rem; color:var(--muted)}
 
-        h1, h2 {
-            text-align: center;
-            color: var(--heading-color);
-            margin-bottom: 25px;
-        }
+    .btn{
+      appearance:none; border:none; border-radius:10px;
+      padding:12px 18px; font-weight:700; cursor:pointer; font-size:1rem;
+      transition:transform .06s ease, background .2s ease, opacity .2s;
+      background:var(--primary); color:#fff;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn.secondary{ background:var(--primary-2) }
+    .btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--border) }
+    .btn.danger{ background:var(--danger) }
+    .btn.success{ background:var(--success) }
+    .btn:active{ transform:translateY(1px) }
+    .btn.small{ padding:8px 12px; font-size:.9rem; border-radius:8px }
 
-        form {
-            display: grid;
-            gap: 20px;
-        }
+    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+    /* Auth */
+    .auth-switch{text-align:center; font-size:.95rem}
+    .auth-switch a{ color:var(--primary); font-weight:700; text-decoration:none }
+    .auth-switch a:hover{ text-decoration:underline }
 
-        label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--heading-color);
-        }
+    /* Password toggle */
+    .pw-wrap{ position:relative }
+    .pw-toggle{
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      font-size:.9rem; cursor:pointer; color:var(--muted); user-select:none
+    }
 
-        input, textarea {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
+    /* Journals grid */
+    #journals-list{
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+      gap:18px; list-style:none; padding:0; margin:0
+    }
+    .entry{
+      background:var(--card); border:1px solid var(--border); border-radius:16px;
+      box-shadow:0 4px 12px var(--shadow);
+      padding:18px; display:flex; flex-direction:column; gap:10px; position:relative;
+      animation:fadeIn .25s ease both;
+    }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none} }
+    .entry header{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      border-bottom:2px solid var(--primary); padding-bottom:8px
+    }
+    .entry h3{ margin:0; font-size:1.1rem; color:var(--heading)}
+    .entry .meta{ font-size:.8rem; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap }
+    .entry .content{ line-height:1.6 }
+    .entry img{ width:100%; height:auto; border-radius:12px; margin-top:8px; object-fit:cover; box-shadow:0 2px 5px var(--shadow) }
+    .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px }
+    .chip{
+      font-size:.75rem; padding:4px 8px; border-radius:999px; border:1px solid var(--border);
+      color:var(--muted)
+    }
+    .entry .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px }
 
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
+    /* Drag & drop */
+    .dropzone{
+      border:2px dashed var(--border); border-radius:12px; padding:14px; text-align:center;
+      transition:border-color .2s ease, background .2s ease;
+    }
+    .dropzone.drag{ border-color:var(--primary); background:rgba(0,0,0,.03) }
 
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 14px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
+    /* Search bar / filters */
+    .filters{ display:grid; gap:10px; grid-template-columns: 1.2fr .9fr .9fr .9fr .9fr }
+    @media(max-width:900px){ .filters{grid-template-columns:1fr 1fr} }
+    @media(max-width:600px){ .filters{grid-template-columns:1fr} }
 
-        button:hover {
-            background-color: var(--secondary-color);
-        }
+    .hidden{ display:none !important }
 
-        #journals-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            list-style: none;
-            padding: 0;
-        }
+    /* Modal */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.4);
+      display:flex; align-items:center; justify-content:center; padding:20px; z-index:40
+    }
+    .modal{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; max-width:420px; width:100% }
 
-        .journal-entry {
-            background-color: var(--card-bg-color);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px var(--shadow-color);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .journal-entry-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .journal-entry-header h3 {
-            margin: 0;
-            color: var(--heading-color);
-            font-size: 1.2rem;
-        }
-
-        .journal-entry-header span {
-            font-size: 0.8rem;
-            color: #777;
-        }
-
-        .journal-entry-content p {
-            margin: 0 0 10px 0;
-            line-height: 1.6;
-        }
-
-        .journal-image {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 15px;
-            height: auto;
-            object-fit: cover;
-            box-shadow: 0 2px 5px var(--shadow-color);
-        }
-        
-        .delete-btn {
-            background-color: var(--delete-color);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            transition: background-color 0.3s;
-        }
-
-        .delete-btn:hover {
-            background-color: #C62828;
-        }
-
-        #login-section, #register-section {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        .toggle-form {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-        .toggle-form a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .toggle-form a:hover {
-            text-decoration: underline;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-    </style>
+    /* Print */
+    @media print{
+      .no-print{ display:none !important }
+      body{ padding:0; background:#fff; color:#000 }
+      .card, .entry{ box-shadow:none; border-color:#ddd }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div id="auth-container">
-            <div id="login-section" class="card">
-                <h2>Giriş Yap</h2>
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="login-username">Kullanıcı Adı</label>
-                        <input type="text" id="login-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Şifre</label>
-                        <input type="password" id="login-password" required>
-                    </div>
-                    <button type="submit">Giriş Yap</button>
-                    <p class="toggle-form">Hesabın yok mu? <a href="#" id="show-register">Kayıt Ol</a></p>
-                </form>
-            </div>
-
-            <div id="register-section" class="card hidden">
-                <h2>Kayıt Ol</h2>
-                <form id="register-form">
-                    <div class="form-group">
-                        <label for="register-username">Kullanıcı Adı</label>
-                        <input type="text" id="register-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">Şifre</label>
-                        <input type="password" id="register-password" required>
-                    </div>
-                    <button type="submit">Kayıt Ol</button>
-                    <p class="toggle-form">Zaten bir hesabın var mı? <a href="#" id="show-login">Giriş Yap</a></p>
-                </form>
-            </div>
+  <div class="container">
+    <!-- THEME & TOP BAR -->
+    <div class="card no-print" id="topbar">
+      <div class="toolbar" style="justify-content:space-between; gap:14px">
+        <div style="display:flex; gap:10px; align-items:center">
+          <button id="theme-toggle" class="btn ghost small" title="Tema değiştir (Dark/Light)">🌗 Tema</button>
+          <button id="install-btn" class="btn ghost small hidden" title="Uygulamayı yükle (PWA)">⬇️ Yükle</button>
         </div>
-
-        <div id="app-container" class="hidden">
-            <h1>Hoş Geldin, <span id="username-display"></span>!</h1>
-            
-            <div class="card">
-                <form id="journal-form">
-                    <div class="form-group">
-                        <label for="title">Başlık</label>
-                        <input type="text" id="title" placeholder="Günün başlığını yazın" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="note">Notlar</label>
-                        <textarea id="note" placeholder="Bugün neler oldu? Ne aldın?"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="photo">Fotoğraf Yükle</label>
-                        <input type="file" id="photo" accept="image/*">
-                    </div>
-
-                    <button type="submit">Kaydı Ekle</button>
-                    <button type="button" id="logout-btn" style="background-color: #B0BEC5;">Çıkış Yap</button>
-                </form>
-            </div>
-            
-            <ul id="journals-list"></ul>
+        <div>
+          <button id="export-json" class="btn small">📤 JSON Dışa Aktar</button>
+          <label class="btn ghost small" for="import-json-input" title="JSON içe aktar">📥 JSON İçe Aktar</label>
+          <input id="import-json-input" type="file" accept="application/json" class="hidden" />
+          <button id="print-btn" class="btn ghost small" title="PDF olarak yazdır">🖨️ Yazdır / PDF</button>
         </div>
+      </div>
     </div>
 
-    <script>
-        const authContainer = document.getElementById('auth-container');
-        const appContainer = document.getElementById('app-container');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const showRegisterBtn = document.getElementById('show-register');
-        const showLoginBtn = document.getElementById('show-login');
-        const logoutBtn = document.getElementById('logout-btn');
-        const usernameDisplay = document.getElementById('username-display');
-        const journalForm = document.getElementById('journal-form');
-        const titleInput = document.getElementById('title');
-        const noteInput = document.getElementById('note');
-        const photoInput = document.getElementById('photo');
-        const journalsList = document.getElementById('journals-list');
+    <!-- AUTH -->
+    <div id="auth-container">
+      <div id="login-section" class="card">
+        <h2>Giriş Yap</h2>
+        <form id="login-form">
+          <div>
+            <label for="login-username">Kullanıcı Adı</label>
+            <input type="text" id="login-username" required autocomplete="username">
+          </div>
+          <div class="pw-wrap">
+            <label for="login-password">Şifre</label>
+            <input type="password" id="login-password" required autocomplete="current-password">
+            <span class="pw-toggle" data-target="login-password">👁️</span>
+          </div>
+          <div class="toolbar" style="justify-content:space-between">
+            <button type="submit" class="btn">Giriş Yap</button>
+            <button type="button" id="show-register" class="btn ghost">Kayıt Ol</button>
+          </div>
+          <p class="auth-switch">Hesabın yok mu? <a href="#" id="to-register">Kayıt ol</a></p>
+        </form>
+      </div>
 
-        let users = JSON.parse(localStorage.getItem('users')) || {};
-        let loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
+      <div id="register-section" class="card hidden">
+        <h2>Kayıt Ol</h2>
+        <form id="register-form" autocomplete="off">
+          <div>
+            <label for="register-username">Kullanıcı Adı</label>
+            <input type="text" id="register-username" required autocomplete="off">
+          </div>
+          <div class="pw-wrap">
+            <label for="register-password">Şifre</label>
+            <input type="password" id="register-password" required autocomplete="new-password" minlength="6" placeholder="En az 6 karakter">
+            <span class="pw-toggle" data-target="register-password">👁️</span>
+            <div class="hint">Şifreler yerelde **hash**’lenerek saklanır (SHA-256).</div>
+          </div>
+          <div class="toolbar" style="justify-content:space-between">
+            <button type="submit" class="btn success">Kayıt Ol</button>
+            <button type="button" id="show-login" class="btn ghost">Giriş Yap</button>
+          </div>
+          <p class="auth-switch">Zaten hesabın var mı? <a href="#" id="to-login">Giriş yap</a></p>
+        </form>
+      </div>
+    </div>
 
-        // AUTHENTICATION LOGIC
-        // ====================
+    <!-- APP -->
+    <div id="app-container" class="hidden">
+      <h1>Hoş Geldin, <span id="username-display"></span>! <span class="badge">Beta</span></h1>
 
-        function saveUsers() {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
+      <div class="card no-print">
+        <form id="journal-form">
+          <div class="row">
+            <div>
+              <label for="title">Başlık</label>
+              <input type="text" id="title" placeholder="Günün başlığı" required />
+            </div>
+            <div>
+              <label for="mood">Ruh Hali</label>
+              <select id="mood" title="Ruh hali seç">
+                <option value="">—</option>
+                <option>😀 Mutlu</option>
+                <option>😌 Sakin</option>
+                <option>😴 Yorgun</option>
+                <option>😕 Kafası Karışık</option>
+                <option>😔 Üzgün</option>
+                <option>😤 Sinirli</option>
+                <option>🤩 Heyecanlı</option>
+              </select>
+            </div>
+          </div>
 
-        function saveLoggedInUser(username) {
-            loggedInUser = username;
-            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-        }
+          <div>
+            <label for="note">Notlar <span id="char-count" class="hint">(0/2000)</span></label>
+            <textarea id="note" maxlength="2000" placeholder="Bugün neler oldu?"></textarea>
+          </div>
 
-        function checkAuth() {
-            if (loggedInUser) {
-                authContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                usernameDisplay.textContent = loggedInUser;
-                renderJournals();
-            } else {
-                authContainer.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-            }
-        }
+          <div>
+            <label for="tags">Etiketler (virgülle ayır)</label>
+            <input id="tags" placeholder="#iş, #tatil, #aile" />
+          </div>
 
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('register-username').value;
-            const password = document.getElementById('register-password').value;
+          <div>
+            <label for="photo">Fotoğraf Yükle</label>
+            <div id="dropzone" class="dropzone">Dosyanı buraya sürükle & bırak ya da aşağıdan seç</div>
+            <input type="file" id="photo" accept="image/*" />
+          </div>
 
-            if (users[username]) {
-                alert('Bu kullanıcı adı zaten alınmış!');
-                return;
-            }
+          <div class="toolbar">
+            <button type="submit" class="btn">Kaydı Ekle</button>
+            <button type="button" id="logout-btn" class="btn ghost">Çıkış Yap</button>
+          </div>
+        </form>
+      </div>
 
-            users[username] = { password: password, journals: [] };
-            saveUsers();
-            alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
-            document.getElementById('register-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
+      <!-- FILTERS & TOOLS -->
+      <div class="card no-print">
+        <div class="filters">
+          <input id="search" placeholder="Başlık/Not içinde ara…" />
+          <input id="filter-tag" placeholder="Etiket filtre (#iş gibi)" />
+          <input id="filter-date-from" type="date" title="Başlangıç tarihi" />
+          <input id="filter-date-to" type="date" title="Bitiş tarihi" />
+          <select id="sort-by" title="Sıralama">
+            <option value="date-desc">Tarih ↓ (Yeni→Eski)</option>
+            <option value="date-asc">Tarih ↑ (Eski→Yeni)</option>
+            <option value="title-asc">Başlık A→Z</option>
+            <option value="title-desc">Başlık Z→A</option>
+            <option value="fav-first">Favoriler önce</option>
+          </select>
+        </div>
+      </div>
+
+      <ul id="journals-list"></ul>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal-root" class="hidden"></div>
+
+  <script>
+    /************** UTIL **************/
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    const toBase64 = file => new Promise((res,reject)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=reject; r.readAsDataURL(file) });
+    const sha256 = async (text) => {
+      const enc = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    };
+    const formatDateTR = (d) => d.toLocaleDateString('tr-TR', { day:'2-digit', month:'long', year:'numeric' }) + ' ' + d.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+
+    const storage = {
+      get users(){ return JSON.parse(localStorage.getItem('users_v2')||'{}') },
+      set users(v){ localStorage.setItem('users_v2', JSON.stringify(v)) },
+      get current(){ return JSON.parse(localStorage.getItem('logged_user')||'null') },
+      set current(v){ localStorage.setItem('logged_user', JSON.stringify(v)) },
+      exportAll(){ return { users: this.users, current: this.current, exportedAt: new Date().toISOString() } },
+      importAll(obj){ if(obj && obj.users){ this.users = obj.users; this.current = obj.current ?? null } }
+    };
+
+    /************** THEME **************/
+    const themeToggle = $('#theme-toggle');
+    const applyTheme = (t)=>{ document.documentElement.classList.toggle('dark', t==='dark'); localStorage.setItem('theme', t) };
+    const savedTheme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+    applyTheme(savedTheme);
+    themeToggle.addEventListener('click', ()=> applyTheme(document.documentElement.classList.contains('dark') ? 'light':'dark'));
+
+    /************** PWA (inline manifest + SW) **************/
+    (function setupPWA(){
+      // Create manifest dynamically
+      const manifest = {
+        name:"Benim Günlüğüm",
+        short_name:"Günlük",
+        start_url:".",
+        display:"standalone",
+        background_color:"#111827",
+        theme_color:"#818cf8",
+        icons:[]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+      const link = document.createElement('link');
+      link.rel='manifest'; link.href = URL.createObjectURL(blob);
+      document.head.appendChild(link);
+
+      // Register service worker from blob (cache-only shell)
+      const swCode = `
+        const CACHE='diary-cache-v1';
+        self.addEventListener('install', e=>{
+          e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./'])));
+          self.skipWaiting();
         });
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-
-            if (users[username] && users[username].password === password) {
-                saveLoggedInUser(username);
-                checkAuth();
-            } else {
-                alert('Kullanıcı adı veya şifre yanlış!');
-            }
+        self.addEventListener('activate', e=> e.waitUntil(self.clients.claim()));
+        self.addEventListener('fetch', e=>{
+          e.respondWith(
+            caches.match(e.request).then(r=> r || fetch(e.request).then(resp=>{
+              return caches.open(CACHE).then(c=>{ c.put(e.request, resp.clone()); return resp; });
+            }).catch(()=>r))
+          );
         });
+      `;
+      const swBlob = new Blob([swCode], {type:'text/javascript'});
+      const swURL = URL.createObjectURL(swBlob);
+      if('serviceWorker' in navigator){ navigator.serviceWorker.register(swURL).catch(()=>{}); }
 
-        logoutBtn.addEventListener('click', () => {
-            saveLoggedInUser(null);
-            checkAuth();
-        });
+      // Install prompt (if supported)
+      let deferred;
+      const installBtn = $('#install-btn');
+      window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferred = e; installBtn.classList.remove('hidden'); });
+      installBtn.addEventListener('click', async ()=>{
+        if(deferred){ deferred.prompt(); deferred = null; installBtn.classList.add('hidden'); }
+      });
+    })();
 
-        showRegisterBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('register-section').classList.remove('hidden');
-        });
+    /************** ELEMENTS **************/
+    const authContainer = $('#auth-container');
+    const appContainer = $('#app-container');
+    const loginForm = $('#login-form');
+    const registerForm = $('#register-form');
+    const showRegisterBtn = $('#show-register');
+    const showLoginBtn = $('#show-login');
+    const toRegister = $('#to-register');
+    const toLogin = $('#to-login');
+    const logoutBtn = $('#logout-btn');
+    const usernameDisplay = $('#username-display');
+    const journalForm = $('#journal-form');
+    const titleInput = $('#title');
+    const noteInput = $('#note');
+    const tagsInput = $('#tags');
+    const moodSelect = $('#mood');
+    const photoInput = $('#photo');
+    const dropzone = $('#dropzone');
+    const journalsList = $('#journals-list');
+    const charCount = $('#char-count');
+    const searchInput = $('#search');
+    const filterTag = $('#filter-tag');
+    const filterFrom = $('#filter-date-from');
+    const filterTo = $('#filter-date-to');
+    const sortBy = $('#sort-by');
+    const exportBtn = $('#export-json');
+    const importInput = $('#import-json-input');
+    const printBtn = $('#print-btn');
+    const modalRoot = $('#modal-root');
 
-        showLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('register-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-        });
+    /************** PASSWORD TOGGLE **************/
+    $$('.pw-toggle').forEach(t=>{
+      t.addEventListener('click', ()=>{
+        const target = document.getElementById(t.dataset.target);
+        if(!target) return;
+        target.type = target.type === 'password' ? 'text':'password';
+        t.textContent = target.type === 'password' ? '👁️' : '🙈';
+      })
+    });
 
-        // JOURNAL LOGIC
-        // =============
+    /************** STATE **************/
+    let users = storage.users;
+    let currentUser = storage.current;
 
-        function renderJournals() {
-            journalsList.innerHTML = '';
-            const userJournals = users[loggedInUser].journals;
-            userJournals.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.classList.add('journal-entry');
-                li.innerHTML = `
-                    <div class="journal-entry-header">
-                        <h3>${entry.title}</h3>
-                        <span>${entry.date}</span>
-                    </div>
-                    <div class="journal-entry-content">
-                        <p>${entry.note}</p>
-                        ${entry.photo ? `<img src="${entry.photo}" alt="Günlük fotoğrafı" class="journal-image">` : ''}
-                    </div>
-                    <button class="delete-btn" data-index="${index}">Sil</button>
-                `;
-                journalsList.prepend(li); // En yeni günlüğü en üste ekle
-            });
-            attachDeleteEvents();
-        }
+    const saveUsers = () => { storage.users = users; };
+    const setCurrent = (u) => { currentUser = u; storage.current = u; };
 
-        function attachDeleteEvents() {
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const index = e.target.getAttribute('data-index');
-                    users[loggedInUser].journals.splice(index, 1);
-                    saveUsers();
-                    renderJournals();
-                });
-            });
-        }
+    const getJournals = () => users[currentUser]?.journals || [];
+    const setJournals = (arr) => { users[currentUser].journals = arr; saveUsers(); };
 
-        journalForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const today = new Date();
-            const formattedDate = today.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    /************** AUTH **************/
+    function checkAuth(){
+      if(currentUser){
+        authContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        usernameDisplay.textContent = currentUser;
+        renderJournals();
+      }else{
+        authContainer.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+      }
+    }
 
-            const newEntry = {
-                title: titleInput.value,
-                note: noteInput.value,
-                date: formattedDate,
-                photo: null
-            };
+    registerForm?.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const username = $('#register-username').value.trim();
+      const pw = $('#register-password').value;
+      if(!username) return alert('Kullanıcı adı boş olamaz.');
+      if(users[username]) return alert('Bu kullanıcı adı zaten alınmış!');
+      const pwHash = await sha256(pw);
+      users[username] = { pwHash, journals: [], profile: { avatar:null } };
+      saveUsers();
+      alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+      $('#register-section').classList.add('hidden');
+      $('#login-section').classList.remove('hidden');
+      $('#login-username').value = username;
+    });
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                newEntry.photo = e.target.result;
-                users[loggedInUser].journals.push(newEntry);
-                saveUsers();
-                renderJournals();
-                journalForm.reset();
-            };
+    loginForm?.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const u = $('#login-username').value.trim();
+      const p = $('#login-password').value;
+      if(!users[u]) return alert('Kullanıcı bulunamadı.');
+      const ok = users[u].pwHash === await sha256(p);
+      if(!ok) return alert('Kullanıcı adı veya şifre yanlış!');
+      setCurrent(u); checkAuth();
+    });
 
-            if (photoInput.files.length > 0) {
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                users[loggedInUser].journals.push(newEntry);
-                saveUsers();
-                renderJournals();
-                journalForm.reset();
-            }
-        });
+    logoutBtn.addEventListener('click', ()=>{ setCurrent(null); checkAuth(); });
 
-        checkAuth();
-    </script>
-</body>
-</html>
+    showRegisterBtn.addEventListener('click', ()=>{ $('#login-section').classList.add('hidden'); $('#register-section').classList.remove('hidden'); });
+    showLoginBtn.addEventListener('click', ()=>{ $('#register-section').classList.add('hidden'); $('#login-section').classList.remove('hidden'); });
+    toRegister.addEventListener('click', (e)=>{ e.preventDefault(); showRegisterBtn.click(); });
+    toLogin.addEventListener('click', (e)=>{ e.preventDefault(); showLoginBtn.click(); });
+
+    /************** JOURNAL CRUD **************/
+    function sanitize(str){ return (str||'').replace(/[<>&]/g, c=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[c])) }
+    function parseTags(input){
+      return (input||'')
+        .split(',').map(s=>s.trim()).filter(Boolean)
+        .map(t=> t.startsWith('#') ? t.toLowerCase() : ('#'+t.toLowerCase()));
+    }
+
+    let 
