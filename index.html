@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OnlineGünlüğüm (Local)</title>
+<title>OnlineGünlüğüm - Güvenli Local</title>
 <style>
 body{margin:0;font-family:sans-serif;background:#0f172a;color:#f1f5f9;}
 header{display:flex;justify-content:space-between;padding:16px;background:#0ea5e9;}
 header h1{margin:0;}
-nav a{margin-left:20px;color:#fff;text-decoration:none;}
+nav a{margin-left:20px;color:#fff;text-decoration:none;cursor:pointer;}
 section{padding:40px 24px;text-align:center;}
 input,textarea,button{padding:10px;margin:6px 0;border-radius:6px;border:none;width:100%;max-width:400px;}
 button{background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer;}
@@ -21,10 +21,10 @@ button{background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer;}
 <header>
 <h1>OnlineGünlüğüm</h1>
 <nav>
-<a href="#register">Kayıt</a>
-<a href="#login">Giriş</a>
-<a href="#notlar" id="navNotlar" style="display:none;">Notlarım</a>
-<a href="#" id="logoutBtn" style="display:none;">Çıkış</a>
+<a onclick="showSection('register')">Kayıt</a>
+<a onclick="showSection('login')">Giriş</a>
+<a onclick="showSection('notlar')" id="navNotlar" style="display:none;">Notlarım</a>
+<a onclick="logout()" id="logoutBtn" style="display:none;">Çıkış</a>
 </nav>
 </header>
 
@@ -55,19 +55,37 @@ button{background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer;}
 <script>
 let currentUser = null;
 
+function showSection(id){
+  document.getElementById("register").style.display="none";
+  document.getElementById("login").style.display="none";
+  document.getElementById("notlar").style.display="none";
+  if(id==="notlar" && !currentUser) return;
+  document.getElementById(id).style.display="block";
+}
+
+// Şifre hashleme
+async function hashPassword(password){
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
 function saveUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
 function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
 
 function saveEntries(entries){ localStorage.setItem("entries", JSON.stringify(entries)); }
 function getEntries(){ return JSON.parse(localStorage.getItem("entries")||"[]"); }
 
-function register(){
-  const name = document.getElementById("regName").value;
-  const email = document.getElementById("regEmail").value;
+async function register(){
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
   const password = document.getElementById("regPass").value;
+  if(!name || !email || !password){document.getElementById("regMsg").textContent="Tüm alanları doldurun"; return;}
   let users = getUsers();
   if(users.find(u=>u.email===email)){document.getElementById("regMsg").textContent="Bu email zaten kayıtlı"; return;}
-  users.push({name,email,password});
+  const hashed = await hashPassword(password);
+  users.push({name,email,password:hashed});
   saveUsers(users);
   document.getElementById("regMsg").textContent="Kayıt başarılı! Giriş yapabilirsiniz.";
   document.getElementById("regName").value="";
@@ -75,43 +93,36 @@ function register(){
   document.getElementById("regPass").value="";
 }
 
-function login(){
-  const email = document.getElementById("logEmail").value;
+async function login(){
+  const email = document.getElementById("logEmail").value.trim();
   const password = document.getElementById("logPass").value;
+  if(!email || !password){document.getElementById("logMsg").textContent="Tüm alanları doldurun"; return;}
+  const hashed = await hashPassword(password);
   let users = getUsers();
-  const user = users.find(u=>u.email===email && u.password===password);
+  const user = users.find(u=>u.email===email && u.password===hashed);
   if(user){
     currentUser = user.email;
     document.getElementById("logMsg").textContent="Giriş başarılı!";
-    showNotes();
+    document.getElementById("navNotlar").style.display="inline";
+    document.getElementById("logoutBtn").style.display="inline";
+    showSection("notlar");
+    loadNotes();
   }else{
     document.getElementById("logMsg").textContent="Email veya şifre hatalı";
   }
 }
 
-function showNotes(){
-  document.getElementById("register").style.display="none";
-  document.getElementById("login").style.display="none";
-  document.getElementById("notlar").style.display="block";
-  document.getElementById("navNotlar").style.display="inline";
-  document.getElementById("logoutBtn").style.display="inline";
-  loadNotes();
-}
-
 function logout(){
   currentUser=null;
-  document.getElementById("register").style.display="block";
-  document.getElementById("login").style.display="block";
-  document.getElementById("notlar").style.display="none";
   document.getElementById("navNotlar").style.display="none";
   document.getElementById("logoutBtn").style.display="none";
+  showSection("login");
 }
-
-document.getElementById("logoutBtn").onclick=logout;
 
 function addNote(){
   if(!currentUser){alert("Önce giriş yap!"); return;}
-  const content = document.getElementById("newNote").value;
+  const content = document.getElementById("newNote").value.trim();
+  if(!content) return;
   let entries = getEntries();
   entries.push({user: currentUser, content, createdAt:new Date().toISOString()});
   saveEntries(entries);
@@ -131,7 +142,7 @@ function loadNotes(){
     container.appendChild(div);
   });
 }
-</script>
 
+</script>
 </body>
 </html>
