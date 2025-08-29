@@ -1,77 +1,137 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OnlineGünlüğüm</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='48' fill='%230ea5e9'/%3E%3Cpath d='M72 64h88a24 24 0 0 1 24 24v96l-32-16-32 16-32-16-32 16V88a24 24 0 0 1 24-24Z' fill='white'/%3E%3C/svg%3E"/>
-  <style>
-    body{margin:0;font-family:sans-serif;background:#0f172a;color:#f1f5f9;}
-    header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#0ea5e9;color:#fff;position:sticky;top:0;}
-    header h1{margin:0;font-size:20px;}
-    nav a{margin-left:20px;color:#fff;text-decoration:none;font-weight:600;}
-    .hero{padding:80px 24px;text-align:center;}
-    .hero h2{font-size:36px;margin-bottom:12px;}
-    .hero p{color:#94a3b8;max-width:600px;margin:0 auto;}
-    .cta{margin-top:28px;}
-    .cta a{display:inline-block;margin:6px;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;}
-    .cta a.primary{background:#0ea5e9;color:#fff;}
-    .cta a.secondary{border:2px solid #0ea5e9;color:#0ea5e9;}
-    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;padding:48px 24px;}
-    .card{background:#1e293b;padding:20px;border-radius:14px;}
-    .card h3{margin-top:0;}
-    footer{padding:20px;text-align:center;font-size:14px;color:#94a3b8;border-top:1px solid #1e293b;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnlineGünlüğüm (Local)</title>
+<style>
+body{margin:0;font-family:sans-serif;background:#0f172a;color:#f1f5f9;}
+header{display:flex;justify-content:space-between;padding:16px;background:#0ea5e9;}
+header h1{margin:0;}
+nav a{margin-left:20px;color:#fff;text-decoration:none;}
+section{padding:40px 24px;text-align:center;}
+input,textarea,button{padding:10px;margin:6px 0;border-radius:6px;border:none;width:100%;max-width:400px;}
+button{background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer;}
+.entry{background:#1e293b;padding:14px;margin:10px 0;border-radius:10px;text-align:left;}
+#notlar{display:none;}
+</style>
 </head>
 <body>
-  <header>
-    <h1>OnlineGünlüğüm</h1>
-    <nav>
-      <a href="#ozellikler">Özellikler</a>
-      <a href="#kayit">Kayıt Ol</a>
-      <a href="#giris">Giriş</a>
-    </nav>
-  </header>
 
-  <section class="hero">
-    <h2>Günlüğünü güvenle yaz, hep yanında kalsın.</h2>
-    <p>Ücretsiz üye ol, kendi gizli günlüğünü oluştur. Basit arayüz, güçlü gizlilik, her cihazdan erişim.</p>
-    <div class="cta">
-      <a href="#kayit" class="primary">Hemen Başla</a>
-      <a href="#ozellikler" class="secondary">Özellikler</a>
-    </div>
-  </section>
+<header>
+<h1>OnlineGünlüğüm</h1>
+<nav>
+<a href="#register">Kayıt</a>
+<a href="#login">Giriş</a>
+<a href="#notlar" id="navNotlar" style="display:none;">Notlarım</a>
+<a href="#" id="logoutBtn" style="display:none;">Çıkış</a>
+</nav>
+</header>
 
-  <section id="ozellikler" class="features">
-    <div class="card"><h3>Üyelik</h3><p>Hızlı ve güvenli kayıt sistemi.</p></div>
-    <div class="card"><h3>Gizli Yazılar</h3><p>Yalnızca senin görebileceğin notlar.</p></div>
-    <div class="card"><h3>Mobil Uyum</h3><p>Telefon ve bilgisayarda kusursuz.</p></div>
-    <div class="card"><h3>Arşiv</h3><p>Tarihe göre listelenmiş yazılarını kolayca bul.</p></div>
-  </section>
+<section id="register">
+<h2>Kayıt Ol</h2>
+<input id="regName" placeholder="Ad Soyad"><br>
+<input id="regEmail" placeholder="Email"><br>
+<input id="regPass" type="password" placeholder="Şifre"><br>
+<button onclick="register()">Kayıt Ol</button>
+<p id="regMsg"></p>
+</section>
 
-  <section id="kayit" class="hero">
-    <h2>Kayıt Ol</h2>
-    <form onsubmit="alert('Kayıt sistemi çok yakında aktif olacak.');return false;" style="max-width:400px;margin:0 auto;text-align:left;">
-      <label>Ad Soyad</label><br><input type="text" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
-      <label>Email</label><br><input type="email" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
-      <label>Şifre</label><br><input type="password" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
-      <button type="submit" style="padding:12px 24px;background:#0ea5e9;color:#fff;border:none;border-radius:10px;font-weight:700;">Kayıt Ol</button>
-    </form>
-  </section>
+<section id="login">
+<h2>Giriş Yap</h2>
+<input id="logEmail" placeholder="Email"><br>
+<input id="logPass" type="password" placeholder="Şifre"><br>
+<button onclick="login()">Giriş Yap</button>
+<p id="logMsg"></p>
+</section>
 
-  <section id="giris" class="hero">
-    <h2>Giriş Yap</h2>
-    <form onsubmit="alert('Giriş sistemi çok yakında aktif olacak.');return false;" style="max-width:400px;margin:0 auto;text-align:left;">
-      <label>Email</label><br><input type="email" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
-      <label>Şifre</label><br><input type="password" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
-      <button type="submit" style="padding:12px 24px;background:#0ea5e9;color:#fff;border:none;border-radius:10px;font-weight:700;">Giriş Yap</button>
-    </form>
-  </section>
+<section id="notlar">
+<h2>Notlarım</h2>
+<textarea id="newNote" placeholder="Yeni not yaz..."></textarea><br>
+<button onclick="addNote()">Not Ekle</button>
+<div id="entries"></div>
+</section>
 
-  <footer>
-    © <span id="year"></span> OnlineGünlüğüm – Tüm hakları saklıdır.
-  </footer>
+<script>
+let currentUser = null;
 
-  <script>document.getElementById('year').textContent=new Date().getFullYear()</script>
+function saveUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
+function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
+
+function saveEntries(entries){ localStorage.setItem("entries", JSON.stringify(entries)); }
+function getEntries(){ return JSON.parse(localStorage.getItem("entries")||"[]"); }
+
+function register(){
+  const name = document.getElementById("regName").value;
+  const email = document.getElementById("regEmail").value;
+  const password = document.getElementById("regPass").value;
+  let users = getUsers();
+  if(users.find(u=>u.email===email)){document.getElementById("regMsg").textContent="Bu email zaten kayıtlı"; return;}
+  users.push({name,email,password});
+  saveUsers(users);
+  document.getElementById("regMsg").textContent="Kayıt başarılı! Giriş yapabilirsiniz.";
+  document.getElementById("regName").value="";
+  document.getElementById("regEmail").value="";
+  document.getElementById("regPass").value="";
+}
+
+function login(){
+  const email = document.getElementById("logEmail").value;
+  const password = document.getElementById("logPass").value;
+  let users = getUsers();
+  const user = users.find(u=>u.email===email && u.password===password);
+  if(user){
+    currentUser = user.email;
+    document.getElementById("logMsg").textContent="Giriş başarılı!";
+    showNotes();
+  }else{
+    document.getElementById("logMsg").textContent="Email veya şifre hatalı";
+  }
+}
+
+function showNotes(){
+  document.getElementById("register").style.display="none";
+  document.getElementById("login").style.display="none";
+  document.getElementById("notlar").style.display="block";
+  document.getElementById("navNotlar").style.display="inline";
+  document.getElementById("logoutBtn").style.display="inline";
+  loadNotes();
+}
+
+function logout(){
+  currentUser=null;
+  document.getElementById("register").style.display="block";
+  document.getElementById("login").style.display="block";
+  document.getElementById("notlar").style.display="none";
+  document.getElementById("navNotlar").style.display="none";
+  document.getElementById("logoutBtn").style.display="none";
+}
+
+document.getElementById("logoutBtn").onclick=logout;
+
+function addNote(){
+  if(!currentUser){alert("Önce giriş yap!"); return;}
+  const content = document.getElementById("newNote").value;
+  let entries = getEntries();
+  entries.push({user: currentUser, content, createdAt:new Date().toISOString()});
+  saveEntries(entries);
+  document.getElementById("newNote").value="";
+  loadNotes();
+}
+
+function loadNotes(){
+  if(!currentUser) return;
+  const entries = getEntries().filter(e=>e.user===currentUser);
+  const container = document.getElementById("entries");
+  container.innerHTML="";
+  entries.reverse().forEach(e=>{
+    const div = document.createElement("div");
+    div.className="entry";
+    div.textContent = e.content + " (" + new Date(e.createdAt).toLocaleString() + ")";
+    container.appendChild(div);
+  });
+}
+</script>
+
 </body>
 </html>
