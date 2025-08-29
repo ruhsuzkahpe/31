@@ -1,166 +1,77 @@
 <!doctype html>
-
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OnlineGünlüğüm – Kişisel Anıların İçin Güvenli Alan</title>
-  <meta name="description" content="OnlineGünlüğüm ile herkes kendi özel günlüğünü tutabilir. Üye ol, yaz, düzenle ve anılarını güvenle sakla." />
-  <meta property="og:title" content="OnlineGünlüğüm" />
-  <meta property="og:description" content="Kişisel günlük tutmanın en kolay yolu." />
-  <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#0ea5e9" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='48' fill='%230ea5e9'/%3E%3Cpath d='M72 64h88a24 24 0 0 1 24 24v96l-32-16-32 16-32-16-32 16V88a24 24 0 0 1 24-24Z' fill='white'/%3E%3Cpath d='M88 96h88M88 120h72M88 144h56' stroke='%230ea5e9' stroke-width='12' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <title>OnlineGünlüğüm</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='48' fill='%230ea5e9'/%3E%3Cpath d='M72 64h88a24 24 0 0 1 24 24v96l-32-16-32 16-32-16-32 16V88a24 24 0 0 1 24-24Z' fill='white'/%3E%3C/svg%3E"/>
   <style>
-    :root { --bg:#0b1220; --card:#0f172a; --text:#e6edf6; --muted:#94a3b8; --brand:#0ea5e9; --accent:#22c55e; }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: var(--text); background: radial-gradient(1200px 600px at 70% -20%, rgba(14,165,233,.18), transparent), var(--bg); }
-    a { color: inherit; text-decoration: none; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0 12px; position: sticky; top: 0; backdrop-filter: blur(8px); background: color-mix(in srgb, var(--bg) 86%, transparent); border-bottom: 1px solid rgba(255,255,255,.06); z-index: 10; }
-    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px; }
-    .logo-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, var(--brand), #38bdf8); box-shadow: 0 6px 30px rgba(14,165,233,.35); }
-    nav { display: flex; gap: 14px; font-size: 14px; color: var(--muted); }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: #0b1424; color: var(--text); transition: transform .08s ease, box-shadow .2s ease; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(14,165,233,.25); }
-    .btn.primary { background: linear-gradient(135deg, var(--brand), #38bdf8); border-color: transparent; color: #001019; font-weight: 700; }
-    .hero { padding: 72px 0 36px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: center; }
-    .badge { display: inline-flex; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 999px; background: rgba(34,197,94,.12); color: #bbf7d0; border: 1px solid rgba(34,197,94,.25); font-size: 12px; }
-    h1 { font-size: clamp(28px, 6vw, 56px); line-height: 1.05; margin: 14px 0; }
-    .lead { font-size: clamp(15px, 2.8vw, 18px); color: var(--muted); max-width: 52ch; }
-    .cta-row { display: flex; gap: 12px; margin: 24px 0 8px; flex-wrap: wrap; }
-    .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 24px; }
-    .stat { background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 16px; text-align: center; }
-    .stat h3 { margin: 0; font-size: 22px; }
-    .stat p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-    .card { background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid rgba(255,255,255,.06); border-radius: 20px; padding: 22px; }
-    .grid { display: grid; gap: 18px; }
-    .grid.features { grid-template-columns: repeat(3, minmax(0,1fr)); margin-top: 18px; }
-    .grid.timeline { grid-template-columns: 1fr; }
-    .feature h3 { margin: 0 0 8px; font-size: 18px; }
-    .muted { color: var(--muted); }
-    .footer { margin: 48px 0 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .preview { aspect-ratio: 4/3; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: radial-gradient(800px 280px at 80% 20%, rgba(34,197,94,.16), transparent), radial-gradient(1000px 300px at 20% 80%, rgba(14,165,233,.2), transparent), linear-gradient(180deg, #0f1628, #0b1220); position: relative; overflow: hidden; }
-    .preview .sheet { position: absolute; inset: 14%; border-radius: 14px; background: white; color: #0f172a; box-shadow: 0 40px 120px rgba(0,0,0,.35); padding: 18px; }
-    .preview h4 { margin: 0 0 8px; font-size: 16px; }
-    .preview p { margin: 0; font-size: 14px; color: #475569; }
-    .ribbon { position: absolute; top: 16px; right: -40px; rotate: 18deg; background: #22c55e; color: #052e10; font-weight: 800; padding: 6px 48px; border-radius: 8px; box-shadow: 0 10px 24px rgba(34,197,94,.3); }
-    .steps { counter-reset: step; }
-    .steps li { list-style: none; margin: 12px 0; padding-left: 42px; position: relative; }
-    .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: linear-gradient(135deg, var(--brand), #38bdf8); color: #001019; font-weight: 800; }
-    .tag { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid rgba(255,255,255,.1); border-radius:999px; }
-    .sep { height:1px; background: rgba(255,255,255,.06); margin: 28px 0; }
-    @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } nav { display:none; } }
+    body{margin:0;font-family:sans-serif;background:#0f172a;color:#f1f5f9;}
+    header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#0ea5e9;color:#fff;position:sticky;top:0;}
+    header h1{margin:0;font-size:20px;}
+    nav a{margin-left:20px;color:#fff;text-decoration:none;font-weight:600;}
+    .hero{padding:80px 24px;text-align:center;}
+    .hero h2{font-size:36px;margin-bottom:12px;}
+    .hero p{color:#94a3b8;max-width:600px;margin:0 auto;}
+    .cta{margin-top:28px;}
+    .cta a{display:inline-block;margin:6px;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;}
+    .cta a.primary{background:#0ea5e9;color:#fff;}
+    .cta a.secondary{border:2px solid #0ea5e9;color:#0ea5e9;}
+    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;padding:48px 24px;}
+    .card{background:#1e293b;padding:20px;border-radius:14px;}
+    .card h3{margin-top:0;}
+    footer{padding:20px;text-align:center;font-size:14px;color:#94a3b8;border-top:1px solid #1e293b;}
   </style>
 </head>
 <body>
-  <header class="container">
-    <div class="logo">
-      <span class="logo-badge" aria-hidden>📘</span>
-      <a href="/" aria-label="OnlineGünlüğüm anasayfa">
-        OnlineGünlüğüm
-      </a>
-    </div>
+  <header>
+    <h1>OnlineGünlüğüm</h1>
     <nav>
       <a href="#ozellikler">Özellikler</a>
-      <a href="#nasil">Kurulum</a>
-      <a href="#sss">SSS</a>
+      <a href="#kayit">Kayıt Ol</a>
+      <a href="#giris">Giriş</a>
     </nav>
-    <div>
-      <a class="btn" href="#" onclick="alert('Giriş sistemi yakında!');return false;">Giriş</a>
-      <a class="btn primary" href="#" onclick="alert('Kayıt sistemi yakında!');return false;">Kayıt Ol</a>
-    </div>
-  </header>  <main class="container">
-    <section class="hero">
-      <div>
-        <span class="badge">🚀 Beta – İlk sürüm yayında</span>
-        <h1>Günlüğünü güvenle yaz, <br/>anıların hep yanında kalsın.</h1>
-        <p class="lead">Herkesin ücretsiz üye olup kendi özel günlüğünü tutabileceği modern bir platform. Basit arayüz, güçlü gizlilik, her cihazdan erişim.</p>
-        <div class="cta-row">
-          <a class="btn primary" href="#" onclick="alert('Kayıt yakında. Backend hazır olunca bu buton çalışacak.');return false;">Hemen Başla</a>
-          <a class="btn" href="#ozellikler">Özellikleri Gör</a>
-        </div>
-        <div class="stats">
-          <div class="stat"><h3>⚡ Hızlı</h3><p>Hafif ve hızlı arayüz</p></div>
-          <div class="stat"><h3>🔐 Güvenli</h3><p>Gizli günlük mantığı</p></div>
-          <div class="stat"><h3>📱 Uyumlu</h3><p>Mobil & masaüstü</p></div>
-        </div>
-      </div>
-      <div class="preview">
-        <div class="ribbon">GİZLİ MOD</div>
-        <div class="sheet" role="img" aria-label="Günlük sayfası önizleme">
-          <h4>Bugün neler oldu?</h4>
-          <p>Sabah kahvemi içerken yeni proje fikrimi not ettim. Öğleden sonra sahilde yürüyüş... 📝</p>
-        </div>
-      </div>
-    </section><section id="ozellikler" class="card">
-  <h2>Öne çıkan özellikler</h2>
-  <div class="grid features">
-    <div class="feature">
-      <h3>Üyelik & Giriş</h3>
-      <p class="muted">E-posta ile kayıt, güvenli giriş ve oturum yönetimi (JWT) planlandı.</p>
-    </div>
-    <div class="feature">
-      <h3>Gizli Günlük</h3>
-      <p class="muted">Yazıların varsayılan olarak sadece sana görünür. İstersen belirli yazıları paylaş.</p>
-    </div>
-    <div class="feature">
-      <h3>Zengin Editör</h3>
-      <p class="muted">Markdown/WYSIWYG desteği ile başlık, liste, görsel ve etiketler.</p>
-    </div>
-    <div class="feature">
-      <h3>Arşiv & Arama</h3>
-      <p class="muted">Tarihe göre sıralama, etiketlere göre filtreleme, hızlı arama.</p>
-    </div>
-    <div class="feature">
-      <h3>Çoklu Cihaz</h3>
-      <p class="muted">Telefon, tablet, masaüstü—sen neredeysen günlük de orada.</p>
-    </div>
-    <div class="feature">
-      <h3>Yedekleme</h3>
-      <p class="muted">JSON/Markdown dışa aktarma ile anılarını yedekle.</p>
-    </div>
-  </div>
-</section>
+  </header>
 
-<div class="sep"></div>
+  <section class="hero">
+    <h2>Günlüğünü güvenle yaz, hep yanında kalsın.</h2>
+    <p>Ücretsiz üye ol, kendi gizli günlüğünü oluştur. Basit arayüz, güçlü gizlilik, her cihazdan erişim.</p>
+    <div class="cta">
+      <a href="#kayit" class="primary">Hemen Başla</a>
+      <a href="#ozellikler" class="secondary">Özellikler</a>
+    </div>
+  </section>
 
-<section id="nasil" class="card">
-  <h2>Kurulum – 3 Adımda Yayına Al</h2>
-  <ol class="steps">
-    <li><strong>Alan adını bağla:</strong> onlinegunlugum.com gibi bir domain al ve barındırma hesabına yönlendir.</li>
-    <li><strong>Bu dosyayı yükle:</strong> Dosya adını <code>index.html</code> yapıp kök dizine koy.</li>
-    <li><strong>SSL & yönlendirme:</strong> HTTPS’i aç ve www → kök yönlendirmesi ekle.</li>
-  </ol>
-  <p class="muted tag">İpucu: Statik barındırma için Vercel / Netlify çok pratik.</p>
-</section>
+  <section id="ozellikler" class="features">
+    <div class="card"><h3>Üyelik</h3><p>Hızlı ve güvenli kayıt sistemi.</p></div>
+    <div class="card"><h3>Gizli Yazılar</h3><p>Yalnızca senin görebileceğin notlar.</p></div>
+    <div class="card"><h3>Mobil Uyum</h3><p>Telefon ve bilgisayarda kusursuz.</p></div>
+    <div class="card"><h3>Arşiv</h3><p>Tarihe göre listelenmiş yazılarını kolayca bul.</p></div>
+  </section>
 
-<div class="sep"></div>
+  <section id="kayit" class="hero">
+    <h2>Kayıt Ol</h2>
+    <form onsubmit="alert('Kayıt sistemi çok yakında aktif olacak.');return false;" style="max-width:400px;margin:0 auto;text-align:left;">
+      <label>Ad Soyad</label><br><input type="text" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
+      <label>Email</label><br><input type="email" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
+      <label>Şifre</label><br><input type="password" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
+      <button type="submit" style="padding:12px 24px;background:#0ea5e9;color:#fff;border:none;border-radius:10px;font-weight:700;">Kayıt Ol</button>
+    </form>
+  </section>
 
-<section id="sss" class="card">
-  <h2>SSS</h2>
-  <details>
-    <summary>Giriş/Kayıt ne zaman aktif olacak?</summary>
-    <p class="muted">Bu bir ilk yayın sayfası. Backend API hazır olduğunda bu butonlar aktif edilecek.</p>
-  </details>
-  <details>
-    <summary>Verilerim güvende mi?</summary>
-    <p class="muted">Canlı sürümde TLS, güçlü parola kuralları ve şifreli oturum (JWT) ile korunacak.</p>
-  </details>
-  <details>
-    <summary>İçeriğimi dışa aktarabilir miyim?</summary>
-    <p class="muted">Evet, JSON ve Markdown dışa aktarma planlandı.</p>
-  </details>
-</section>
+  <section id="giris" class="hero">
+    <h2>Giriş Yap</h2>
+    <form onsubmit="alert('Giriş sistemi çok yakında aktif olacak.');return false;" style="max-width:400px;margin:0 auto;text-align:left;">
+      <label>Email</label><br><input type="email" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
+      <label>Şifre</label><br><input type="password" required style="width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;"><br>
+      <button type="submit" style="padding:12px 24px;background:#0ea5e9;color:#fff;border:none;border-radius:10px;font-weight:700;">Giriş Yap</button>
+    </form>
+  </section>
 
-<section class="footer container">
-  <span>© <span id="yil"></span> OnlineGünlüğüm</span>
-  <span class="muted">Yapım aşamasında – v0.1</span>
-</section>
+  <footer>
+    © <span id="year"></span> OnlineGünlüğüm – Tüm hakları saklıdır.
+  </footer>
 
-  </main>  <script>
-    // Küçük etkileşimler
-    document.getElementById('yil').textContent = new Date().getFullYear();
-  </script></body>
+  <script>document.getElementById('year').textContent=new Date().getFullYear()</script>
+</body>
 </html>
