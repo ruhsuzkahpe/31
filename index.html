@@ -4,37 +4,37 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Benim Günlüğüm — Kusursuz Sürüm</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   /* ---------- Tema & Temel ---------- */
   :root{
-    --primary:#5C6BC0; --primary-2:#7986CB;
-    --bg:#ECEFF1; --card:#ffffff; --text:#263238;
-    --muted:#607d8b; --danger:#EF5350; --border:#B0BEC5;
-    --shadow: 0 8px 20px rgba(0,0,0,0.08);
+    --primary:#6078C0; --primary-2:#7986CB;
+    --bg:#F0F4F8; --card:#ffffff; --text:#263238;
+    --muted:#607d8b; --danger:#EF5350; --border:#CFD8DC;
+    --shadow: 0 8px 24px rgba(0,0,0,0.06);
     --success:#2e7d32;
   }
   :root.dark{
-    --bg:#0f1724; --card:#0b1220; --text:#cbd5e1;
-    --muted:#94a3b8; --primary:#818cf8; --primary-2:#6366f1;
-    --border:#203040; --shadow: 0 8px 20px rgba(0,0,0,0.5);
+    --bg:#1A202C; --card:#2D3748; --text:#E2E8F0;
+    --muted:#A0AEC0; --primary:#818cf8; --primary-2:#6366f1;
+    --border:#4A5568; --shadow: 0 8px 24px rgba(0,0,0,0.3);
   }
 
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; padding:28px; font-family:'Poppins',sans-serif;
+    margin:0; padding:28px; font-family:'Inter',sans-serif;
     background:var(--bg); color:var(--text); display:flex; justify-content:center;
   }
 
   .wrapper{width:100%; max-width:920px; display:grid; gap:22px}
 
   .card{
-    background:var(--card); border-radius:14px; padding:22px;
+    background:var(--card); border-radius:12px; padding:22px;
     box-shadow:var(--shadow); border:1px solid var(--border);
     transition:transform .16s ease, box-shadow .16s ease;
   }
-  .card:hover{ transform:translateY(-3px) }
+  .card:hover{ transform:translateY(-2px) }
 
   h1,h2{ margin:0 0 14px; color:var(--primary); text-align:center }
   h2.small{ font-size:1rem; color:var(--muted); margin-top:6px }
@@ -58,6 +58,7 @@
   .btn.small{ padding:8px 10px; font-size:.9rem; border-radius:8px }
   .btn.danger{ background:var(--danger) }
   .hint{ color:var(--muted); font-size:.9rem }
+  .hidden{ display:none!important }
 
   /* Journal grid */
   #journals-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; list-style:none; padding:0; margin:0 }
@@ -95,6 +96,11 @@
 
   /* responsive */
   @media(max-width:920px){ .searchbar input{ width:220px } }
+  @media(max-width:600px){
+    body{ padding:16px }
+    .card{ padding:16px }
+    .wrapper{ gap:16px }
+  }
 
   /* print */
   @media print{ .no-print{ display:none!important } }
@@ -102,7 +108,6 @@
 </head>
 <body>
   <div class="wrapper">
-    <!-- Top bar: theme + export/import + print -->
     <div class="card no-print">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap">
         <div style="display:flex; gap:10px; align-items:center">
@@ -120,9 +125,8 @@
       </div>
     </div>
 
-    <!-- Auth -->
     <div id="auth-container" class="card">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+      <div style="display:grid; grid-template-columns:1fr; gap:12px">
         <div id="login-section">
           <h2>Giriş Yap</h2>
           <form id="login-form">
@@ -131,10 +135,10 @@
                 <label for="login-username">Kullanıcı Adı</label>
                 <input id="login-username" type="text" autocomplete="username" required/>
               </div>
-              <div class="pw-wrap">
+              <div class="pw-wrap" style="position:relative">
                 <label for="login-password">Şifre</label>
                 <input id="login-password" type="password" autocomplete="current-password" required/>
-                <span class="pw-toggle" data-target="login-password" style="position:absolute;right:20px;top:62px;cursor:pointer">👁️</span>
+                <span class="pw-toggle" data-target="login-password" style="position:absolute;right:12px;top:62px;cursor:pointer">👁️</span>
               </div>
             </div>
             <div style="display:flex; gap:10px; margin-top:10px">
@@ -154,7 +158,7 @@
             <div class="pw-wrap" style="position:relative">
               <label for="register-password">Şifre</label>
               <input id="register-password" type="password" minlength="6" required placeholder="En az 6 karakter"/>
-              <span class="pw-toggle" data-target="register-password" style="position:absolute;right:20px;top:62px;cursor:pointer">👁️</span>
+              <span class="pw-toggle" data-target="register-password" style="position:absolute;right:12px;top:62px;cursor:pointer">👁️</span>
               <div class="hint">Şifreler tarayıcı tarafında SHA-256 ile hash'lenip saklanır.</div>
             </div>
             <div style="display:flex; gap:10px; margin-top:10px">
@@ -166,12 +170,10 @@
       </div>
     </div>
 
-    <!-- App -->
     <div id="app-container" class="card hidden">
       <h1>Hoş Geldin, <span id="username-display"></span></h1>
       <p class="small hint" style="text-align:center">Güzel — tüm özellikler açık ve düzenli tutuldu 🎯</p>
 
-      <!-- Journal form -->
       <div class="card no-print">
         <form id="journal-form">
           <div class="row">
@@ -219,7 +221,6 @@
         </form>
       </div>
 
-      <!-- Filters & tools -->
       <div class="card no-print">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap">
           <div class="searchbar">
@@ -241,13 +242,11 @@
         </div>
       </div>
 
-      <!-- Calendar -->
       <div id="calendar-card" class="card hidden no-print">
         <h3>Takvim</h3>
         <div id="calendar" class="calendar"></div>
       </div>
 
-      <!-- Stats -->
       <div id="stats-card" class="card hidden no-print">
         <h3>İstatistikler</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
@@ -262,13 +261,11 @@
         </div>
       </div>
 
-      <!-- Journals list -->
       <ul id="journals-list"></ul>
 
     </div>
   </div>
 
-  <!-- Modal root -->
   <div id="modal-root" style="display:none"></div>
 
 <script>
@@ -341,6 +338,8 @@ const authContainer = $('#auth-container');
 const appContainer = $('#app-container');
 const loginForm = $('#login-form');
 const registerForm = $('#register-form');
+const loginSection = $('#login-section');
+const registerSection = $('#register-section');
 const showRegisterBtn = $('#show-register');
 const showLoginBtn = $('#show-login');
 const loginUsername = $('#login-username');
@@ -383,6 +382,9 @@ const toggleReminderBtn = $('#toggle-reminder');
 
 const modalRoot = $('#modal-root');
 
+const toggleCalendarBtn = $('#toggle-calendar');
+const toggleStatsBtn = $('#toggle-stats');
+
 /* ----------------- Theme & PWA setup ----------------- */
 const initTheme = () => {
   const stored = localStorage.getItem('diary_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -397,7 +399,7 @@ themeToggle.addEventListener('click', () => {
 /* create manifest and service worker dynamically for PWA offline shell */
 (function setupPWA(){
   try{
-    const manifest = { name:'Benim Günlüğüm', short_name:'Günlük', start_url:'.', display:'standalone', background_color:'#ffffff', theme_color:'#5C6BC0' };
+    const manifest = { name:'Benim Günlüğüm', short_name:'Günlük', start_url:'.', display:'standalone', background_color:'#ffffff', theme_color:'#6078C0' };
     const manBlob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
     const manURL = URL.createObjectURL(manBlob);
     const link = document.createElement('link'); link.rel='manifest'; link.href = manURL; document.head.appendChild(link);
@@ -461,9 +463,8 @@ registerForm.addEventListener('submit', async e => {
     await registerUser(registerUsername.value.trim(), registerPassword.value);
     alert('Kayıt başarılı. Giriş sayfasına yönlendiriliyorsunuz.');
     registerForm.reset();
-    $('#login-section').scrollIntoView({behavior:'smooth'});
-    $('#login-section').classList.remove('hidden');
-    $('#register-section').classList.add('hidden');
+    loginSection.classList.remove('hidden');
+    registerSection.classList.add('hidden');
     loginUsername.value = registerUsername.value.trim();
   }catch(err){ alert(err); }
 });
@@ -476,8 +477,8 @@ loginForm.addEventListener('submit', async e => {
     renderAuth();
   }catch(err){ alert(err); }
 });
-showRegisterBtn.addEventListener('click', ()=> { $('#login-section').classList.add('hidden'); $('#register-section').classList.remove('hidden'); });
-showLoginBtn.addEventListener('click', ()=> { $('#register-section').classList.add('hidden'); $('#login-section').classList.remove('hidden'); });
+showRegisterBtn.addEventListener('click', ()=> { loginSection.classList.add('hidden'); registerSection.classList.remove('hidden'); });
+showLoginBtn.addEventListener('click', ()=> { registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); });
 logoutBtn.addEventListener('click', ()=> { logout(); });
 
 /* password visibility toggles */
@@ -716,6 +717,15 @@ exportAllBtn.addEventListener('click', async () => {
 });
 
 /* ----------------- Calendar & Stats ----------------- */
+toggleCalendarBtn.addEventListener('click', () => {
+    calendarCard.classList.toggle('hidden');
+    if (!calendarCard.classList.contains('hidden')) renderCalendarView();
+});
+toggleStatsBtn.addEventListener('click', () => {
+    statsCard.classList.toggle('hidden');
+    if (!statsCard.classList.contains('hidden')) renderStats();
+});
+
 function renderCalendarView(){
   calendarEl.innerHTML = '';
   const now = new Date();
@@ -776,10 +786,10 @@ function drawBarChart(canvas, labels, values){
     const x = pad; const y = pad + i*(barH+6);
     const val = values[i];
     const barW = (w - pad*2) * (val/max);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#5C6BC0';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#6078C0';
     ctx.fillRect(x, y, barW, barH);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#263238';
-    ctx.font = '12px Poppins';
+    ctx.font = '12px Inter';
     ctx.fillText(`${lab} (${val})`, x + Math.max(6, barW+6), y + barH - 6);
   });
 }
