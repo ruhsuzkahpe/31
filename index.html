@@ -2,208 +2,201 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>5 Dakika Rahatla — Anonim Destek</title>
+  <title>5 Dakika Rahatla — Anonim Destek (Firebase)</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @keyframes breath {
-      0% { transform: scale(0.85); }
-      50% { transform: scale(1.07); }
-      100% { transform: scale(0.85); }
+    @keyframes breath { 0% { transform: scale(0.85); } 50% { transform: scale(1.07); } 100% { transform: scale(0.85); }
     }
     .animate-breath { animation: breath 6s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-gradient-to-b from-blue-50 to-indigo-50 text-slate-900 min-h-screen p-4">
-  <div id="root"></div>
+<div id="root"></div>
 
-  <script type="text/babel">
+<script type="text/babel">
+  // ----------------- Firebase Setup -----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyAj45jq9Eam5MNYgnwJVpzsmikeuqaqA34",
+    authDomain: "isoo-5264a.firebaseapp.com",
+    projectId: "isoo-5264a",
+    storageBucket: "isoo-5264a.firebasestorage.app",
+    messagingSenderId: "92451505899",
+    appId: "1:92451505899:web:f03fff4ef2dea12ca960ae",
+    measurementId: "G-XRK1RSCK8X"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    const STORAGE_KEY = "relief_posts_v1";
-    const POST_LIFETIME_MS = 24*60*60*1000;
+  // ----------------- React App -----------------
 
-    const BAD_WORDS = ["idiot", "stupid", "salak", "aptal"];
+  const BAD_WORDS = ["idiot","stupid","salak","aptal"];
 
-    function containsBadWord(text){
-      const t=text.toLowerCase();
-      return BAD_WORDS.some(w=>t.includes(w));
-    }
+  function containsBadWord(text){
+    const t=text.toLowerCase();
+    return BAD_WORDS.some(w=>t.includes(w));
+  }
 
-    function uid(){ return Math.random().toString(36).slice(2,9); }
+  function uid(){ return Math.random().toString(36).slice(2,9); }
 
-    function loadPosts(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return [];
-        const now=Date.now();
-        return JSON.parse(raw).filter(p=> now-p.ts < POST_LIFETIME_MS);
-      }catch(e){ return []; }
-    }
-    function savePosts(list){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    }
+  function timeAgo(ts){
+    const diff=Date.now()-ts;
+    const mins=Math.floor(diff/60000);
+    if(mins<1) return "az önce";
+    if(mins<60) return `${mins} dk önce`;
+    const h=Math.floor(mins/60);
+    if(h<24) return `${h} saat önce`;
+    const d=Math.floor(h/24);
+    return `${d} gün önce`;
+  }
 
-    function timeAgo(ts){
-      const diff=Date.now()-ts;
-      const mins=Math.floor(diff/60000);
-      if(mins<1) return "az önce";
-      if(mins<60) return `${mins} dk önce`;
-      const h=Math.floor(mins/60);
-      if(h<24) return `${h} saat önce`;
-      const d=Math.floor(h/24);
-      return `${d} gün önce`;
-    }
+  function BreathCircle({running}){
+    return (
+      <div className="flex flex-col items-center">
+        <div className={`rounded-full border shadow-inner flex items-center justify-center ${running?'animate-breath':''}`} style={{width:150,height:150}}>Nefes</div>
+        <div className="text-xs text-slate-500 mt-2">Daire ile nefes al/ver</div>
+      </div>
+    )
+  }
 
-    function BreathCircle({running}){
-      return (
-        <div className="flex flex-col items-center">
-          <div className={`rounded-full border shadow-inner flex items-center justify-center ${running?'animate-breath':''}`} style={{width:150,height:150}}>
-            Nefes
-          </div>
-          <div className="text-xs text-slate-500 mt-2">Daire ile nefes al/ver</div>
-        </div>
-      )
-    }
+  function App(){
+    const [breathOn,setBreathOn]=React.useState(true);
+    const [affirmation,setAffirmation]=React.useState(randomAff());
+    const [ambient,setAmbient]=React.useState("waves");
+    const [audioOn,setAudioOn]=React.useState(false);
+    const [posts,setPosts]=React.useState([]);
+    const [text,setText]=React.useState("");
+    const [replyText,setReplyText]=React.useState("");
+    const [selected,setSelected]=React.useState(null);
+    const audioRef=React.useRef(null);
 
-    function App(){
-      const [breathOn,setBreathOn]=React.useState(true);
-      const [affirmation,setAffirmation]=React.useState(randomAff());
-      const [ambient,setAmbient]=React.useState("waves");
-      const [audioOn,setAudioOn]=React.useState(false);
-      const audioRef=React.useRef(null);
+    // ----------------- Firestore Listener -----------------
+    React.useEffect(()=>{
+      const unsubscribe = db.collection('posts').orderBy('ts','desc').onSnapshot(snapshot => {
+        const newPosts = snapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
+        setPosts(newPosts);
+      });
+      return ()=>unsubscribe();
+    },[]);
 
-      const [posts,setPosts]=React.useState(loadPosts());
-      const [text,setText]=React.useState("");
-      const [replyText,setReplyText]=React.useState("");
-      const [selected,setSelected]=React.useState(null);
-
-      React.useEffect(()=>{
-        if(audioRef.current){
-          audioRef.current.pause();
-          audioRef.current.currentTime=0;
-          if(audioOn){
-            audioRef.current.loop=true;
-            audioRef.current.play().catch(()=>{});
-          }
-        }
-      },[audioOn,ambient]);
-
-      function addPost(){
-        if(!text.trim()) return;
-        const flagged=containsBadWord(text);
-        const newPost={id:uid(),ts:Date.now(),text:text.trim(),replies:[],flags:flagged?1:0};
-        const newList=[newPost,...posts];
-        savePosts(newList);
-        setPosts(newList);
-        setText("");
+    React.useEffect(()=>{
+      if(audioRef.current && audioOn){
+        audioRef.current.pause();
+        audioRef.current.currentTime=0;
+        audioRef.current.play().catch(()=>{});
       }
-      function addReply(pid){
-        if(!replyText.trim()) return;
-        const newList=posts.map(p=>{
-          if(p.id===pid) p.replies=[...p.replies,{id:uid(),ts:Date.now(),text:replyText.trim()}];
-          return p;
-        });
-        savePosts(newList);
-        setPosts(newList);
-        setReplyText("");
-        setSelected(null);
-      }
+    },[audioOn,ambient]);
 
-      return (
-        <div className="max-w-5xl mx-auto">
-          <header className="py-6">
-            <h1 className="text-2xl font-bold">5 Dakika Rahatla — Anonim Destek</h1>
-          </header>
+    function addPost(){
+      if(!text.trim()) return;
+      const flagged=containsBadWord(text);
+      db.collection('posts').add({text:text.trim(),ts:Date.now(),replies:[],flags:flagged?1:0});
+      setText("");
+    }
 
-          <main className="grid md:grid-cols-3 gap-4">
-            <section className="bg-white/80 rounded-2xl p-4 shadow">
-              <h2 className="font-semibold mb-2">Hızlı Rahatlama</h2>
-              <BreathCircle running={breathOn}/>
-              <button onClick={()=>setBreathOn(!breathOn)} className="mt-2 px-3 py-1 rounded bg-indigo-600 text-white text-sm">
-                {breathOn?"Durdur":"Başlat"}
-              </button>
+    function addReply(postId){
+      if(!replyText.trim()) return;
+      const postRef = db.collection('posts').doc(postId);
+      postRef.update({replies:firebase.firestore.FieldValue.arrayUnion({id:uid(),text:replyText,ts:Date.now()})});
+      setReplyText("");
+      setSelected(null);
+    }
 
-              <div className="mt-4 p-3 border rounded">
-                <div className="flex justify-between">
-                  <span className="font-medium">Doğa Sesi</span>
-                  <div>
-                    <select value={ambient} onChange={e=>setAmbient(e.target.value)} className="text-sm border rounded px-2">
-                      <option value="waves">Deniz</option>
-                      <option value="rain">Yağmur</option>
-                      <option value="forest">Orman</option>
-                    </select>
-                    <button onClick={()=>setAudioOn(!audioOn)} className="ml-2 px-2 py-1 border rounded text-sm">{audioOn?"Durdur":"Başlat"}</button>
-                  </div>
+    return (
+      <div className="max-w-5xl mx-auto">
+        <header className="py-6">
+          <h1 className="text-2xl font-bold">5 Dakika Rahatla — Anonim Destek</h1>
+        </header>
+        <main className="grid md:grid-cols-3 gap-4">
+          <section className="bg-white/80 rounded-2xl p-4 shadow">
+            <h2 className="font-semibold mb-2">Hızlı Rahatlama</h2>
+            <BreathCircle running={breathOn}/>
+            <button onClick={()=>setBreathOn(!breathOn)} className="mt-2 px-3 py-1 rounded bg-indigo-600 text-white text-sm">
+              {breathOn?"Durdur":"Başlat"}
+            </button>
+
+            <div className="mt-4 p-3 border rounded">
+              <div className="flex justify-between">
+                <span className="font-medium">Doğa Sesi</span>
+                <div>
+                  <select value={ambient} onChange={e=>setAmbient(e.target.value)} className="text-sm border rounded px-2">
+                    <option value="waves">Deniz</option>
+                    <option value="rain">Yağmur</option>
+                    <option value="forest">Orman</option>
+                  </select>
+                  <button onClick={()=>setAudioOn(!audioOn)} className="ml-2 px-2 py-1 border rounded text-sm">{audioOn?"Durdur":"Başlat"}</button>
                 </div>
-                <audio ref={audioRef} src={chooseAmbient(ambient)} hidden></audio>
               </div>
+              <audio ref={audioRef} src={chooseAmbient(ambient)} />
+            </div>
 
-              <div className="mt-4 p-3 border rounded">
-                <div className="flex justify-between">
-                  <span className="font-medium">Olumlama</span>
-                  <button onClick={()=>setAffirmation(randomAff())} className="px-2 py-1 border rounded text-sm">Yeni</button>
+            <div className="mt-4 p-3 border rounded">
+              <div className="flex justify-between">
+                <span className="font-medium">Olumlama</span>
+                <button onClick={()=>setAffirmation(randomAff())} className="px-2 py-1 border rounded text-sm">Yeni</button>
+              </div>
+              <div className="mt-2 text-lg font-semibold">“{affirmation}”</div>
+            </div>
+          </section>
+
+          <section className="md:col-span-2 bg-white/80 rounded-2xl p-4 shadow">
+            <h2 className="font-semibold">Anonim Paylaşım</h2>
+            <textarea rows="3" value={text} onChange={e=>setText(e.target.value)} placeholder="Anonim paylaşımını yaz..." className="w-full border rounded p-2 mt-2"></textarea>
+            <button onClick={addPost} className="mt-2 px-3 py-1 rounded bg-emerald-600 text-white">Gönder</button>
+
+            <div className="mt-4 space-y-3">
+              {posts.length===0 && <div className="text-slate-500">Henüz paylaşım yok.</div>}
+              {posts.map(p=>(
+                <div key={p.id} className="p-3 border rounded bg-white">
+                  <div className="text-sm">{p.text}</div>
+                  <div className="text-xs text-slate-400">{timeAgo(p.ts)}</div>
+                  <button onClick={()=>setSelected(p.id)} className="text-xs border rounded px-2 py-1 mt-2">Yanıtla</button>
+                  {selected===p.id && (
+                    <div className="mt-2">
+                      <textarea rows="2" value={replyText} onChange={e=>setReplyText(e.target.value)} className="w-full border rounded p-1"></textarea>
+                      <button onClick={()=>addReply(p.id)} className="mt-1 px-2 py-1 bg-indigo-600 text-white rounded text-sm">Gönder</button>
+                    </div>
+                  )}
+                  {p.replies && p.replies.length>0 && (
+                    <div className="mt-2 space-y-1">
+                      {p.replies.map(r=>(
+                        <div key={r.id} className="p-2 bg-slate-50 border rounded text-sm">{r.text} <span className="text-xs text-slate-400 ml-2">{timeAgo(r.ts)}</span></div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="mt-2 text-lg font-semibold">“{affirmation}”</div>
-              </div>
-            </section>
+              ))}
+            </div>
+          </section>
+        </main>
+      </div>
+    )
+  }
 
-            <section className="md:col-span-2 bg-white/80 rounded-2xl p-4 shadow">
-              <h2 className="font-semibold">Anonim Paylaşım</h2>
-              <textarea rows="3" value={text} onChange={e=>setText(e.target.value)} placeholder="Anonim paylaşımını yaz..." className="w-full border rounded p-2 mt-2"></textarea>
-              <button onClick={addPost} className="mt-2 px-3 py-1 rounded bg-emerald-600 text-white">Gönder</button>
+  function chooseAmbient(name){
+    const map={
+      waves:"https://cdn.pixabay.com/download/audio/2023/03/15/audio_08a5f2a3f2.mp3?filename=ocean-waves-ambient-11217.mp3",
+      rain:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_5f6cf3c7f0.mp3?filename=rain-01-111849.mp3",
+      forest:"https://cdn.pixabay.com/download/audio/2021/10/13/audio_fd5d9b4b5e.mp3?filename=forest-birds-2-110316.mp3"
+    };
+    return map[name]||map.waves;
+  }
 
-              <div className="mt-4 space-y-3">
-                {posts.length===0 && <div className="text-slate-500">Henüz paylaşım yok.</div>}
-                {posts.map(p=>(
-                  <div key={p.id} className="p-3 border rounded bg-white">
-                    <div className="text-sm">{p.text}</div>
-                    <div className="text-xs text-slate-400">{timeAgo(p.ts)}</div>
-                    <button onClick={()=>setSelected(p.id)} className="text-xs border rounded px-2 py-1 mt-2">Yanıtla</button>
-                    {selected===p.id && (
-                      <div className="mt-2">
-                        <textarea rows="2" value={replyText} onChange={e=>setReplyText(e.target.value)} className="w-full border rounded p-1"></textarea>
-                        <button onClick={()=>addReply(p.id)} className="mt-1 px-2 py-1 bg-indigo-600 text-white rounded text-sm">Gönder</button>
-                      </div>
-                    )}
-                    {p.replies && p.replies.length>0 && (
-                      <div className="mt-2 space-y-1">
-                        {p.replies.map(r=>(
-                          <div key={r.id} className="p-2 bg-slate-50 border rounded text-sm">{r.text} <span className="text-xs text-slate-400 ml-2">{timeAgo(r.ts)}</span></div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          </main>
-        </div>
-      )
-    }
+  function randomAff(){
+    const list=[
+      "Bugün yapabildiğim kadar iyiyim.",
+      "Bu duygu gelip geçecek.",
+      "Küçük bir adım bile ilerlemektir.",
+      "Nefes al, bir anlığına rahatla."
+    ];
+    return list[Math.floor(Math.random()*list.length)];
+  }
 
-    function chooseAmbient(name){
-      const map={
-        waves:"https://cdn.pixabay.com/download/audio/2023/03/15/audio_08a5f2a3f2.mp3?filename=ocean-waves-ambient-11217.mp3",
-        rain:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_5f6cf3c7f0.mp3?filename=rain-01-111849.mp3",
-        forest:"https://cdn.pixabay.com/download/audio/2021/10/13/audio_fd5d9b4b5e.mp3?filename=forest-birds-2-110316.mp3"
-      };
-      return map[name]||map.waves;
-    }
-
-    function randomAff(){
-      const list=[
-        "Bugün yapabildiğim kadar iyiyim.",
-        "Bu duygu gelip geçecek.",
-        "Küçük bir adım bile ilerlemektir.",
-        "Nefes al, bir anlığına rahatla."
-      ];
-      return list[Math.floor(Math.random()*list.length)];
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-
-  </script>
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
 </body>
 </html>
