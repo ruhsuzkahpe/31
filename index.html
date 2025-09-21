@@ -1,147 +1,107 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OnlineGünlüğüm - Çalışan</title>
-<style>
-body{margin:0;font-family:sans-serif;background:#0f172a;color:#f1f5f9;}
-header{display:flex;justify-content:space-between;padding:16px;background:#0ea5e9;}
-header h1{margin:0;}
-nav a{margin-left:20px;color:#fff;text-decoration:none;cursor:pointer;}
-section{padding:40px 24px;text-align:center;}
-input,textarea,button{padding:10px;margin:6px 0;border-radius:6px;border:none;width:100%;max-width:400px;}
-button{background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer;}
-.entry{background:#1e293b;padding:14px;margin:10px 0;border-radius:10px;text-align:left;}
-#notlar{display:none;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonim Mektuplar</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #5C6BC0;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #4C599A;
+        }
+
+        #mektuplarAlani {
+            margin-top: 20px;
+            text-align: left;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .mektup {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 3px solid #5C6BC0;
+        }
+    </style>
 </head>
 <body>
 
-<header>
-<h1>OnlineGünlüğüm</h1>
-<nav>
-<a onclick="showSection('register')">Kayıt</a>
-<a onclick="showSection('login')">Giriş</a>
-<a onclick="showSection('notlar')" id="navNotlar" style="display:none;">Notlarım</a>
-<a onclick="logout()" id="logoutBtn" style="display:none;">Çıkış</a>
-</nav>
-</header>
+    <div class="container">
+        <h1>Bırak Mektubunu</h1>
+        <textarea id="mektupMetni" placeholder="İçinden geçenleri, seni rahatlatan şeyleri veya sadece gününün nasıl geçtiğini yaz..."></textarea>
+        <button id="gonderButon">Mektubu Gönder</button>
 
-<section id="register">
-<h2>Kayıt Ol</h2>
-<input id="regName" placeholder="Ad Soyad"><br>
-<input id="regEmail" placeholder="Email"><br>
-<input id="regPass" type="password" placeholder="Şifre"><br>
-<button onclick="register()">Kayıt Ol</button>
-<p id="regMsg"></p>
-</section>
+        <div id="mektuplarAlani">
+            <h2>Gelen Mektuplar</h2>
+            <div class="mektup">Bu bir deneme mektubudur. Gerçek bir uygulama olsa burada diğer insanların mektupları görünürdü.</div>
+        </div>
+    </div>
 
-<section id="login">
-<h2>Giriş Yap</h2>
-<input id="logEmail" placeholder="Email"><br>
-<input id="logPass" type="password" placeholder="Şifre"><br>
-<button onclick="login()">Giriş Yap</button>
-<p id="logMsg"></p>
-</section>
+    <script>
+        document.getElementById('gonderButon').addEventListener('click', function() {
+            let mektupMetni = document.getElementById('mektupMetni').value;
+            
+            if (mektupMetni.trim() !== '') {
+                let mektuplarAlani = document.getElementById('mektuplarAlani');
+                let yeniMektupDiv = document.createElement('div');
+                yeniMektupDiv.className = 'mektup';
+                yeniMektupDiv.textContent = mektupMetni;
+                mektuplarAlani.appendChild(yeniMektupDiv);
 
-<section id="notlar">
-<h2>Notlarım</h2>
-<textarea id="newNote" placeholder="Yeni not yaz..."></textarea><br>
-<button onclick="addNote()">Not Ekle</button>
-<div id="entries"></div>
-</section>
-
-<script>
-let currentUser = null;
-
-function showSection(id){
-  document.getElementById("register").style.display="none";
-  document.getElementById("login").style.display="none";
-  document.getElementById("notlar").style.display="none";
-  if(id==="notlar" && !currentUser) return;
-  document.getElementById(id).style.display="block";
-}
-
-async function hashPassword(password){
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-function saveUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
-function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
-
-function saveEntries(entries){ localStorage.setItem("entries", JSON.stringify(entries)); }
-function getEntries(){ return JSON.parse(localStorage.getItem("entries")||"[]"); }
-
-async function register(){
-  const name = document.getElementById("regName").value.trim();
-  const email = document.getElementById("regEmail").value.trim();
-  const password = document.getElementById("regPass").value;
-  if(!name || !email || !password){document.getElementById("regMsg").textContent="Tüm alanları doldurun"; return;}
-  let users = getUsers();
-  if(users.find(u=>u.email===email)){document.getElementById("regMsg").textContent="Bu email zaten kayıtlı"; return;}
-  const hashed = await hashPassword(password);
-  users.push({name,email,password:hashed});
-  saveUsers(users);
-  document.getElementById("regMsg").textContent="Kayıt başarılı! Giriş yapabilirsiniz.";
-  document.getElementById("regName").value="";
-  document.getElementById("regEmail").value="";
-  document.getElementById("regPass").value="";
-}
-
-async function login(){
-  const email = document.getElementById("logEmail").value.trim();
-  const password = document.getElementById("logPass").value;
-  if(!email || !password){document.getElementById("logMsg").textContent="Tüm alanları doldurun"; return;}
-  const hashed = await hashPassword(password);
-  let users = getUsers();
-  const user = users.find(u=>u.email===email && u.password===hashed);
-  if(user){
-    currentUser = user.email;
-    document.getElementById("logMsg").textContent="Giriş başarılı!";
-    document.getElementById("navNotlar").style.display="inline";
-    document.getElementById("logoutBtn").style.display="inline";
-    showSection("notlar");
-    loadNotes();
-  }else{
-    document.getElementById("logMsg").textContent="Email veya şifre hatalı";
-  }
-}
-
-function logout(){
-  currentUser=null;
-  document.getElementById("navNotlar").style.display="none";
-  document.getElementById("logoutBtn").style.display="none";
-  showSection("login");
-}
-
-function addNote(){
-  if(!currentUser){alert("Önce giriş yap!"); return;}
-  const content = document.getElementById("newNote").value.trim();
-  if(!content) return;
-  let entries = getEntries();
-  entries.push({user: currentUser, content, createdAt:new Date().toISOString()});
-  saveEntries(entries);
-  document.getElementById("newNote").value="";
-  loadNotes();
-}
-
-function loadNotes(){
-  if(!currentUser) return;
-  const entries = getEntries().filter(e=>e.user===currentUser);
-  const container = document.getElementById("entries");
-  container.innerHTML="";
-  entries.reverse().forEach(e=>{
-    const div = document.createElement("div");
-    div.className="entry";
-    div.textContent = e.content + " (" + new Date(e.createdAt).toLocaleString() + ")";
-    container.appendChild(div);
-  });
-}
-
-</script>
+                document.getElementById('mektupMetni').value = ''; // Metin kutusunu temizle
+            } else {
+                alert('Lütfen bir şeyler yazın!');
+            }
+        });
+    </script>
 </body>
 </html>
