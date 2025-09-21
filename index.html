@@ -1,369 +1,209 @@
-*/
-
-import React, { useEffect, useRef, useState } from 'react';
-
-// Simple bad-words list (expandable)
-const BAD_WORDS = ['s*ck', 'idiot', 'stupid', 'damn']; // sample placeholders — expand with real words if desired
-
-// Helper: sanitize and check
-function containsBadWord(text) {
-  const t = text.toLowerCase();
-  return BAD_WORDS.some(w => {
-    const clean = w.replace(/\*/g, '.*');
-    try {
-      const re = new RegExp(`\\b${clean}\\b`);
-      return re.test(t);
-    } catch (e) {
-      return t.includes(w.replace(/\*/g, ''));
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>5 Dakika Rahatla — Anonim Destek</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes breath {
+      0% { transform: scale(0.85); }
+      50% { transform: scale(1.07); }
+      100% { transform: scale(0.85); }
     }
-  });
-}
+    .animate-breath { animation: breath 6s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-indigo-50 text-slate-900 min-h-screen p-4">
+  <div id="root"></div>
 
-function uid() {
-  return Math.random().toString(36).slice(2, 9);
-}
+  <script type="text/babel">
 
-const STORAGE_KEY = 'relief_posts_v1';
-const POST_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const STORAGE_KEY = "relief_posts_v1";
+    const POST_LIFETIME_MS = 24*60*60*1000;
 
-export default function App() {
-  // Relaxation controls
-  const [breathOn, setBreathOn] = useState(true);
-  const [audioOn, setAudioOn] = useState(false);
-  const [affirmation, setAffirmation] = useState(randomAff());
-  const [ambient, setAmbient] = useState('waves');
-  const audioRef = useRef(null);
+    const BAD_WORDS = ["idiot", "stupid", "salak", "aptal"];
 
-  // Board
-  const [posts, setPosts] = useState(loadPosts());
-  const [text, setText] = useState('');
-  const [replyText, setReplyText] = useState('');
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [filterHidden, setFilterHidden] = useState(true);
-
-  // On mount, cleanup expired posts
-  useEffect(() => {
-    cleanupExpired();
-    window.addEventListener('storage', handleStorageEvent);
-    return () => window.removeEventListener('storage', handleStorageEvent);
-  }, []);
-
-  useEffect(() => {
-    // play/stop ambient audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      if (audioOn) {
-        audioRef.current.loop = true;
-        audioRef.current.play().catch(() => {});
-      }
+    function containsBadWord(text){
+      const t=text.toLowerCase();
+      return BAD_WORDS.some(w=>t.includes(w));
     }
-  }, [audioOn, ambient]);
 
-  function handleStorageEvent(e) {
-    if (e.key === STORAGE_KEY) {
-      setPosts(loadPosts());
+    function uid(){ return Math.random().toString(36).slice(2,9); }
+
+    function loadPosts(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return [];
+        const now=Date.now();
+        return JSON.parse(raw).filter(p=> now-p.ts < POST_LIFETIME_MS);
+      }catch(e){ return []; }
     }
-  }
+    function savePosts(list){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
 
-  function cleanupExpired() {
-    const now = Date.now();
-    const cur = loadPosts();
-    const filtered = cur.filter(p => now - p.ts < POST_LIFETIME_MS && !p.hidden);
-    if (filtered.length !== cur.length) savePosts(filtered);
-    setPosts(filtered);
-  }
+    function timeAgo(ts){
+      const diff=Date.now()-ts;
+      const mins=Math.floor(diff/60000);
+      if(mins<1) return "az önce";
+      if(mins<60) return `${mins} dk önce`;
+      const h=Math.floor(mins/60);
+      if(h<24) return `${h} saat önce`;
+      const d=Math.floor(h/24);
+      return `${d} gün önce`;
+    }
 
-  function savePosts(list) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    setPosts(list);
-  }
+    function BreathCircle({running}){
+      return (
+        <div className="flex flex-col items-center">
+          <div className={`rounded-full border shadow-inner flex items-center justify-center ${running?'animate-breath':''}`} style={{width:150,height:150}}>
+            Nefes
+          </div>
+          <div className="text-xs text-slate-500 mt-2">Daire ile nefes al/ver</div>
+        </div>
+      )
+    }
 
-  function addPost(message) {
-    if (!message.trim()) return;
-    if (message.length > 1000) return alert('Mesaj çok uzun (en fazla 1000 karakter).');
-    const flagged = containsBadWord(message);
-    const post = {
-      id: uid(),
-      ts: Date.now(),
-      text: message.trim(),
-      replies: [],
-      flags: flagged ? 1 : 0,
-      hidden: flagged && filterHidden,
-    };
-    const newList = [post, ...posts];
-    savePosts(newList);
-    setText('');
-  }
+    function App(){
+      const [breathOn,setBreathOn]=React.useState(true);
+      const [affirmation,setAffirmation]=React.useState(randomAff());
+      const [ambient,setAmbient]=React.useState("waves");
+      const [audioOn,setAudioOn]=React.useState(false);
+      const audioRef=React.useRef(null);
 
-  function addReply(postId, reply) {
-    if (!reply.trim()) return;
-    const newList = posts.map(p => {
-      if (p.id === postId) {
-        p.replies = [...p.replies, { id: uid(), ts: Date.now(), text: reply.trim() }];
+      const [posts,setPosts]=React.useState(loadPosts());
+      const [text,setText]=React.useState("");
+      const [replyText,setReplyText]=React.useState("");
+      const [selected,setSelected]=React.useState(null);
+
+      React.useEffect(()=>{
+        if(audioRef.current){
+          audioRef.current.pause();
+          audioRef.current.currentTime=0;
+          if(audioOn){
+            audioRef.current.loop=true;
+            audioRef.current.play().catch(()=>{});
+          }
+        }
+      },[audioOn,ambient]);
+
+      function addPost(){
+        if(!text.trim()) return;
+        const flagged=containsBadWord(text);
+        const newPost={id:uid(),ts:Date.now(),text:text.trim(),replies:[],flags:flagged?1:0};
+        const newList=[newPost,...posts];
+        savePosts(newList);
+        setPosts(newList);
+        setText("");
       }
-      return p;
-    });
-    savePosts(newList);
-    setReplyText('');
-  }
-
-  function flagPost(postId) {
-    const newList = posts.map(p => {
-      if (p.id === postId) {
-        p.flags = (p.flags || 0) + 1;
-        if (p.flags >= 3) p.hidden = true; // auto-hide after 3 flags
+      function addReply(pid){
+        if(!replyText.trim()) return;
+        const newList=posts.map(p=>{
+          if(p.id===pid) p.replies=[...p.replies,{id:uid(),ts:Date.now(),text:replyText.trim()}];
+          return p;
+        });
+        savePosts(newList);
+        setPosts(newList);
+        setReplyText("");
+        setSelected(null);
       }
-      return p;
-    });
-    savePosts(newList);
-  }
 
-  function deletePost(postId) {
-    const newList = posts.filter(p => p.id !== postId);
-    savePosts(newList);
-  }
+      return (
+        <div className="max-w-5xl mx-auto">
+          <header className="py-6">
+            <h1 className="text-2xl font-bold">5 Dakika Rahatla — Anonim Destek</h1>
+          </header>
 
-  function toggleHide(postId) {
-    const newList = posts.map(p => {
-      if (p.id === postId) p.hidden = !p.hidden;
-      return p;
-    });
-    savePosts(newList);
-  }
+          <main className="grid md:grid-cols-3 gap-4">
+            <section className="bg-white/80 rounded-2xl p-4 shadow">
+              <h2 className="font-semibold mb-2">Hızlı Rahatlama</h2>
+              <BreathCircle running={breathOn}/>
+              <button onClick={()=>setBreathOn(!breathOn)} className="mt-2 px-3 py-1 rounded bg-indigo-600 text-white text-sm">
+                {breathOn?"Durdur":"Başlat"}
+              </button>
 
-  function randomizeAffirmation() {
-    setAffirmation(randomAff());
-  }
-
-  // Guided meditation via speechSynthesis
-  function playGuided(short = true) {
-    const lines = short
-      ? [
-          'Gözlerini kapa. Derin bir nefes al. Nefesini sayarak ver. Biraz daha. Rahatla.'
-        ]
-      : [
-          'Gözlerini kapa. Yavaşça derin bir nefes al. Nefesini üçe kadar say ve ver. Dikkatini bedenine getir. Omuzlarını gevşet. Her nefeste biraz daha rahatlıyorsun.'
-        ];
-    const utter = new SpeechSynthesisUtterance(lines.join(' '));
-    utter.lang = 'tr-TR';
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utter);
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 text-slate-900 p-4">
-      <div className="max-w-4xl mx-auto">
-        <header className="flex items-center justify-between py-6">
-          <h1 className="text-2xl font-bold">5 Dakika Rahatla — Anonim Destek</h1>
-          <div className="text-sm text-slate-600">Anonim. Kısa. Güvenli.</div>
-        </header>
-
-        <main className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Left: Relax controls */}
-          <section className="md:col-span-1 bg-white/80 rounded-2xl p-4 shadow">
-            <h2 className="font-semibold mb-2">Hızlı Rahatlama</h2>
-
-            <div className="space-y-4">
-              <div className="flex flex-col items-center">
-                <BreathCircle running={breathOn} />
-                <div className="mt-2 flex gap-2">
-                  <button className="px-3 py-1 rounded bg-indigo-600 text-white text-sm" onClick={() => setBreathOn(!breathOn)}>
-                    {breathOn ? 'Nefes Durdur' : 'Nefes Başlat'}
-                  </button>
-                  <button className="px-3 py-1 rounded border text-sm" onClick={() => { setBreathOn(true); playGuided(true); }}>
-                    2 Dakika Meditasyon
-                  </button>
-                </div>
-                <div className="text-xs text-slate-500 mt-1">Nefesle birlikte daireyi takip et.</div>
-              </div>
-
-              <div className="p-3 rounded-lg border">
-                <div className="flex items-center justify-between">
-                  <div className="font-medium">Doğa Sesi</div>
-                  <div className="flex gap-2 items-center">
-                    <select value={ambient} onChange={e => setAmbient(e.target.value)} className="text-sm px-2 py-1 border rounded">
-                      <option value="waves">Deniz Dalga</option>
+              <div className="mt-4 p-3 border rounded">
+                <div className="flex justify-between">
+                  <span className="font-medium">Doğa Sesi</span>
+                  <div>
+                    <select value={ambient} onChange={e=>setAmbient(e.target.value)} className="text-sm border rounded px-2">
+                      <option value="waves">Deniz</option>
                       <option value="rain">Yağmur</option>
                       <option value="forest">Orman</option>
                     </select>
-                    <button className="px-2 py-1 border rounded text-sm" onClick={() => setAudioOn(!audioOn)}>{audioOn ? 'Durdur' : 'Başlat'}</button>
+                    <button onClick={()=>setAudioOn(!audioOn)} className="ml-2 px-2 py-1 border rounded text-sm">{audioOn?"Durdur":"Başlat"}</button>
                   </div>
                 </div>
-                <audio ref={audioRef} src={chooseAmbientSrc(ambient)} hidden />
-                <div className="text-xs text-slate-500 mt-2">Arka planda hafif doğa sesi oynatır. Tarayıcı izinleri gerekebilir.</div>
+                <audio ref={audioRef} src={chooseAmbient(ambient)} hidden></audio>
               </div>
 
-              <div className="p-3 rounded-lg border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Günlük Olumlama</div>
-                    <div className="text-sm text-slate-600">Kısa pozitif cümleler</div>
-                  </div>
-                  <button className="px-2 py-1 border rounded text-sm" onClick={randomizeAffirmation}>Yeni</button>
+              <div className="mt-4 p-3 border rounded">
+                <div className="flex justify-between">
+                  <span className="font-medium">Olumlama</span>
+                  <button onClick={()=>setAffirmation(randomAff())} className="px-2 py-1 border rounded text-sm">Yeni</button>
                 </div>
-                <div className="mt-3 text-lg font-semibold">“{affirmation}”</div>
+                <div className="mt-2 text-lg font-semibold">“{affirmation}”</div>
               </div>
+            </section>
 
-              <div className="p-3 rounded-lg border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Yönlendirilmiş Meditasyon</div>
-                    <div className="text-sm text-slate-600">Sesli kısa rehber</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-2 py-1 border rounded text-sm" onClick={() => playGuided(true)}>Kısa</button>
-                    <button className="px-2 py-1 border rounded text-sm" onClick={() => playGuided(false)}>Uzun</button>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-500 mt-2">Cihazınızın sesini açın. Tarayıcı konuşma (speechSynthesis) kullanır.</div>
-              </div>
+            <section className="md:col-span-2 bg-white/80 rounded-2xl p-4 shadow">
+              <h2 className="font-semibold">Anonim Paylaşım</h2>
+              <textarea rows="3" value={text} onChange={e=>setText(e.target.value)} placeholder="Anonim paylaşımını yaz..." className="w-full border rounded p-2 mt-2"></textarea>
+              <button onClick={addPost} className="mt-2 px-3 py-1 rounded bg-emerald-600 text-white">Gönder</button>
 
-            </div>
-          </section>
-
-          {/* Middle: Board */}
-          <section className="md:col-span-2 bg-white/80 rounded-2xl p-4 shadow">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="font-semibold">Anonim Destek Panosu</h2>
-                <div className="text-sm text-slate-600">Günlük olarak paylaşılan kısa düşünceler — herkes anonim destek verir.</div>
-              </div>
-              <div className="flex gap-2 items-center">
-                <label className="text-sm text-slate-600">Otomatik gizle: </label>
-                <input type="checkbox" checked={filterHidden} onChange={e => setFilterHidden(e.target.checked)} />
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-              <textarea className="md:col-span-2 p-3 rounded border resize-none" rows={4} placeholder="Kısa paylaşımını yaz (anonim). 1000 karakter sınırı." value={text} onChange={e => setText(e.target.value)} />
-              <div className="flex flex-col gap-2">
-                <div className="text-xs text-slate-500">Paylaşımın insanlara umut verici olsun. Kötü amaçlı, tehdit, siyasi tartışma yasaktır.</div>
-                <div className="flex gap-2">
-                  <button className="px-3 py-1 rounded bg-emerald-600 text-white" onClick={() => addPost(text)}>Paylaş</button>
-                  <button className="px-3 py-1 rounded border" onClick={() => setText('')}>Temizle</button>
-                </div>
-                <div className="text-xs text-slate-500">Paylaşım sayısı: {posts.length}</div>
-                <div className="text-xs text-slate-500">Not: Bu prototip tarayıcıda saklanır. Gerçek anonim çok kullanıcılı deneyim için backend gerekir.</div>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {posts.length === 0 && <div className="text-slate-500">Henüz paylaşım yok — sen ilk ol!</div>}
-              {posts.map(p => (p.hidden && filterHidden) ? null : (
-                <article key={p.id} className="p-3 rounded-lg border bg-white">
-                  <div className="flex justify-between items-start gap-2">
-                    <div>
-                      <div className="text-sm text-slate-700">{truncate(p.text, 400)}</div>
-                      <div className="text-xs text-slate-400 mt-2">{timeAgo(p.ts)}</div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="text-xs text-slate-500">Flags: {p.flags || 0}</div>
-                      <div className="flex gap-1">
-                        <button className="px-2 py-1 text-xs border rounded" onClick={() => { setSelectedPost(p.id); }}>{selectedPost === p.id ? 'Yanıtla' : 'Yanıtla'}</button>
-                        <button className="px-2 py-1 text-xs border rounded" onClick={() => flagPost(p.id)}>İşaretle</button>
-                        <button className="px-2 py-1 text-xs border rounded" onClick={() => toggleHide(p.id)}>{p.hidden ? 'Göster' : 'Gizle'}</button>
-                        <button className="px-2 py-1 text-xs border rounded" onClick={() => deletePost(p.id)}>Sil</button>
+              <div className="mt-4 space-y-3">
+                {posts.length===0 && <div className="text-slate-500">Henüz paylaşım yok.</div>}
+                {posts.map(p=>(
+                  <div key={p.id} className="p-3 border rounded bg-white">
+                    <div className="text-sm">{p.text}</div>
+                    <div className="text-xs text-slate-400">{timeAgo(p.ts)}</div>
+                    <button onClick={()=>setSelected(p.id)} className="text-xs border rounded px-2 py-1 mt-2">Yanıtla</button>
+                    {selected===p.id && (
+                      <div className="mt-2">
+                        <textarea rows="2" value={replyText} onChange={e=>setReplyText(e.target.value)} className="w-full border rounded p-1"></textarea>
+                        <button onClick={()=>addReply(p.id)} className="mt-1 px-2 py-1 bg-indigo-600 text-white rounded text-sm">Gönder</button>
                       </div>
-                    </div>
-                  </div>
-
-                  {selectedPost === p.id && (
-                    <div className="mt-3">
-                      <textarea rows={2} className="w-full p-2 border rounded resize-none" placeholder="Destekleyici kısa bir yanıt yazın (anonim)." value={replyText} onChange={e => setReplyText(e.target.value)} />
-                      <div className="flex gap-2 mt-2">
-                        <button className="px-3 py-1 rounded bg-indigo-600 text-white" onClick={() => addReply(p.id, replyText)}>Yanıt Gönder</button>
-                        <button className="px-3 py-1 rounded border" onClick={() => { setSelectedPost(null); setReplyText(''); }}>İptal</button>
+                    )}
+                    {p.replies && p.replies.length>0 && (
+                      <div className="mt-2 space-y-1">
+                        {p.replies.map(r=>(
+                          <div key={r.id} className="p-2 bg-slate-50 border rounded text-sm">{r.text} <span className="text-xs text-slate-400 ml-2">{timeAgo(r.ts)}</span></div>
+                        ))}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </main>
+        </div>
+      )
+    }
 
-                  {p.replies && p.replies.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      {p.replies.map(r => (
-                        <div key={r.id} className="p-2 rounded bg-slate-50 text-sm border">{r.text} <div className="text-xs text-slate-400 mt-1">{timeAgo(r.ts)}</div></div>
-                      ))}
-                    </div>
-                  )}
+    function chooseAmbient(name){
+      const map={
+        waves:"https://cdn.pixabay.com/download/audio/2023/03/15/audio_08a5f2a3f2.mp3?filename=ocean-waves-ambient-11217.mp3",
+        rain:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_5f6cf3c7f0.mp3?filename=rain-01-111849.mp3",
+        forest:"https://cdn.pixabay.com/download/audio/2021/10/13/audio_fd5d9b4b5e.mp3?filename=forest-birds-2-110316.mp3"
+      };
+      return map[name]||map.waves;
+    }
 
-                </article>
-              ))}
-            </div>
+    function randomAff(){
+      const list=[
+        "Bugün yapabildiğim kadar iyiyim.",
+        "Bu duygu gelip geçecek.",
+        "Küçük bir adım bile ilerlemektir.",
+        "Nefes al, bir anlığına rahatla."
+      ];
+      return list[Math.floor(Math.random()*list.length)];
+    }
 
-          </section>
-        </main>
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 
-        <footer className="text-center text-xs text-slate-500 mt-6">Prototype — Veriler yalnızca tarayıcıda saklanır. Gizlilik: yazılan içerik localStorage'ta tutulur.</footer>
-      </div>
-    </div>
-  );
-}
-
-// ---------------- Helper components & functions ----------------
-
-function BreathCircle({ running = true }) {
-  // simple CSS animation: expand/contract every 4s
-  return (
-    <div className="flex flex-col items-center">
-      <div className={`rounded-full border shadow-inner ${running ? 'animate-breath' : ''}`} style={{ width: 150, height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="text-center">Nefes</div>
-      </div>
-      <style>{`
-        @keyframes breath {
-          0% { transform: scale(0.85); }
-          50% { transform: scale(1.07); }
-          100% { transform: scale(0.85); }
-        }
-        .animate-breath { animation: breath 6s ease-in-out infinite; }
-      `}</style>
-    </div>
-  );
-}
-
-function chooseAmbientSrc(name) {
-  // public domain / free sound URLs (these should be replaced if you want other sources)
-  const map = {
-    waves: 'https://cdn.pixabay.com/download/audio/2023/03/15/audio_08a5f2a3f2.mp3?filename=ocean-waves-ambient-11217.mp3',
-    rain: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_5f6cf3c7f0.mp3?filename=rain-01-111849.mp3',
-    forest: 'https://cdn.pixabay.com/download/audio/2021/10/13/audio_fd5d9b4b5e.mp3?filename=forest-birds-2-110316.mp3'
-  };
-  return map[name] || map.waves;
-}
-
-function randomAff() {
-  const list = [
-    'Bugün yapabildiğim kadar iyiyim.',
-    'Bu duygu gelip geçecek.',
-    'Küçük bir adım bile ilerlemektir.',
-    'Nefes al, bir anlığına rahatla.'
-  ];
-  return list[Math.floor(Math.random() * list.length)];
-}
-
-function loadPosts() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    const now = Date.now();
-    return parsed.filter(p => now - p.ts < POST_LIFETIME_MS);
-  } catch (e) {
-    return [];
-  }
-}
-
-function truncate(s, n) {
-  if (!s) return '';
-  return s.length > n ? s.slice(0, n) + '…' : s;
-}
-
-function timeAgo(ts) {
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'az önce';
-  if (mins < 60) return `${mins} dk önce`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} saat önce`;
-  const days = Math.floor(hours / 24);
-  return `${days} gün önce`;
-}
+  </script>
+</body>
+</html>
