@@ -2,9 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>5 Dakika Rahatla — Anonim Destek (Firebase)</title>
+  <title>5 Dakika Rahatla — Anonim Destek (Realtime DB)</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -23,6 +23,7 @@
   const firebaseConfig = {
     apiKey: "AIzaSyAj45jq9Eam5MNYgnwJVpzsmikeuqaqA34",
     authDomain: "isoo-5264a.firebaseapp.com",
+    databaseURL: "https://isoo-5264a-default-rtdb.firebaseio.com",
     projectId: "isoo-5264a",
     storageBucket: "isoo-5264a.firebasestorage.app",
     messagingSenderId: "92451505899",
@@ -30,7 +31,7 @@
     measurementId: "G-XRK1RSCK8X"
   };
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const db = firebase.database();
 
   // ----------------- React App -----------------
 
@@ -74,13 +75,15 @@
     const [selected,setSelected]=React.useState(null);
     const audioRef=React.useRef(null);
 
-    // ----------------- Firestore Listener -----------------
+    // ----------------- Realtime DB Listener -----------------
     React.useEffect(()=>{
-      const unsubscribe = db.collection('posts').orderBy('ts','desc').onSnapshot(snapshot => {
-        const newPosts = snapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
-        setPosts(newPosts);
+      const postsRef = db.ref('posts');
+      postsRef.on('value', snapshot => {
+        const val = snapshot.val() || {};
+        const arr = Object.keys(val).map(k => ({id:k,...val[k]}));
+        arr.sort((a,b)=>b.ts - a.ts);
+        setPosts(arr);
       });
-      return ()=>unsubscribe();
     },[]);
 
     React.useEffect(()=>{
@@ -94,14 +97,15 @@
     function addPost(){
       if(!text.trim()) return;
       const flagged=containsBadWord(text);
-      db.collection('posts').add({text:text.trim(),ts:Date.now(),replies:[],flags:flagged?1:0});
+      const newPostRef = db.ref('posts').push();
+      newPostRef.set({text:text.trim(),ts:Date.now(),replies:{},flags:flagged?1:0});
       setText("");
     }
 
     function addReply(postId){
       if(!replyText.trim()) return;
-      const postRef = db.collection('posts').doc(postId);
-      postRef.update({replies:firebase.firestore.FieldValue.arrayUnion({id:uid(),text:replyText,ts:Date.now()})});
+      const replyRef = db.ref(`posts/${postId}/replies`).push();
+      replyRef.set({id:uid(),text:replyText,ts:Date.now()});
       setReplyText("");
       setSelected(null);
     }
@@ -161,9 +165,9 @@
                       <button onClick={()=>addReply(p.id)} className="mt-1 px-2 py-1 bg-indigo-600 text-white rounded text-sm">Gönder</button>
                     </div>
                   )}
-                  {p.replies && p.replies.length>0 && (
+                  {p.replies && Object.values(p.replies).length>0 && (
                     <div className="mt-2 space-y-1">
-                      {p.replies.map(r=>(
+                      {Object.values(p.replies).map(r=>(
                         <div key={r.id} className="p-2 bg-slate-50 border rounded text-sm">{r.text} <span className="text-xs text-slate-400 ml-2">{timeAgo(r.ts)}</span></div>
                       ))}
                     </div>
