@@ -1,431 +1,133 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Beyza — Benimle Barışır mısın? 💌</title>
-  <meta name="description" content="İsmail'in Beyza'ya içten bir özrü: romantik, samimi ve tatlı bir sayfa." />
-  <style>
-    :root{
-      --bg:#fff7fb;
-      --pink-1:#ffdfe9;
-      --pink-2:#ffc2da;
-      --accent:#ff6f98;
-      --accent-2:#ff9fc1;
-      --text:#2b2330;
-      --muted:#7d6f77;
-      --card:#ffffff;
-      --glass: rgba(255,255,255,0.7);
-      --radius:20px;
-      --max-w:980px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:
-        radial-gradient(600px 300px at 10% 10%, rgba(255,182,197,0.08), transparent 10%),
-        linear-gradient(180deg,var(--bg), #fff);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:28px 18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .wrap{
-      width:100%;
-      max-width:var(--max-w);
-      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,250,251,0.98));
-      border-radius:26px;
-      padding:28px;
-      box-shadow: 0 20px 50px rgba(255,120,160,0.07);
-      position:relative;
-      overflow:hidden;
-    }
-
-    /* subtle decorative hearts */
-    .bg-heart{
-      position:absolute; pointer-events:none; opacity:0.12;
-      filter: blur(8px);
-    }
-    .bg-heart.h1{left:-80px;top:-60px;width:360px;transform:rotate(-12deg)}
-    .bg-heart.h2{right:-60px;bottom:-90px;width:420px;transform:rotate(8deg)}
-    .bg-heart.h3{right:14%;top:-40px;width:180px}
-
-    header{display:flex;align-items:center;gap:16px}
-    .logo{
-      width:72px;height:72px;border-radius:16px;
-      background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:26px;
-      box-shadow: 0 12px 36px rgba(255,110,150,0.10);
-    }
-    h1{margin:0;font-size:clamp(20px,4vw,36px);line-height:1.02}
-    p.lead{margin:6px 0 0;color:var(--muted)}
-
-    .main{display:flex;gap:26px;align-items:stretch;margin-top:22px}
-    .left{flex:1;min-width:260px}
-    .card{
-      background:var(--card);
-      border-radius:18px;
-      padding:18px;
-      box-shadow: 0 8px 24px rgba(18,18,18,0.04);
-    }
-
-    .message {
-      font-size:18px;
-      line-height:1.6;
-      padding:14px;
-      border-radius:14px;
-      background:linear-gradient(180deg, rgba(255,250,251,0.96), rgba(255,240,246,0.96));
-      margin-top:14px;
-      color:#38242f;
-    }
-
-    .typed {
-      display:block;
-      font-weight:700;
-      font-size:19px;
-      min-height:58px;
-    }
-
-    .controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-    .btn{
-      padding:10px 14px;border-radius:12px;text-decoration:none;border:0;cursor:pointer;
-      font-weight:800;
-      background:var(--accent); color:white;
-      box-shadow: 0 12px 26px rgba(255,110,150,0.08);
-    }
-    .btn.ghost{background:transparent;color:var(--accent);border:2px solid rgba(255,110,150,0.12);font-weight:800}
-
-    .right{
-      width:360px;
-      display:flex;flex-direction:column;gap:14px;
-    }
-
-    .heart-big{
-      width:100%;height:260px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-      background: linear-gradient(180deg, rgba(255,250,251,0.98), rgba(255,236,243,0.98));
-      box-shadow: inset 0 -8px 22px rgba(255,120,160,0.03);
-      position:relative;
-      overflow:hidden;
-    }
-    .heart-svg{width:180px;height:180px;transform:translateY(-4px);transition:transform .3s ease}
-
-    .meta{font-size:13px;color:var(--muted);line-height:1.5}
-    .footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
-
-    /* modal */
-    .overlay{position:fixed;inset:0;background:rgba(6,6,6,0.42);display:flex;align-items:center;justify-content:center;z-index:60;opacity:0;pointer-events:none;transition:all .22s ease}
-    .overlay.show{opacity:1;pointer-events:auto}
-    .modal{width:92%;max-width:560px;background:white;border-radius:14px;padding:18px;box-shadow:0 30px 60px rgba(2,6,23,0.32);text-align:center}
-    .modal h2{margin:6px 0 6px}
-    .modal p{color:#444}
-    .close{margin-top:14px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;background:var(--accent);color:white;font-weight:800}
-
-    /* confetti hearts */
-    .confetti-piece{position:fixed;z-index:120;pointer-events:none;will-change:transform,opacity}
-
-    /* small input */
-    .small-input{width:100%;padding:8px;border-radius:10px;border:1px solid #eee;margin-top:8px}
-
-    @media (max-width:920px){
-      .main{flex-direction:column}
-      .right{width:100%}
-      .heart-big{height:180px}
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Hızlı Olan Kazansın!</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #222;
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Kaydırma çubuklarını gizle */
+        }
+        #oyunAlani {
+            width: 400px;
+            height: 400px;
+            border: 2px solid #444;
+            background-color: #333;
+            position: relative;
+            border-radius: 10px;
+            margin-top: 20px;
+            cursor: crosshair;
+        }
+        #hedef {
+            width: 50px;
+            height: 50px;
+            background-color: #ff4757;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.1s ease; /* Pürüzsüz hareket */
+            box-shadow: 0 0 10px #ff4757;
+        }
+        h1 { margin: 0; font-size: 24px; }
+        .bilgi { font-size: 20px; margin: 5px; }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #2ed573;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #26af61; }
+    </style>
 </head>
 <body>
-  <div class="wrap" role="main" aria-labelledby="title">
-    <!-- decorative hearts -->
-    <svg class="bg-heart h1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path fill="#ffd7e7" d="M100 170s-55-34-78-59c-22-24-10-60 20-67 30-7 45 9 58 25 13-16 28-32 58-25 30 7 42 43 20 67-23 25-78 59-78 59z"/>
-    </svg>
-    <svg class="bg-heart h2" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path fill="#fff0f3" d="M100 170s-55-34-78-59c-22-24-10-60 20-67 30-7 45 9 58 25 13-16 28-32 58-25 30 7 42 43 20 67-23 25-78 59-78 59z"/>
-    </svg>
-    <svg class="bg-heart h3" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path fill="#ffe8f0" d="M100 170s-55-34-78-59c-22-24-10-60 20-67 30-7 45 9 58 25 13-16 28-32 58-25 30 7 42 43 20 67-23 25-78 59-78 59z"/>
-    </svg>
 
-    <header>
-      <div class="logo" aria-hidden="true">❤</div>
-      <div>
-        <h1 id="title">Beyza — Benimle Barışır mısın?</h1>
-        <p class="lead">İsmail'ten Beyza'ya içten, saf ve romantik bir özür. Bu sayfa, kalbimden çıkan kelimelerle hazırlanmıştır.</p>
-      </div>
-    </header>
+    <h1>🔴 Hedefi Yakala!</h1>
+    <div class="bilgi">Puan: <span id="puan">0</span></div>
+    <div class="bilgi">Süre: <span id="sure">10</span> sn</div>
+    
+    <button onclick="oyunuBaslat()" id="baslatButon">Oyunu Başlat</button>
 
-    <div class="main" aria-live="polite">
-      <div class="left">
-        <div class="card" role="region" aria-label="Özür mesajı">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-            <div>
-              <div style="font-size:13px;color:var(--muted)">Sevgili</div>
-              <div id="loverName" style="font-weight:900;font-size:20px">Beyza</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:13px;color:var(--muted)">Gönderen</div>
-              <div id="yourName" style="font-weight:800">İsmail</div>
-            </div>
-          </div>
-
-          <div class="message" id="messageBox">
-            <span class="typed" id="typedArea" aria-live="polite"></span>
-            <div style="margin-top:10px" class="meta">Kısa ve içten: "Seni incittiysem çok üzgünüm. Hatalıydım. Lütfen beni affet. Tek bir gülümsemen dünyama yeter."</div>
-          </div>
-
-          <div class="controls">
-            <button class="btn" id="askBtn" aria-haspopup="dialog">Beni Affet ♥</button>
-            <button class="btn ghost" id="editBtn">İsimleri Düzenle</button>
-            <button class="btn ghost" id="melodyBtn" title="Nazik bir melodi çal">Melodi Çal ♪</button>
-          </div>
-
-          <div style="margin-top:12px" class="meta">Sayfa cihazında çalışır — hiçbir veri gönderilmez. İsimleri değiştirmek istersen <strong>İsimleri Düzenle</strong> butonunu kullan.</div>
-        </div>
-
-        <div style="margin-top:14px" class="card">
-          <h4 style="margin:6px 0">Küçük Not Bırak</h4>
-          <textarea id="shortNote" rows="3" class="small-input" placeholder="Kalbinden gelen iki cümle..."></textarea>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn" id="sendNote">Notu Gönder (Simülasyon)</button>
-            <button class="btn ghost" id="clearNote">Temizle</button>
-          </div>
-          <div id="noteInfo" style="margin-top:8px;color:var(--muted);font-size:13px"></div>
-        </div>
-      </div>
-
-      <aside class="right" aria-hidden="true">
-        <div class="heart-big card">
-          <svg class="heart-svg" viewBox="0 0 32 29.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs><linearGradient id="g1" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ff7aa2"/><stop offset="1" stop-color="#ffb3c6"/></linearGradient></defs>
-            <path fill="url(#g1)" d="M23.6 0c-2.7 0-4.9 1.6-6 4-1.1-2.4-3.3-4-6-4C6 0 0 6 0 12.2 0 21 12 29.6 16 29.6s16-8.6 16-17.4C32 6 26 0 23.6 0z"/>
-          </svg>
-        </div>
-
-        <div class="card" style="text-align:center">
-          <h4 style="margin:6px 0">Sürpriz</h4>
-          <p class="meta">"Beni Affet"e tıklayınca küçük bir animasyon, birkaç konfetti kalbi ve sonrasında <strong>senin için özel bir mesaj</strong> göreceksin.</p>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
-            <button class="btn" id="surpriseBtn">Sürprizi Başlat</button>
-            <button class="btn ghost" id="copyBtn">Kısa Mesajı Kopyala</button>
-          </div>
-        </div>
-
-        <div class="card" style="text-align:center">
-          <div style="font-weight:800">İpucu</div>
-          <p class="meta">En etkili özür kısa, net ve içten olandır. Bu sayfa jest; asıl önemli olan kalpten gelen davranıştır.</p>
-        </div>
-      </aside>
+    <div id="oyunAlani">
+        <div id="hedef" style="display: none;" onclick="yakaladim()"></div>
     </div>
 
-    <div class="footer">© <span id="year"></span> — İsmail'in Beyza'ya içten bir dileği</div>
-  </div>
+    <script>
+        let puan = 0;
+        let sure = 10;
+        let oyunAktif = false;
+        let zamanlayici;
 
-  <!-- modal -->
-  <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal" role="document">
-      <svg width="80" height="80" viewBox="0 0 24 24" style="display:block;margin:0 auto 8px" aria-hidden="true">
-        <path fill="#ff6f98" d="M12 21s-7-4.35-9-7a6.5 6.5 0 0111-6 6.5 6.5 0 0111 6c-2 2.65-9 7-9 7z"/>
-      </svg>
-      <h2 id="modalTitle">Beyza, benimle barışır mısın?</h2>
-      <p id="modalText">Senin yanında olmak her şeyden daha değerli. Hatalıysam içtenlikle özür diliyorum. Bana bir şans daha verir misin?</p>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
-        <button class="close" id="acceptBtn">Evet, seni affediyorum 💗</button>
-        <button class="close" id="declineBtn" style="background:#f3f3f3;color:#444">Biraz zamana ihtiyacım var</button>
-      </div>
-    </div>
-  </div>
+        function oyunuBaslat() {
+            puan = 0;
+            sure = 10;
+            oyunAktif = true;
+            
+            // Skorları sıfırla
+            document.getElementById("puan").innerText = puan;
+            document.getElementById("sure").innerText = sure;
+            document.getElementById("baslatButon").style.display = "none"; // Butonu gizle
+            document.getElementById("hedef").style.display = "block"; // Hedefi göster
+            
+            hedefiTasi(); // İlk konuma git
 
-  <script>
-    // Names pre-filled
-    const LOVER = "Beyza";
-    const SENDER = "İsmail";
-    document.getElementById('loverName').textContent = LOVER;
-    document.getElementById('yourName').textContent = SENDER;
-    document.getElementById('year').textContent = new Date().getFullYear();
+            // Geri sayımı başlat
+            zamanlayici = setInterval(() => {
+                sure--;
+                document.getElementById("sure").innerText = sure;
+                
+                if (sure <= 0) {
+                    oyunuBitir();
+                }
+            }, 1000);
+        }
 
-    // Typing lines (romantic + brief)
-    const lines = [
-      `Sevgili ${LOVER},`,
-      "Sana karşı istemeden kırıcı olduysam çok üzgünüm.",
-      "Hatalarımı görüyorum ve düzelmek istiyorum.",
-      "Sadece bir kez daha beni gülümsetir misin?",
-    ];
-    const typedEl = document.getElementById('typedArea');
-    let li = 0, ci = 0;
-    function typeLoop(){
-      if(li >= lines.length) return;
-      const line = lines[li];
-      if(ci <= line.length){
-        typedEl.textContent = line.slice(0,ci);
-        ci++;
-        setTimeout(typeLoop, 36 + Math.random()*22);
-      } else {
-        li++; ci=0;
-        setTimeout(typeLoop, 700);
-      }
-    }
-    // start typing after small delay
-    setTimeout(typeLoop, 420);
+        function hedefiTasi() {
+            if (!oyunAktif) return;
 
-    // Modal logic
-    const overlay = document.getElementById('overlay');
-    const askBtn = document.getElementById('askBtn');
-    const acceptBtn = document.getElementById('acceptBtn');
-    const declineBtn = document.getElementById('declineBtn');
+            const oyunAlani = document.getElementById("oyunAlani");
+            const hedef = document.getElementById("hedef");
 
-    function openModal(title, msg){
-      if(title) document.getElementById('modalTitle').textContent = title;
-      if(msg) document.getElementById('modalText').textContent = msg;
-      overlay.classList.add('show');
-      overlay.setAttribute('aria-hidden','false');
-      startConfetti(22);
-    }
-    function closeModal(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+            // Rastgele pozisyon hesapla (oyun alanı sınırları içinde)
+            const x = Math.random() * (oyunAlani.clientWidth - 50);
+            const y = Math.random() * (oyunAlani.clientHeight - 50);
 
-    askBtn.addEventListener('click', function(){ openModal(); });
-    acceptBtn.addEventListener('click', function(){
-      // show final message and larger confetti
-      document.getElementById('modalText').textContent = `Beyza 💗 İsmail — Yeniden birlikte, daha güçlü ve daha sevgi dolu. Seni çok seviyorum.`;
-      acceptBtn.textContent = "Seni Seviyorum 💖";
-      acceptBtn.disabled = true;
-      startConfetti(48);
-      // animate main heart
-      const heart = document.querySelector('.heart-svg');
-      if(heart) { heart.style.transform = 'scale(1.05) translateY(-6px)'; setTimeout(()=>heart.style.transform='scale(1) translateY(-4px)', 900); }
-      setTimeout(closeModal, 1700);
-    });
-    declineBtn.addEventListener('click', function(){
-      document.getElementById('modalText').textContent = "Tamam, sana zaman veriyorum. Seni bekleyeceğim. 💙";
-      startConfetti(16);
-      setTimeout(closeModal, 1500);
-    });
+            hedef.style.left = x + "px";
+            hedef.style.top = y + "px";
+            
+            // Rastgele renk değiştir (Eğlence olsun diye)
+            const renkler = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502'];
+            hedef.style.backgroundColor = renkler[Math.floor(Math.random() * renkler.length)];
+        }
 
-    overlay.addEventListener('click', function(e){
-      if(e.target === overlay) closeModal();
-    });
+        function yakaladim() {
+            if (!oyunAktif) return;
+            puan++;
+            document.getElementById("puan").innerText = puan;
+            hedefiTasi(); // Hedef kaçsın
+        }
 
-    // Edit names button (local only)
-    document.getElementById('editBtn').addEventListener('click', function(){
-      const ln = prompt("Sevgilinin adı:", LOVER) || LOVER;
-      const yn = prompt("Senin adın:", SENDER) || SENDER;
-      document.getElementById('loverName').textContent = ln;
-      document.getElementById('yourName').textContent = yn;
-      // also update typed lines small personalization
-      lines[0] = `Sevgili ${ln},`;
-      typedEl.textContent = '';
-      li = 0; ci = 0;
-      setTimeout(typeLoop, 200);
-    });
+        function oyunuBitir() {
+            oyunAktif = false;
+            clearInterval(zamanlayici);
+            document.getElementById("hedef").style.display = "none";
+            document.getElementById("baslatButon").style.display = "inline-block";
+            document.getElementById("baslatButon").innerText = "Tekrar Oyna";
+            alert("Oyun Bitti! Toplam Puanın: " + puan);
+        }
+    </script>
 
-    // Short note send (simulated)
-    document.getElementById('sendNote').addEventListener('click', function(){
-      const t = document.getElementById('shortNote').value.trim();
-      const info = document.getElementById('noteInfo');
-      if(!t){ info.textContent = 'Lütfen önce kısa bir not yaz.'; return; }
-      info.textContent = 'Not başarıyla kaydedildi (simülasyon).';
-      // show note in modal
-      openModal(`Bir not — ${document.getElementById('loverName').textContent}`, t);
-    });
-    document.getElementById('clearNote').addEventListener('click', function(){
-      document.getElementById('shortNote').value = '';
-      document.getElementById('noteInfo').textContent = '';
-    });
-
-    // Copy short message
-    document.getElementById('copyBtn').addEventListener('click', function(){
-      const text = `Beyza — Seni çok seviyorum. Hatalıysam özür dilerim. İsmail`;
-      navigator.clipboard?.writeText(text).then(()=>{ alert('Kısa mesaj panoya kopyalandı.'); }).catch(()=>{ alert('Kopyalama başarısız, lütfen manuel kopyala:\n\n' + text); });
-    });
-
-    // Melody (WebAudio) gentle motif
-    document.getElementById('melodyBtn').addEventListener('click', async function(){
-      try{
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContext();
-        const notes = [440, 523.25, 659.25, 523.25]; // A4, C5, E5, C5 simple motif
-        const dur = 0.32;
-        const now = ctx.currentTime + 0.05;
-        notes.forEach((f,i)=>{
-          const o = ctx.createOscillator();
-          const g = ctx.createGain();
-          o.type = 'sine';
-          o.frequency.setValueAtTime(f, now + i*dur);
-          g.gain.setValueAtTime(0.0001, now + i*dur);
-          g.gain.linearRampToValueAtTime(0.08, now + i*dur + 0.02);
-          g.gain.linearRampToValueAtTime(0.0001, now + i*dur + dur - 0.02);
-          o.connect(g); g.connect(ctx.destination);
-          o.start(now + i*dur);
-          o.stop(now + i*dur + dur);
-        });
-      }catch(e){ alert('Tarayıcınız ses çalmayı desteklemiyor veya izin gerekebilir.'); }
-    });
-
-    // Confetti hearts
-    function startConfetti(amount = 30){
-      const colors = ["#ff7aa2","#ffb3c6","#ffd7e6","#ff9fc1"];
-      for(let i=0;i<amount;i++) createHeart(colors[i % colors.length]);
-      setTimeout(()=>{ document.querySelectorAll('.confetti-piece').forEach(p=>p.remove()); }, 2600);
-    }
-
-    function createHeart(color){
-      const el = document.createElement('div');
-      el.className = 'confetti-piece';
-      const size = 10 + Math.random()*22;
-      const startX = window.innerWidth * (0.25 + Math.random()*0.5);
-      const startY = window.innerHeight * (0.35 + Math.random()*0.15);
-      el.style.left = startX + 'px';
-      el.style.top = startY + 'px';
-      el.style.width = size + 'px';
-      el.style.height = size + 'px';
-      el.style.opacity = (0.6 + Math.random()*0.6);
-      el.innerHTML = heartSVG(size, color);
-      document.body.appendChild(el);
-
-      const dx = (Math.random()-0.5) * 220;
-      const dy = -300 - Math.random()*300;
-      const rot = (Math.random()-0.5) * 720;
-      el.animate([
-        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
-        { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, opacity: 0.02 }
-      ], {
-        duration: 1100 + Math.random()*900,
-        easing: 'cubic-bezier(.2,.7,.2,1)'
-      });
-    }
-    function heartSVG(size, color){
-      const s = Math.round(size);
-      return `<svg width="${s}" height="${s}" viewBox="0 0 32 29.6" xmlns="http://www.w3.org/2000/svg"><path fill="${color}" d="M23.6 0c-2.7 0-4.9 1.6-6 4-1.1-2.4-3.3-4-6-4C6 0 0 6 0 12.2 0 21 12 29.6 16 29.6s16-8.6 16-17.4C32 6 26 0 23.6 0z"/></svg>`;
-    }
-
-    // small confetti on first interaction
-    window.addEventListener('click', once); window.addEventListener('keydown', once);
-    function once(){ startConfetti(8); window.removeEventListener('click', once); window.removeEventListener('keydown', once); }
-
-    // accessibility: Esc to close modal
-    window.addEventListener('keydown', function(e){ if(e.key === 'Escape') { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); } });
-
-    // Surprise button to show final affectionate banner
-    document.getElementById('surpriseBtn').addEventListener('click', function(){
-      openModal(`${LOVER} 💗 ${SENDER}`, `Kalbimdeki en güzel yer senin: ${LOVER} — ${SENDER}`);
-      startConfetti(34);
-      // small animation for big heart
-      const hb = document.querySelector('.heart-svg');
-      if(hb){ hb.style.transform = 'scale(1.08) translateY(-6px)'; setTimeout(()=>hb.style.transform='scale(1) translateY(-4px)', 900); }
-    });
-
-    // allow clicking main heart to also show a tender message
-    document.querySelectorAll('.heart-big, .heart-svg').forEach(el=>{
-      el.addEventListener('click', ()=> {
-        openModal(`Sadece senin için`, `Her şey daha güzel, sen yanımdaysan. Affet beni, lütfen. — ${SENDER}`);
-        startConfetti(20);
-      });
-    });
-  </script>
 </body>
 </html>
