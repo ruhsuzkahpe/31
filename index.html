@@ -2,132 +2,356 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Hızlı Olan Kazansın!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Reflex PRO</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #222;
-            color: white;
-            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none; /* Yazı seçimini engelle */
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Tıklamalar canvas'a geçsin */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .hud {
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            z-index: 10;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            color: #ff00ff;
+            font-size: 60px;
             margin: 0;
-            overflow: hidden; /* Kaydırma çubuklarını gizle */
+            text-shadow: 0 0 20px #ff00ff, 4px 4px 0px #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 5px;
         }
-        #oyunAlani {
-            width: 400px;
-            height: 400px;
-            border: 2px solid #444;
-            background-color: #333;
-            position: relative;
-            border-radius: 10px;
-            margin-top: 20px;
-            cursor: crosshair;
-        }
-        #hedef {
-            width: 50px;
-            height: 50px;
-            background-color: #ff4757;
-            border-radius: 50%;
-            position: absolute;
-            cursor: pointer;
-            transition: all 0.1s ease; /* Pürüzsüz hareket */
-            box-shadow: 0 0 10px #ff4757;
-        }
-        h1 { margin: 0; font-size: 24px; }
-        .bilgi { font-size: 20px; margin: 5px; }
+
+        p { color: white; font-size: 18px; margin-top: 10px; }
+
         button {
-            padding: 10px 20px;
-            font-size: 18px;
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: transparent;
+            color: #00ffcc;
+            border: 2px solid #00ffcc;
+            box-shadow: 0 0 15px #00ffcc;
             cursor: pointer;
-            background-color: #2ed573;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            margin-top: 10px;
+            font-family: inherit;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-weight: bold;
         }
-        button:hover { background-color: #26af61; }
+
+        button:hover {
+            background: #00ffcc;
+            color: black;
+            box-shadow: 0 0 30px #00ffcc;
+        }
+
+        canvas {
+            display: block;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🔴 Hedefi Yakala!</h1>
-    <div class="bilgi">Puan: <span id="puan">0</span></div>
-    <div class="bilgi">Süre: <span id="sure">10</span> sn</div>
-    
-    <button onclick="oyunuBaslat()" id="baslatButon">Oyunu Başlat</button>
-
-    <div id="oyunAlani">
-        <div id="hedef" style="display: none;" onclick="yakaladim()"></div>
+    <div id="ui-layer">
+        <div class="hud">
+            <span>SKOR: <span id="scoreEl">0</span></span>
+            <span>REKOR: <span id="highScoreEl">0</span></span>
+        </div>
+        <div class="hud" style="justify-content: center;">
+            <span id="comboEl" style="opacity: 0; color: #ffff00;">COMBO x1!</span>
+        </div>
+        <div class="hud" style="justify-content: flex-end;">
+            <span>SÜRE: <span id="timeEl">30</span></span>
+        </div>
     </div>
 
+    <div id="start-screen">
+        <h1>NEON REFLEX</h1>
+        <p>Hedef küçülmeden tıkla. Hızlı ol.</p>
+        <button onclick="startGame()">BAŞLAT</button>
+    </div>
+
+    <div id="game-over-screen" style="display: none;">
+        <h1 style="color: #ff3333; text-shadow: 0 0 20px #ff3333;">OYUN BİTTİ</h1>
+        <p>Skorun: <span id="finalScore">0</span></p>
+        <button onclick="startGame()">TEKRAR DENE</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
     <script>
-        let puan = 0;
-        let sure = 10;
-        let oyunAktif = false;
-        let zamanlayici;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Ekran Boyutlandırma
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        function oyunuBaslat() {
-            puan = 0;
-            sure = 10;
-            oyunAktif = true;
-            
-            // Skorları sıfırla
-            document.getElementById("puan").innerText = puan;
-            document.getElementById("sure").innerText = sure;
-            document.getElementById("baslatButon").style.display = "none"; // Butonu gizle
-            document.getElementById("hedef").style.display = "block"; // Hedefi göster
-            
-            hedefiTasi(); // İlk konuma git
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
 
-            // Geri sayımı başlat
-            zamanlayici = setInterval(() => {
-                sure--;
-                document.getElementById("sure").innerText = sure;
-                
-                if (sure <= 0) {
-                    oyunuBitir();
+        // Oyun Değişkenleri
+        let score = 0;
+        let timeLeft = 30;
+        let isPlaying = false;
+        let gameLoopId;
+        let timerInterval;
+        let particles = [];
+        let target = { x: 0, y: 0, radius: 40, maxRadius: 40, color: '#ff00ff', shrinking: false };
+        let combo = 0;
+        
+        // Rekoru yükle
+        let highScore = localStorage.getItem('neonHighScore') || 0;
+        document.getElementById('highScoreEl').innerText = highScore;
+
+        // Ses Motoru (Basit Bip ve Patlama Sesi)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'hit') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'over') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.5);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        // Parçacık (Patlama Efekti) Sınıfı
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 10,
+                    y: (Math.random() - 0.5) * 10
+                };
+                this.radius = Math.random() * 3 + 1;
+                this.alpha = 1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.02;
+            }
+        }
+
+        function spawnTarget() {
+            const margin = 60;
+            target.x = Math.random() * (canvas.width - margin * 2) + margin;
+            target.y = Math.random() * (canvas.height - margin * 2) + margin;
+            
+            // Zorluk arttıkça hedef küçülür
+            let sizeModifier = Math.min(score * 0.5, 20); 
+            target.maxRadius = 40 - sizeModifier;
+            if(target.maxRadius < 15) target.maxRadius = 15;
+            
+            target.radius = target.maxRadius;
+            
+            // Rastgele Neon Renkler
+            const colors = ['#ff00ff', '#00ffcc', '#ffff00', '#ff3333'];
+            target.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 30; // 30 Saniye
+            combo = 0;
+            particles = [];
+            isPlaying = true;
+
+            document.getElementById('scoreEl').innerText = score;
+            document.getElementById('timeEl').innerText = timeLeft;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            spawnTarget();
+            
+            // Zamanlayıcı
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeEl').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
                 }
             }, 1000);
+
+            animate();
         }
 
-        function hedefiTasi() {
-            if (!oyunAktif) return;
+        function endGame() {
+            isPlaying = false;
+            clearInterval(timerInterval);
+            cancelAnimationFrame(gameLoopId);
+            playSound('over');
 
-            const oyunAlani = document.getElementById("oyunAlani");
-            const hedef = document.getElementById("hedef");
+            // Rekor Kontrolü
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('neonHighScore', highScore);
+                document.getElementById('highScoreEl').innerText = highScore;
+            }
 
-            // Rastgele pozisyon hesapla (oyun alanı sınırları içinde)
-            const x = Math.random() * (oyunAlani.clientWidth - 50);
-            const y = Math.random() * (oyunAlani.clientHeight - 50);
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('game-over-screen').style.display = 'flex';
+        }
 
-            hedef.style.left = x + "px";
-            hedef.style.top = y + "px";
+        function animate() {
+            if (!isPlaying) return;
+            gameLoopId = requestAnimationFrame(animate);
             
-            // Rastgele renk değiştir (Eğlence olsun diye)
-            const renkler = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502'];
-            hedef.style.backgroundColor = renkler[Math.floor(Math.random() * renkler.length)];
+            // Arkaplanı hafifçe temizle (hareket izi efekti için opacity düşük siyah)
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Hedefi Çiz
+            // Hedef zamanla küçülür (Stres faktörü)
+            if (target.radius > 0) {
+                target.radius -= 0.1 + (score * 0.005); // Skor arttıkça daha hızlı küçülür
+            } else {
+                // Hedef kaybolursa combo bozulur, yeni hedef gelir
+                combo = 0;
+                updateComboUI();
+                spawnTarget();
+            }
+
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, Math.max(target.radius, 0), 0, Math.PI * 2);
+            ctx.fillStyle = target.color;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = target.color;
+            ctx.fill();
+            ctx.shadowBlur = 0; // Diğer çizimleri etkilemesin diye sıfırla
+
+            // Parçacıkları güncelle ve çiz
+            particles.forEach((particle, index) => {
+                if (particle.alpha <= 0) {
+                    particles.splice(index, 1);
+                } else {
+                    particle.update();
+                    particle.draw();
+                }
+            });
         }
 
-        function yakaladim() {
-            if (!oyunAktif) return;
-            puan++;
-            document.getElementById("puan").innerText = puan;
-            hedefiTasi(); // Hedef kaçsın
+        function updateComboUI() {
+            const el = document.getElementById('comboEl');
+            if (combo > 1) {
+                el.innerText = `COMBO x${combo}!`;
+                el.style.opacity = 1;
+                el.style.fontSize = (20 + combo) + 'px';
+            } else {
+                el.style.opacity = 0;
+            }
         }
 
-        function oyunuBitir() {
-            oyunAktif = false;
-            clearInterval(zamanlayici);
-            document.getElementById("hedef").style.display = "none";
-            document.getElementById("baslatButon").style.display = "inline-block";
-            document.getElementById("baslatButon").innerText = "Tekrar Oyna";
-            alert("Oyun Bitti! Toplam Puanın: " + puan);
+        // Tıklama Kontrolü (Mouse ve Dokunmatik)
+        function handleInput(clientX, clientY) {
+            if (!isPlaying) return;
+
+            const dist = Math.hypot(clientX - target.x, clientY - target.y);
+
+            if (dist - target.radius < 0) {
+                // VURULDU!
+                score++;
+                combo++;
+                document.getElementById('scoreEl').innerText = score;
+                updateComboUI();
+                
+                playSound('hit');
+                createExplosion(target.x, target.y, target.color);
+                spawnTarget();
+            } else {
+                // BOŞA TIKLAMA (İstersen buraya ceza ekleyebilirsin)
+                combo = 0;
+                updateComboUI();
+            }
         }
+
+        window.addEventListener('mousedown', (e) => {
+            handleInput(e.clientX, e.clientY);
+        });
+        
+        window.addEventListener('touchstart', (e) => {
+            handleInput(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
     </script>
-
 </body>
 </html>
