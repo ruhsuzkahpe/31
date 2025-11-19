@@ -3,53 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON FLUX: INFINITY</title>
+    <title>NEON FLUX: OVERDRIVE</title>
     <style>
         body {
             margin: 0;
             background-color: #050505;
             overflow: hidden;
-            touch-action: none; /* Kaydırmayı engelle */
+            touch-action: none;
             font-family: 'Segoe UI', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
         }
         canvas { display: block; }
-        #ui {
+        #ui-layer {
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
-            mix-blend-mode: exclusion; /* Renklerin üstünde şık dursun */
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            padding: 20px; box-sizing: border-box;
             z-index: 10;
         }
+        #top-hud { display: flex; justify-content: space-between; width: 100%; }
+        .hud-text {
+            color: rgba(255,255,255,0.9);
+            font-size: 20px; font-weight: 300; letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        #energy-bar-container {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 6px;
+            background: #222;
+        }
+        #energy-bar {
+            width: 0%; height: 100%; background: #00f2ff;
+            box-shadow: 0 0 15px #00f2ff; transition: width 0.1s;
+        }
+        
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; pointer-events: auto;
+        }
         h1 {
-            font-size: 4vw;
-            margin: 0;
-            letter-spacing: 10px;
-            text-transform: uppercase;
-            font-weight: 100;
-            border-bottom: 1px solid white;
-            padding-bottom: 10px;
+            color: #fff; font-size: 40px; font-weight: 100; margin: 0; letter-spacing: 8px;
+            text-shadow: 0 0 20px #00f2ff; border-bottom: 1px solid #444; padding-bottom: 10px;
         }
-        p { font-size: 14px; margin-top: 15px; opacity: 0.7; letter-spacing: 2px; }
-        #score-disp {
-            position: absolute;
-            top: 30px; left: 30px;
-            color: rgba(255,255,255,0.8);
-            font-size: 24px;
-            font-weight: 100;
-            font-variant-numeric: tabular-nums;
-        }
+        p { color: #aaa; margin-top: 15px; font-size: 14px; letter-spacing: 2px; }
+        .blink { animation: pulse 1.5s infinite; color: #00f2ff; font-weight: bold; margin-top: 30px; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <div id="score-disp">0</div>
-    
-    <div id="ui">
+    <div id="ui-layer">
+        <div id="top-hud">
+            <div class="hud-text">SKOR: <span id="scoreVal">0</span></div>
+            <div class="hud-text">REKOR: <span id="highScoreVal">0</span></div>
+        </div>
+        <div id="energy-bar-container"><div id="energy-bar"></div></div>
+    </div>
+
+    <div id="start-screen">
         <h1>NEON FLUX</h1>
-        <p>BAŞLAMAK İÇİN DOKUN</p>
+        <p>OVERDRIVE EDITION</p>
+        <div class="blink">BAŞLAMAK İÇİN DOKUN</div>
     </div>
 
     <canvas id="c"></canvas>
@@ -57,23 +76,63 @@
     <script>
         const c = document.getElementById('c');
         const ctx = c.getContext('2d');
-        const ui = document.getElementById('ui');
-        const scoreEl = document.getElementById('score-disp');
+        const uiStart = document.getElementById('start-screen');
+        const scoreEl = document.getElementById('scoreVal');
+        const highScoreEl = document.getElementById('highScoreVal');
+        const energyBar = document.getElementById('energy-bar');
 
         let w, h;
         let gameActive = false;
         let score = 0;
-        let frame = 0;
-        let timeScale = 1.0; // Slow motion için
+        let highScore = localStorage.getItem('fluxHighScore') || 0;
+        highScoreEl.innerText = highScore;
         
-        // Renk Değişkeni (HUE)
+        let frame = 0;
+        let timeScale = 1.0;
+        let shockwaveEnergy = 0; // 0 to 100
+        
+        // Renk Döngüsü
         let hue = 0;
 
-        const player = { x: 0, y: 0, r: 8, trail: [] };
+        // Ses Motoru (Basit Synth)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        function playTone(freq, type, duration) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playCollectSound() {
+            // Giderek yükselen nota
+            let note = 400 + (score % 2000); 
+            playTone(note, 'sine', 0.15);
+        }
+        
+        function playExplosionSound() {
+            playTone(100, 'sawtooth', 0.5);
+        }
+
+        function playShieldSound() {
+            playTone(800, 'square', 0.3);
+            setTimeout(() => playTone(1200, 'square', 0.3), 100);
+        }
+
+        // --- NESNELER ---
+        const player = { x: 0, y: 0, r: 8, trail: [], hasShield: false };
         let enemies = [];
+        let orbs = [];
         let particles = [];
-        let orbs = []; // Toplanabilir puanlar
-        let gridOffset = { x: 0, y: 0 }; // Grid hareketi için
+        let shockwaves = [];
 
         function resize() {
             w = c.width = window.innerWidth;
@@ -82,273 +141,294 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- YARDIMCI FONKSİYONLAR ---
-        function random(min, max) { return Math.random() * (max - min) + min; }
-        
+        function spawnShockwave(x, y) {
+            shockwaves.push({x: x, y: y, r: 0, maxR: Math.max(w,h), alpha: 1});
+            playTone(200, 'triangle', 1.0); // Şok sesi
+            
+            // Ekrandaki tüm düşmanları yok et
+            enemies.forEach(e => {
+                createExplosion(e.x, e.y, e.color, 10);
+                score += 50;
+            });
+            enemies = [];
+            scoreEl.innerText = score;
+        }
+
         function createExplosion(x, y, color, count) {
             for(let i=0; i<count; i++){
                 particles.push({
                     x: x, y: y,
-                    vx: Math.cos(random(0, Math.PI*2)) * random(2, 8),
-                    vy: Math.sin(random(0, Math.PI*2)) * random(2, 8),
+                    vx: (Math.random()-0.5)*10,
+                    vy: (Math.random()-0.5)*10,
                     life: 1.0,
                     color: color,
-                    size: random(2, 5)
+                    size: Math.random()*4 + 1
                 });
             }
         }
 
-        // --- OYUN DÖNGÜSÜ ---
         function loop() {
             requestAnimationFrame(loop);
             
-            // Renk döngüsü
             hue = (hue + 0.5) % 360;
             const mainColor = `hsl(${hue}, 100%, 60%)`;
 
-            // Arkaplan Temizliği (İz Efekti İçin Hafif Opak)
-            ctx.fillStyle = `rgba(5, 5, 5, ${0.3 * timeScale})`; 
+            // Arkaplan
+            ctx.fillStyle = `rgba(5, 5, 8, ${0.25 * timeScale})`;
             ctx.fillRect(0, 0, w, h);
 
-            // --- 1. GRID (IZGARA) EFEKTİ ---
-            // Grid oyuncunun tersine hareket ederek derinlik hissi verir
-            ctx.strokeStyle = `rgba(255, 255, 255, 0.05)`;
+            // --- GRID ---
+            ctx.strokeStyle = `rgba(255, 255, 255, 0.04)`;
             ctx.lineWidth = 1;
-            const gridSize = 50;
-            
-            // Grid kaydırma hesabı
+            const gridSize = 60;
             const offX = (player.x * 0.05) % gridSize;
             const offY = (player.y * 0.05) % gridSize;
-
             ctx.beginPath();
-            // Dikey Çizgiler
             for (let x = -gridSize; x < w + gridSize; x += gridSize) {
-                ctx.moveTo(x - offX, 0);
-                ctx.lineTo(x - offX, h);
+                ctx.moveTo(x - offX, 0); ctx.lineTo(x - offX, h);
             }
-            // Yatay Çizgiler
             for (let y = -gridSize; y < h + gridSize; y += gridSize) {
-                ctx.moveTo(0, y - offY);
-                ctx.lineTo(w, y - offY);
+                ctx.moveTo(0, y - offY); ctx.lineTo(w, y - offY);
             }
             ctx.stroke();
 
+            // --- SHOCKWAVES ---
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                let s = shockwaves[i];
+                s.r += 20 * timeScale;
+                s.alpha -= 0.02 * timeScale;
+                
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+                ctx.strokeStyle = `rgba(0, 242, 255, ${s.alpha})`;
+                ctx.lineWidth = 10;
+                ctx.stroke();
 
-            // --- 2. OYUNCU ---
-            if (gameActive || particles.length > 0) {
-                // Kuyruk (Trail)
+                if(s.alpha <= 0) shockwaves.splice(i, 1);
+            }
+
+            // --- OYUNCU ---
+            if(gameActive || particles.length > 0) {
                 player.trail.push({x: player.x, y: player.y});
-                if (player.trail.length > 15) player.trail.shift();
+                if(player.trail.length > 12) player.trail.shift();
 
-                // Kuyruk Çizimi
-                if (gameActive) {
+                if(gameActive) {
+                    // Trail
                     ctx.beginPath();
-                    ctx.strokeStyle = mainColor;
+                    ctx.strokeStyle = player.hasShield ? '#0f0' : mainColor;
                     ctx.lineWidth = 4;
                     ctx.lineCap = 'round';
-                    // Bezier curve ile daha yumuşak çizgi
-                    ctx.moveTo(player.trail[0].x, player.trail[0].y);
-                    for (let i = 1; i < player.trail.length; i++) {
-                        const p = player.trail[i];
-                        ctx.lineTo(p.x, p.y);
+                    if(player.trail.length) {
+                        ctx.moveTo(player.trail[0].x, player.trail[0].y);
+                        for(let p of player.trail) ctx.lineTo(p.x, p.y);
                     }
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = mainColor;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = player.hasShield ? '#0f0' : mainColor;
                     ctx.stroke();
                     ctx.shadowBlur = 0;
 
-                    // Oyuncu Merkezi
+                    // Kalkan Görseli
+                    if(player.hasShield) {
+                        ctx.beginPath();
+                        ctx.arc(player.x, player.y, player.r + 10, 0, Math.PI*2);
+                        ctx.strokeStyle = `rgba(0, 255, 0, ${0.5 + Math.sin(frame*0.2)*0.2})`;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+
+                    // Çekirdek
                     ctx.fillStyle = '#fff';
-                    ctx.beginPath();
-                    ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
                 }
             }
 
-            // --- 3. ORBS (PUANLAR) ---
-            if (gameActive && frame % 30 === 0) {
+            // --- ORBS (TOPLANABİLİR) ---
+            if(gameActive && frame % 25 === 0) {
+                let type = 'score';
+                if(Math.random() > 0.98) type = 'shield'; // %2 şansla kalkan
+                
                 orbs.push({
-                    x: random(0, w), y: random(0, h),
-                    r: 5, active: true
+                    x: Math.random()*w, y: Math.random()*h,
+                    r: type === 'shield' ? 8 : 5,
+                    type: type
                 });
             }
 
             for (let i = orbs.length - 1; i >= 0; i--) {
                 let o = orbs[i];
                 
-                // Manyetik Çekim Efekti
+                // Manyetik Çekim
                 let dx = player.x - o.x;
                 let dy = player.y - o.y;
                 let dist = Math.hypot(dx, dy);
 
-                if (dist < 150) { // Yakınsa çek
-                    o.x += dx * 0.05;
-                    o.y += dy * 0.05;
+                if(dist < 200) {
+                    o.x += dx * 0.08;
+                    o.y += dy * 0.08;
                 }
 
-                // Çizim
-                ctx.fillStyle = mainColor;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = mainColor;
+                let col = o.type === 'shield' ? '#0f0' : mainColor;
+                ctx.fillStyle = col;
+                ctx.shadowBlur = 10; ctx.shadowColor = col;
                 ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI*2); ctx.fill();
                 ctx.shadowBlur = 0;
 
                 // Toplama
-                if (dist < player.r + o.r + 10) {
-                    score += 10;
+                if(dist < player.r + o.r + 10) {
+                    if(o.type === 'score') {
+                        score += 10;
+                        playCollectSound();
+                        createExplosion(o.x, o.y, mainColor, 3);
+                        
+                        // Şok Dalgası Enerjisi
+                        shockwaveEnergy += 5;
+                        if(shockwaveEnergy >= 100) {
+                            shockwaveEnergy = 0;
+                            spawnShockwave(player.x, player.y);
+                        }
+                        energyBar.style.width = shockwaveEnergy + '%';
+
+                    } else if(o.type === 'shield') {
+                        player.hasShield = true;
+                        playShieldSound();
+                        createExplosion(o.x, o.y, '#0f0', 10);
+                    }
                     scoreEl.innerText = score;
                     orbs.splice(i, 1);
-                    // Toplama efekti (küçük patlama)
-                    createExplosion(o.x, o.y, mainColor, 3);
                 }
             }
 
-            // --- 4. DÜŞMANLAR (KARANLIK MADDE) ---
-            if (gameActive && frame % 40 === 0) {
-                // Ekranın kenarından gelsin
-                let angle = random(0, Math.PI*2);
-                let radius = Math.max(w, h) / 1.5;
+            // --- DÜŞMANLAR ---
+            if(gameActive && frame % 35 === 0) {
+                let angle = Math.random() * Math.PI * 2;
+                let rad = Math.max(w, h);
                 enemies.push({
-                    x: w/2 + Math.cos(angle) * radius,
-                    y: h/2 + Math.sin(angle) * radius,
-                    vx: -Math.cos(angle) * (2 + score/500), // Merkeze değil, rastgele aksın
-                    vy: -Math.sin(angle) * (2 + score/500),
-                    r: random(10, 20),
-                    angle: angle // Kendi ekseninde dönmesi için
+                    x: w/2 + Math.cos(angle)*rad,
+                    y: h/2 + Math.sin(angle)*rad,
+                    vx: -Math.cos(angle) * (2.5 + score/1000),
+                    vy: -Math.sin(angle) * (2.5 + score/1000),
+                    r: Math.random()*10 + 10,
+                    color: '#ff0055'
                 });
             }
 
             for (let i = enemies.length - 1; i >= 0; i--) {
                 let e = enemies[i];
-                // Oyuncuyu hafif takip etsin (Zorluk)
+                // Takip Mantığı
                 let dx = player.x - e.x;
                 let dy = player.y - e.y;
-                let angleToPlayer = Math.atan2(dy, dx);
-                
-                e.vx += Math.cos(angleToPlayer) * 0.05;
-                e.vy += Math.sin(angleToPlayer) * 0.05;
-                
-                // Hız sınırlama (timeScale ile çarpılır - Slow motion için)
+                let ang = Math.atan2(dy, dx);
+                e.vx += Math.cos(ang) * 0.08;
+                e.vy += Math.sin(ang) * 0.08;
+
                 e.x += e.vx * timeScale;
                 e.y += e.vy * timeScale;
 
-                // Düşman Çizimi (Dikenli Yapı)
+                // Çizim
                 ctx.save();
                 ctx.translate(e.x, e.y);
-                ctx.rotate(frame * 0.05); // Dönme efekti
-                ctx.fillStyle = '#ff0044';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#ff0000';
-                ctx.beginPath();
-                // Kare çiz ama dönüyor
-                ctx.rect(-e.r, -e.r, e.r*2, e.r*2);
-                ctx.fill();
-                // İçine siyah delik
+                ctx.rotate(frame * 0.1);
+                ctx.fillStyle = e.color;
+                ctx.shadowBlur = 20; ctx.shadowColor = e.color;
+                ctx.fillRect(-e.r, -e.r, e.r*2, e.r*2);
                 ctx.fillStyle = '#000';
-                ctx.beginPath(); ctx.arc(0, 0, e.r/2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(0, 0, e.r*0.6, 0, Math.PI*2); ctx.fill();
                 ctx.restore();
 
-                // Çarpışma (ÖLÜM)
+                // Çarpışma
                 let dist = Math.hypot(player.x - e.x, player.y - e.y);
-                if (gameActive && dist < player.r + e.r) {
-                    gameOver();
+                if(gameActive && dist < player.r + e.r) {
+                    if(player.hasShield) {
+                        // Kalkan varsa koru
+                        player.hasShield = false;
+                        createExplosion(e.x, e.y, '#0f0', 20); // Kalkan patlaması
+                        playShieldSound();
+                        enemies.splice(i, 1);
+                        // Düşmanları biraz itele
+                        enemies.forEach(push => {
+                            push.vx *= -2; push.vy *= -2;
+                        });
+                    } else {
+                        gameOver();
+                    }
                 }
-
-                // Ekrandan çok uzaklaşırsa sil
-                if (e.x < -w || e.x > w*2 || e.y < -h || e.y > h*2) enemies.splice(i, 1);
+                
+                if(Math.abs(e.x - w/2) > w*1.5 || Math.abs(e.y - h/2) > h*1.5) enemies.splice(i, 1);
             }
 
-            // --- 5. PARÇACIKLAR (PATLAMALAR) ---
+            // --- PARÇACIKLAR ---
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
                 p.x += p.vx * timeScale;
                 p.y += p.vy * timeScale;
-                p.life -= 0.02 * timeScale; // Slow motionda yavaş sön
-                p.size *= 0.95;
-
+                p.life -= 0.02 * timeScale;
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                ctx.fill();
-                ctx.globalAlpha = 1.0;
-
-                if (p.life <= 0) particles.splice(i, 1);
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = 1;
+                if(p.life <= 0) particles.splice(i, 1);
             }
-
+            
             frame++;
-        }
-
-        // --- KONTROLLER ---
-        function startGame(e) {
-            if (gameActive) return;
-            
-            // Reset
-            gameActive = true;
-            score = 0;
-            scoreEl.innerText = "0";
-            enemies = [];
-            orbs = [];
-            particles = [];
-            player.trail = [];
-            timeScale = 1.0; // Hızı normale döndür
-            
-            // UI Gizle
-            ui.style.display = 'none';
-            scoreEl.style.display = 'block';
-
-            // Başlangıç pozisyonu (parmak/mouse yeri)
-            movePlayer(e);
         }
 
         function gameOver() {
             gameActive = false;
+            timeScale = 0.1; // Slow Mo
+            playExplosionSound();
+            createExplosion(player.x, player.y, '#fff', 40);
             
-            // SLOW MOTION DEATH EFFECT
-            timeScale = 0.1; // Her şeyi yavaşlat
-            
-            // Büyük patlama
-            createExplosion(player.x, player.y, '#fff', 50);
-            createExplosion(player.x, player.y, '#ff0044', 30);
+            if(score > highScore) {
+                highScore = score;
+                localStorage.setItem('fluxHighScore', highScore);
+                highScoreEl.innerText = highScore;
+            }
 
-            // UI Göster (Biraz gecikmeli)
             setTimeout(() => {
-                ui.style.display = 'block';
-                ui.innerHTML = `<h1>YOK OLDUN</h1><p>SKOR: ${score}</p><p style="color:#ff0044; font-weight:bold">TEKRAR DOKUN</p>`;
+                uiStart.style.display = 'flex';
+                uiStart.innerHTML = `<h1>YANDIN</h1><p>SKOR: ${score}</p><div class="blink">TEKRAR DOKUN</div>`;
             }, 1000);
         }
 
-        function movePlayer(e) {
-            if (!gameActive && timeScale === 1.0) return; // Oyun bitmişse ve slow motion bitmemişse hareket etme
-            e.preventDefault();
+        function startGame(e) {
+            if(gameActive) return;
             
-            let cx, cy;
-            if(e.touches) {
-                cx = e.touches[0].clientX;
-                cy = e.touches[0].clientY;
-            } else {
-                cx = e.clientX;
-                cy = e.clientY;
-            }
+            // Audio context başlat (Mobil tarayıcılar için dokunma şart)
+            if(audioCtx.state === 'suspended') audioCtx.resume();
 
-            // Yumuşak takip (Lerp)
-            // Eğer çok yavaşlatılmışsa (ölüm anı) hareket etmesin
-            if (timeScale > 0.5) {
-                player.x += (cx - player.x) * 0.3; // 0.3 = Daha sıkı kontrol
-                player.y += (cy - player.y) * 0.3;
-            }
+            gameActive = true;
+            score = 0;
+            scoreEl.innerText = "0";
+            shockwaveEnergy = 0;
+            energyBar.style.width = "0%";
+            enemies = []; orbs = []; particles = [];
+            player.trail = []; player.hasShield = false;
+            timeScale = 1.0;
+            
+            uiStart.style.display = 'none';
+            
+            handleMove(e);
         }
 
-        // Event Listeners
+        function handleMove(e) {
+            if(!gameActive && timeScale > 0.5) return;
+            e.preventDefault();
+            let cx = e.touches ? e.touches[0].clientX : e.clientX;
+            let cy = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            // Parmak yukarıda olsa bile gör diye Y ofseti
+            let targetY = e.touches ? cy - 40 : cy; 
+
+            player.x += (cx - player.x) * 0.25;
+            player.y += (targetY - player.y) * 0.25;
+        }
+
         window.addEventListener('mousedown', startGame);
         window.addEventListener('touchstart', startGame, {passive: false});
-        
-        window.addEventListener('mousemove', movePlayer);
-        window.addEventListener('touchmove', movePlayer, {passive: false});
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, {passive: false});
 
-        // Başlat
         loop();
-
     </script>
 </body>
 </html>
