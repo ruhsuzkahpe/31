@@ -3,285 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON DASH: INFINITY</title>
+    <title>NEON SUMO ONLINE</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #111; overflow: hidden; touch-action: none; font-family: 'Arial Black', sans-serif; user-select: none; -webkit-user-select: none; }
-        canvas { display: block; width: 100%; height: 100%; }
-        
-        #ui {
+        body { margin: 0; background: #111; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; color: white; user-select: none; -webkit-user-select: none; }
+        canvas { display: block; }
+
+        /* MENÜ TASARIMI */
+        #menu {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            background: rgba(10, 10, 10, 0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 20;
         }
+        h1 { font-size: 50px; color: #fff; text-shadow: 0 0 20px #ff0055; margin: 0; letter-spacing: 2px; text-align: center; }
+        p { color: #aaa; margin-bottom: 30px; font-size: 16px; }
         
-        #score-disp {
-            position: absolute; top: 10%;
-            font-size: 60px; color: rgba(255,255,255,0.2);
-            font-weight: 900;
+        .btn {
+            width: 260px; padding: 15px; margin: 10px; font-size: 20px; font-weight: bold;
+            border: none; border-radius: 50px; cursor: pointer; text-transform: uppercase;
+            transition: transform 0.1s; color: white;
+        }
+        .btn-host { background: linear-gradient(45deg, #ff0055, #ff5500); box-shadow: 0 0 20px #ff0055; }
+        .btn-join { background: linear-gradient(45deg, #00f2ff, #0055ff); box-shadow: 0 0 20px #00f2ff; }
+        .btn:active { transform: scale(0.95); }
+
+        /* INPUT ALANI */
+        #join-ui { display: none; flex-direction: column; align-items: center; }
+        input {
+            background: #222; border: 2px solid #555; padding: 15px; width: 200px;
+            font-size: 24px; color: #fff; text-align: center; border-radius: 10px;
+            margin-bottom: 15px; outline: none; letter-spacing: 3px;
         }
 
-        #start-msg {
-            font-size: 24px; color: #fff; text-align: center;
-            text-shadow: 0 0 20px #0ff; animation: pulse 1s infinite;
+        /* LOBİ */
+        #lobby-ui { display: none; text-align: center; }
+        .code { font-size: 70px; font-weight: bold; color: #ff0055; letter-spacing: 5px; margin: 10px 0; }
+        
+        /* KAZANAN EKRANI */
+        #win-ui {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 30; pointer-events: none;
         }
+        #win-text { font-size: 60px; font-weight: bold; text-shadow: 0 0 30px white; }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div id="ui">
-        <div id="score-disp">0</div>
-        <div id="start-msg">BAŞLAMAK İÇİN DOKUN</div>
+    <div id="win-ui"><div id="win-text">KAZANDIN!</div></div>
+
+    <div id="menu">
+        <h1>NEON SUMO</h1>
+        <p>DÖN • BASILI TUT • ÇARPIŞ</p>
+
+        <div id="main-ui">
+            <button class="btn btn-host" onclick="setupHost()">ODA KUR</button>
+            <button class="btn btn-join" onclick="showJoin()">ODAYA KATIL</button>
+        </div>
+
+        <div id="join-ui">
+            <input type="number" id="room-code" placeholder="KOD" maxlength="4">
+            <button class="btn btn-join" onclick="joinRoom()">BAĞLAN</button>
+            <button class="btn" style="background:transparent; color:#aaa; font-size:14px;" onclick="location.reload()">GERİ</button>
+        </div>
+
+        <div id="lobby-ui">
+            <p>ARKADAŞINA BU KODU VER:</p>
+            <div class="code" id="my-code">...</div>
+            <div style="color:#888; animation: pulse 1s infinite;">Rakip Bekleniyor...</div>
+        </div>
     </div>
+
     <canvas id="c"></canvas>
 
     <script>
+        // --- AYARLAR ---
         const c = document.getElementById('c');
         const ctx = c.getContext('2d');
-        const uiMsg = document.getElementById('start-msg');
-        const scoreEl = document.getElementById('score-disp');
-
         let w, h;
-        let gameActive = false;
-        let frame = 0;
-        let score = 0;
-        let speed = 6;
-        let hue = 0;
-
-        // --- OYUNCU AYARLARI ---
-        const player = {
-            x: 100, y: 0, w: 40, h: 40,
-            dy: 0, jumpPower: -14, gravity: 0.8,
-            grounded: false, rotation: 0,
-            color: '#0ff',
-            trail: []
+        
+        let role = null; // 'host' | 'client'
+        let peer = null, conn = null;
+        
+        // OYUN DURUMU (Fiziksel Dünya)
+        const game = {
+            active: false,
+            winner: null,
+            arena: { r: 0 }, // Çember yarıçapı
+            // Oyuncu 1 (Host - Kırmızı)
+            p1: { x: 0, y: 0, r: 25, angle: 0, vx: 0, vy: 0, boosting: false, color: '#ff0055' },
+            // Oyuncu 2 (Client - Mavi)
+            p2: { x: 0, y: 0, r: 25, angle: 0, vx: 0, vy: 0, boosting: false, color: '#00f2ff' },
+            particles: []
         };
 
-        let obstacles = [];
-        let particles = [];
-        let floorHeight = 0;
+        // İstemci tarafı girdisi
+        let isTouching = false;
 
-        function resize() {
-            w = c.width = window.innerWidth;
-            h = c.height = window.innerHeight;
-            floorHeight = h - 100;
-            if(!gameActive) player.y = floorHeight - player.h;
+        function resize() { 
+            w = c.width = window.innerWidth; 
+            h = c.height = window.innerHeight; 
+            // Arena başlangıç boyutu (Ekranın %90'ı)
+            if(!game.active) game.arena.r = Math.min(w,h) * 0.45;
         }
-        window.addEventListener('resize', resize);
-        resize();
+        window.addEventListener('resize', resize); resize();
 
-        // --- OYUN DÖNGÜSÜ ---
-        function loop() {
-            requestAnimationFrame(loop);
-            
-            // Arkaplan (Hafif renk değişimi)
-            hue += 0.5;
-            ctx.fillStyle = `hsl(${hue}, 20%, 10%)`;
-            ctx.fillRect(0, 0, w, h);
+        // --- AĞ (PEERJS) ---
+        function generateCode() { return Math.floor(1000 + Math.random() * 9000); }
 
-            // ZEMİN (Neon Çizgi)
-            ctx.shadowBlur = 20; 
-            ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
-            ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-            ctx.fillRect(0, floorHeight, w, 10);
-            ctx.shadowBlur = 0;
+        function setupHost() {
+            const code = generateCode();
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('lobby-ui').style.display = 'block';
+            document.getElementById('my-code').innerText = code;
 
-            if (!gameActive) {
-                // Bekleme Modunda Oyuncu Animasyonu
-                player.y = floorHeight - player.h - Math.abs(Math.sin(Date.now()/200)*20);
-                drawPlayer();
-                return;
-            }
-
-            updatePlayer();
-            updateObstacles();
-            updateParticles();
-            drawPlayer();
-
-            // Skor ve Hızlanma
-            score++;
-            scoreEl.innerText = Math.floor(score / 10);
-            speed += 0.002; // Yavaşça hızlan
-            
-            frame++;
-        }
-
-        // --- OYUNCU MANTIĞI ---
-        function updatePlayer() {
-            // Yerçekimi
-            player.dy += player.gravity;
-            player.y += player.dy;
-
-            // Zemin Kontrolü
-            if (player.y + player.h > floorHeight) {
-                player.y = floorHeight - player.h;
-                player.dy = 0;
-                player.grounded = true;
-                
-                // Yerdeyken dönmeyi sıfırla (en yakın 90 dereceye)
-                player.rotation = Math.round(player.rotation / (Math.PI/2)) * (Math.PI/2);
-            } else {
-                player.grounded = false;
-                player.rotation += 0.1; // Havada dön
-            }
-
-            // Trail (İz) Efekti
-            if (frame % 3 === 0) {
-                player.trail.push({ x: player.x, y: player.y, r: player.rotation, alpha: 0.8 });
-            }
-            for (let i = player.trail.length - 1; i >= 0; i--) {
-                let t = player.trail[i];
-                t.x -= speed; // İz geriye kaysın
-                t.alpha -= 0.05;
-                if (t.alpha <= 0) player.trail.splice(i, 1);
-            }
-        }
-
-        function drawPlayer() {
-            // Trail Çizimi
-            player.trail.forEach(t => {
-                ctx.save();
-                ctx.translate(t.x + player.w/2, t.y + player.h/2);
-                ctx.rotate(t.r);
-                ctx.fillStyle = `rgba(0, 255, 255, ${t.alpha})`;
-                ctx.fillRect(-player.w/2, -player.h/2, player.w, player.h);
-                ctx.restore();
+            peer = new Peer(code.toString());
+            peer.on('connection', (c) => {
+                conn = c;
+                setupConn();
+                startGame(); // Bağlanınca hemen başla
             });
+        }
 
-            // Oyuncu Çizimi
+        function showJoin() {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('join-ui').style.display = 'flex';
+        }
+
+        function joinRoom() {
+            const code = document.getElementById('room-code').value;
+            if(!code) return;
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(code);
+                conn.on('open', () => {
+                    setupConn();
+                    role = 'client';
+                    document.getElementById('menu').style.display = 'none';
+                    loop(); // Döngüyü başlat
+                });
+            });
+        }
+
+        function setupConn() {
+            conn.on('data', (data) => {
+                if (role === 'client' && data.type === 'state') {
+                    // Client sadece çizim için veriyi alır
+                    game.p1 = data.p1;
+                    game.p2 = data.p2;
+                    game.arena = data.arena;
+                    game.winner = data.winner;
+                    if(data.boom) createParticles(data.boom.x, data.boom.y, data.boom.c);
+                    if(game.winner) showWin(game.winner === 'p2');
+
+                } else if (role === 'host' && data.type === 'input') {
+                    // Host, Client'ın "Basıyor mu?" bilgisini alır
+                    game.p2.boosting = data.boosting;
+                }
+            });
+            
+            conn.on('close', () => { alert("Bağlantı koptu!"); location.reload(); });
+        }
+
+        function startGame() {
+            role = 'host';
+            document.getElementById('menu').style.display = 'none';
+            
+            // Başlangıç Pozisyonları
+            game.p1.x = w/2 - 100; game.p1.y = h/2;
+            game.p2.x = w/2 + 100; game.p2.y = h/2;
+            game.p1.vx = 0; game.p1.vy = 0;
+            game.p2.vx = 0; game.p2.vy = 0;
+            game.arena.r = Math.min(w,h) * 0.45;
+            game.active = true;
+            
+            loop();
+
+            // Host Veri Gönderimi (Saniyede 30)
+            setInterval(() => {
+                if(game.active) {
+                    conn.send({
+                        type: 'state',
+                        p1: game.p1,
+                        p2: game.p2,
+                        arena: game.arena,
+                        winner: game.winner
+                    });
+                }
+            }, 33);
+        }
+
+        // --- OYUN FİZİĞİ (SADECE HOST) ---
+        function updatePhysics() {
+            if(!game.active || game.winner) return;
+
+            // Arena Daralması
+            if(game.arena.r > 100) game.arena.r -= 0.05;
+
+            // Oyuncuları Güncelle
+            updatePlayer(game.p1, role === 'host' ? isTouching : false); // Host kendi inputu
+            updatePlayer(game.p2, game.p2.boosting); // Client network inputu
+
+            // Çarpışma Kontrolü (Sumo Mantığı)
+            let dx = game.p2.x - game.p1.x;
+            let dy = game.p2.y - game.p1.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            let minDist = game.p1.r + game.p2.r;
+
+            if (dist < minDist) {
+                // ÇARPIŞMA!
+                let angle = Math.atan2(dy, dx);
+                let force = 8; // İtme gücü
+                
+                // Birbirlerini itekle
+                game.p1.vx -= Math.cos(angle) * force;
+                game.p1.vy -= Math.sin(angle) * force;
+                game.p2.vx += Math.cos(angle) * force;
+                game.p2.vy += Math.sin(angle) * force;
+                
+                // Efekt Gönder
+                let cx = (game.p1.x + game.p2.x)/2;
+                let cy = (game.p1.y + game.p2.y)/2;
+                createParticles(cx, cy, '#fff');
+                conn.send({type:'state', p1:game.p1, p2:game.p2, arena:game.arena, boom:{x:cx,y:cy,c:'#fff'}});
+            }
+
+            // Arena Dışına Çıkma (Ölüm)
+            checkBounds(game.p1, 'p1');
+            checkBounds(game.p2, 'p2');
+        }
+
+        function updatePlayer(p, isPressing) {
+            // Sürekli Dönme
+            p.angle += 0.1;
+
+            // Sürtünme (Yavaşlama)
+            p.vx *= 0.95;
+            p.vy *= 0.95;
+
+            // Basıyorsa İleri Git (Boost)
+            if (isPressing) {
+                // Dönme açısına göre kuvvet uygula
+                p.vx += Math.cos(p.angle) * 0.8;
+                p.vy += Math.sin(p.angle) * 0.8;
+                // Dönerken açıyı kilitleme (Strateji için dönmeye devam etsin mi? Evet, sumo stili)
+            }
+
+            p.x += p.vx;
+            p.y += p.vy;
+        }
+
+        function checkBounds(p, pid) {
+            let dx = p.x - w/2;
+            let dy = p.y - h/2;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+
+            // Eğer merkezden uzaklık > arena yarıçapı ise DÜŞTÜ
+            if (dist > game.arena.r + p.r) {
+                game.winner = pid === 'p1' ? 'p2' : 'p1'; // Diğeri kazandı
+                game.active = false;
+                showWin(role === 'host' ? (game.winner === 'p1') : (game.winner === 'p2'));
+            }
+        }
+
+        function showWin(iWon) {
+            const ui = document.getElementById('win-ui');
+            const txt = document.getElementById('win-text');
+            ui.style.display = 'flex';
+            if(iWon) {
+                txt.innerText = "KAZANDIN! 👑";
+                txt.style.color = "#0f0";
+            } else {
+                txt.innerText = "ELENDİN 💀";
+                txt.style.color = "#f00";
+            }
+            setTimeout(() => location.reload(), 3000);
+        }
+
+        // --- ÇİZİM ---
+        function draw() {
+            // Temizle
+            ctx.fillStyle = '#111'; ctx.fillRect(0,0,w,h);
+
+            // ARENA
+            ctx.strokeStyle = '#fff'; 
+            ctx.lineWidth = 5;
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath(); ctx.arc(w/2, h/2, game.arena.r, 0, Math.PI*2); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Oyuncuları Çiz
+            drawPlayerObj(game.p1);
+            drawPlayerObj(game.p2);
+
+            // Efektler
+            for(let i=game.particles.length-1; i>=0; i--) {
+                let pt = game.particles[i];
+                pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.05;
+                ctx.globalAlpha = pt.life; ctx.fillStyle = pt.c;
+                ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI*2); ctx.fill();
+                if(pt.life<=0) game.particles.splice(i,1);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawPlayerObj(p) {
             ctx.save();
-            ctx.translate(player.x + player.w/2, player.y + player.h/2);
-            ctx.rotate(player.rotation);
+            ctx.translate(p.x, p.y);
             
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#0ff';
-            ctx.fillStyle = '#fff'; // İç renk beyaz
-            ctx.fillRect(-player.w/2, -player.h/2, player.w, player.h);
+            // Parlama
+            ctx.shadowBlur = 20; ctx.shadowColor = p.color;
             
-            // Neon Kenar
-            ctx.strokeStyle = '#0ff';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(-player.w/2, -player.h/2, player.w, player.h);
+            // Gövde
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI*2); ctx.fill();
             
+            // Yön Göstergesi (Göz)
+            ctx.rotate(p.angle);
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(p.r-5, 0, 8, 0, Math.PI*2); ctx.fill();
+            
+            // Boost Efekti
+            if(p.boosting || (role==='host' && p===game.p1 && isTouching) || (role==='client' && p===game.p2 && isTouching)) {
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(0, 0, p.r+5, 0, Math.PI*2); ctx.stroke();
+            }
+
             ctx.restore();
         }
 
-        // --- ENGEL MANTIĞI ---
-        function updateObstacles() {
-            // Engel Ekleme
-            if (frame % 100 === 0 || (Math.random() < 0.02 && frame > 100 && obstacles.length < 2)) {
-                // Minimum mesafe kontrolü
-                let lastObs = obstacles[obstacles.length-1];
-                if (!lastObs || (w - lastObs.x > 250)) { // Engeller arası boşluk
-                    let type = Math.random();
-                    let obsH = type > 0.7 ? 70 : 40; // Bazen büyük engel
-                    let isFlying = type < 0.2; // %20 ihtimalle uçan engel
-                    
-                    obstacles.push({
-                        x: w,
-                        y: isFlying ? floorHeight - 90 : floorHeight - obsH,
-                        w: 40,
-                        h: obsH,
-                        color: `hsl(${hue + 180}, 100%, 50%)` // Zıt renk
-                    });
-                }
-            }
-
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                let o = obstacles[i];
-                o.x -= speed;
-
-                // Çizim (Üçgenimsi Dikenler veya Bloklar)
-                ctx.fillStyle = o.color;
-                ctx.shadowBlur = 15; ctx.shadowColor = o.color;
-                ctx.fillRect(o.x, o.y, o.w, o.h);
-                ctx.shadowBlur = 0;
-
-                // Çarpışma Kontrolü (Basit AABB)
-                if (
-                    player.x < o.x + o.w &&
-                    player.x + player.w > o.x &&
-                    player.y < o.y + o.h &&
-                    player.y + player.h > o.y
-                ) {
-                    die();
-                }
-
-                // Ekrandan çıktıysa sil
-                if (o.x + o.w < 0) obstacles.splice(i, 1);
-            }
-        }
-
-        // --- EFEKTLER ---
-        function die() {
-            gameActive = false;
-            uiMsg.innerHTML = "YANDIN!<br>SKOR: " + Math.floor(score/10);
-            uiMsg.style.display = 'block';
-            
-            // Patlama Efekti
-            for(let i=0; i<30; i++) {
-                particles.push({
-                    x: player.x + player.w/2,
-                    y: player.y + player.h/2,
-                    vx: (Math.random()-0.5) * 20,
-                    vy: (Math.random()-0.5) * 20,
-                    life: 1,
-                    color: player.color
+        function createParticles(x, y, c) {
+            for(let i=0; i<15; i++) {
+                game.particles.push({
+                    x:x, y:y, c:c, life:1,
+                    vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10
                 });
             }
         }
 
-        function updateParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                let p = particles[i];
-                p.x += p.vx; p.y += p.vy; p.life -= 0.03;
-                p.vy += 0.5; // Parçacıklara yerçekimi
-                
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, 5, 5);
-                ctx.globalAlpha = 1;
-
-                if(p.life <= 0) particles.splice(i, 1);
+        // --- DÖNGÜ ---
+        function loop() {
+            requestAnimationFrame(loop);
+            if(role === 'host') updatePhysics();
+            else {
+                // Client sürekli input gönderir
+                conn.send({ type: 'input', boosting: isTouching });
             }
+            draw();
         }
 
         // --- KONTROLLER ---
-        function jump(e) {
-            if (e) e.preventDefault();
-            
-            if (!gameActive) {
-                // Oyunu Başlat
-                gameActive = true;
-                uiMsg.style.display = 'none';
-                score = 0; speed = 7;
-                obstacles = []; particles = [];
-                player.y = floorHeight - player.h;
-                player.trail = [];
-                return;
-            }
-
-            if (player.grounded) {
-                player.dy = player.jumpPower;
-                player.grounded = false;
-                
-                // Zıplama Efekti (Küçük parçacıklar)
-                for(let i=0; i<5; i++) {
-                    particles.push({
-                        x: player.x + player.w/2, y: player.y + player.h,
-                        vx: (Math.random()-0.5)*5, vy: Math.random()*-2,
-                        life: 0.5, color: '#fff'
-                    });
-                }
-            }
-        }
-
-        window.addEventListener('touchstart', jump, {passive: false});
-        window.addEventListener('mousedown', jump);
-        window.addEventListener('keydown', (e) => { if(e.code === 'Space') jump(); });
-
-        loop();
+        // Sadece basılı tutma var
+        window.addEventListener('touchstart', (e) => { e.preventDefault(); isTouching = true; }, {passive:false});
+        window.addEventListener('touchend', (e) => { e.preventDefault(); isTouching = false; });
+        window.addEventListener('mousedown', () => isTouching = true);
+        window.addEventListener('mouseup', () => isTouching = false);
 
     </script>
 </body>
