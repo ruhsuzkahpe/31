@@ -3,363 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON SUMO ONLINE</title>
+    <title>NEON MIND: ONLINE</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #111; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; color: white; user-select: none; -webkit-user-select: none; }
-        canvas { display: block; }
-
-        /* MENÜ TASARIMI */
-        #menu {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 10, 0.95); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 20;
-        }
-        h1 { font-size: 50px; color: #fff; text-shadow: 0 0 20px #ff0055; margin: 0; letter-spacing: 2px; text-align: center; }
-        p { color: #aaa; margin-bottom: 30px; font-size: 16px; }
+        body { margin: 0; background: #080808; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; user-select: none; -webkit-user-select: none; }
         
-        .btn {
-            width: 260px; padding: 15px; margin: 10px; font-size: 20px; font-weight: bold;
-            border: none; border-radius: 50px; cursor: pointer; text-transform: uppercase;
-            transition: transform 0.1s; color: white;
-        }
-        .btn-host { background: linear-gradient(45deg, #ff0055, #ff5500); box-shadow: 0 0 20px #ff0055; }
-        .btn-join { background: linear-gradient(45deg, #00f2ff, #0055ff); box-shadow: 0 0 20px #00f2ff; }
-        .btn:active { transform: scale(0.95); }
-
-        /* INPUT ALANI */
-        #join-ui { display: none; flex-direction: column; align-items: center; }
-        input {
-            background: #222; border: 2px solid #555; padding: 15px; width: 200px;
-            font-size: 24px; color: #fff; text-align: center; border-radius: 10px;
-            margin-bottom: 15px; outline: none; letter-spacing: 3px;
-        }
-
-        /* LOBİ */
-        #lobby-ui { display: none; text-align: center; }
-        .code { font-size: 70px; font-weight: bold; color: #ff0055; letter-spacing: 5px; margin: 10px 0; }
+        /* MENÜ */
+        #menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        h1 { font-size: 40px; text-shadow: 0 0 20px #0ff; margin-bottom: 10px; text-align: center; text-transform: uppercase; }
         
-        /* KAZANAN EKRANI */
-        #win-ui {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 30; pointer-events: none;
-        }
-        #win-text { font-size: 60px; font-weight: bold; text-shadow: 0 0 30px white; }
+        .btn { width: 80%; max-width: 300px; padding: 20px; margin: 10px; font-size: 20px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; color: #fff; transition: 0.2s; }
+        .btn-host { background: #ff0055; box-shadow: 0 0 15px #ff0055; }
+        .btn-join { background: #00f2ff; box-shadow: 0 0 15px #00f2ff; color: #000; }
+        
+        .input-box { padding: 15px; font-size: 24px; text-align: center; width: 200px; margin-bottom: 10px; border-radius: 10px; border: 2px solid #555; background: #222; color: #fff; outline: none; }
+
+        /* OYUN ALANI */
+        #game { display: none; flex-direction: column; height: 100vh; }
+        
+        #status-bar { flex: 1; display: flex; justify-content: space-between; padding: 20px; font-size: 24px; font-weight: bold; background: #1a1a1a; border-bottom: 2px solid #333; }
+        .p1-score { color: #00f2ff; }
+        .p2-score { color: #ff0055; }
+
+        #arena { flex: 4; position: relative; display: flex; justify-content: center; align-items: center; }
+        
+        #character { width: 100px; height: 100px; background: #333; border-radius: 50%; position: relative; transition: transform 0.3s; box-shadow: 0 0 30px #000; display: flex; justify-content: center; align-items: center; font-size: 40px; }
+        
+        .shield { border: 5px solid #00f2ff; box-shadow: 0 0 20px #00f2ff; background: rgba(0, 242, 255, 0.2); }
+        .gun { border: 5px solid #ff0055; box-shadow: 0 0 20px #ff0055; background: rgba(255, 0, 85, 0.2); }
+
+        #msg { position: absolute; top: 20px; font-size: 24px; text-align: center; width: 100%; text-shadow: 0 0 10px #fff; }
+
+        /* KONTROLLER */
+        #controls { flex: 2; display: flex; gap: 10px; padding: 20px; background: #1a1a1a; border-top: 2px solid #333; }
+        .action-btn { flex: 1; background: #333; border: 2px solid #555; border-radius: 10px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .action-btn:active { background: #555; transform: scale(0.95); }
+        .selected { border-color: #fff; color: #fff; background: #444; box-shadow: 0 0 15px #fff; }
+
+        /* Lobi */
+        #lobby { display: none; text-align: center; }
+        .code-disp { font-size: 60px; color: #ff0055; font-weight: bold; margin: 20px; letter-spacing: 5px; }
 
     </style>
 </head>
 <body>
 
-    <div id="win-ui"><div id="win-text">KAZANDIN!</div></div>
-
     <div id="menu">
-        <h1>NEON SUMO</h1>
-        <p>DÖN • BASILI TUT • ÇARPIŞ</p>
-
-        <div id="main-ui">
-            <button class="btn btn-host" onclick="setupHost()">ODA KUR</button>
-            <button class="btn btn-join" onclick="showJoin()">ODAYA KATIL</button>
+        <h1>NEON MIND<br><span style="font-size:18px; color:#888">ONLINE DUELLO</span></h1>
+        
+        <div id="start-btns">
+            <button class="btn btn-host" onclick="setupHost()">ODA KUR (HOST)</button>
+            <button class="btn btn-join" onclick="showJoin()">ODAYA GİR (JOIN)</button>
         </div>
 
-        <div id="join-ui">
-            <input type="number" id="room-code" placeholder="KOD" maxlength="4">
+        <div id="join-form" style="display:none; flex-direction:column; align-items:center;">
+            <input type="number" id="room-input" class="input-box" placeholder="KOD">
             <button class="btn btn-join" onclick="joinRoom()">BAĞLAN</button>
-            <button class="btn" style="background:transparent; color:#aaa; font-size:14px;" onclick="location.reload()">GERİ</button>
+            <button style="background:none; border:none; color:#888; margin-top:10px;" onclick="location.reload()">GERİ</button>
         </div>
 
-        <div id="lobby-ui">
-            <p>ARKADAŞINA BU KODU VER:</p>
-            <div class="code" id="my-code">...</div>
-            <div style="color:#888; animation: pulse 1s infinite;">Rakip Bekleniyor...</div>
+        <div id="lobby">
+            <p>ARKADAŞINA BU SAYIYI SÖYLE:</p>
+            <div class="code-disp" id="my-code">...</div>
+            <p style="animation: blink 1s infinite">Rakip Bekleniyor...</p>
         </div>
     </div>
 
-    <canvas id="c"></canvas>
+    <div id="game">
+        <div id="status-bar">
+            <div class="p1-score">SEN: <span id="s-me">0</span></div>
+            <div class="p2-score">RAKİP: <span id="s-opp">0</span></div>
+        </div>
+
+        <div id="arena">
+            <div id="msg">HAMLENİ SEÇ...</div>
+            <div id="character">?</div>
+        </div>
+
+        <div id="controls">
+            <button class="action-btn" onclick="makeMove('L')">SOL</button>
+            <button class="action-btn" onclick="makeMove('M')">ORTA</button>
+            <button class="action-btn" onclick="makeMove('R')">SAĞ</button>
+        </div>
+    </div>
 
     <script>
         // --- AYARLAR ---
-        const c = document.getElementById('c');
-        const ctx = c.getContext('2d');
-        let w, h;
-        
-        let role = null; // 'host' | 'client'
-        let peer = null, conn = null;
-        
-        // OYUN DURUMU (Fiziksel Dünya)
-        const game = {
-            active: false,
-            winner: null,
-            arena: { r: 0 }, // Çember yarıçapı
-            // Oyuncu 1 (Host - Kırmızı)
-            p1: { x: 0, y: 0, r: 25, angle: 0, vx: 0, vy: 0, boosting: false, color: '#ff0055' },
-            // Oyuncu 2 (Client - Mavi)
-            p2: { x: 0, y: 0, r: 25, angle: 0, vx: 0, vy: 0, boosting: false, color: '#00f2ff' },
-            particles: []
-        };
+        let peer = null;
+        let conn = null;
+        let myRole = ''; // 'shooter' (Ateş Eden) veya 'keeper' (Kalkan)
+        let myMove = null;
+        let oppMove = null;
+        let scores = { me: 0, opp: 0 };
+        let round = 1;
 
-        // İstemci tarafı girdisi
-        let isTouching = false;
-
-        function resize() { 
-            w = c.width = window.innerWidth; 
-            h = c.height = window.innerHeight; 
-            // Arena başlangıç boyutu (Ekranın %90'ı)
-            if(!game.active) game.arena.r = Math.min(w,h) * 0.45;
-        }
-        window.addEventListener('resize', resize); resize();
-
-        // --- AĞ (PEERJS) ---
+        // --- PEERJS BAĞLANTI (KESİN ÇALIŞAN KISIM) ---
         function generateCode() { return Math.floor(1000 + Math.random() * 9000); }
 
         function setupHost() {
             const code = generateCode();
-            document.getElementById('main-ui').style.display = 'none';
-            document.getElementById('lobby-ui').style.display = 'block';
+            document.getElementById('start-btns').style.display = 'none';
+            document.getElementById('lobby').style.display = 'block';
             document.getElementById('my-code').innerText = code;
 
             peer = new Peer(code.toString());
+            
             peer.on('connection', (c) => {
                 conn = c;
                 setupConn();
-                startGame(); // Bağlanınca hemen başla
+                startGame('shooter'); // Host ilk saldırır
             });
+            peer.on('error', err => alert("Bağlantı Hatası: " + err));
         }
 
         function showJoin() {
-            document.getElementById('main-ui').style.display = 'none';
-            document.getElementById('join-ui').style.display = 'flex';
+            document.getElementById('start-btns').style.display = 'none';
+            document.getElementById('join-form').style.display = 'flex';
         }
 
         function joinRoom() {
-            const code = document.getElementById('room-code').value;
+            const code = document.getElementById('room-input').value;
             if(!code) return;
+            
             peer = new Peer();
             peer.on('open', () => {
                 conn = peer.connect(code);
                 conn.on('open', () => {
                     setupConn();
-                    role = 'client';
-                    document.getElementById('menu').style.display = 'none';
-                    loop(); // Döngüyü başlat
+                    startGame('keeper'); // Giren ilk savunur
                 });
+                
+                // Bağlanamazsa 3sn sonra uyar
+                setTimeout(() => { if(document.getElementById('menu').style.display !== 'none') alert("Oda bulunamadı!"); }, 3000);
             });
         }
 
         function setupConn() {
             conn.on('data', (data) => {
-                if (role === 'client' && data.type === 'state') {
-                    // Client sadece çizim için veriyi alır
-                    game.p1 = data.p1;
-                    game.p2 = data.p2;
-                    game.arena = data.arena;
-                    game.winner = data.winner;
-                    if(data.boom) createParticles(data.boom.x, data.boom.y, data.boom.c);
-                    if(game.winner) showWin(game.winner === 'p2');
-
-                } else if (role === 'host' && data.type === 'input') {
-                    // Host, Client'ın "Basıyor mu?" bilgisini alır
-                    game.p2.boosting = data.boosting;
+                if(data.type === 'move') {
+                    oppMove = data.val;
+                    checkResult();
                 }
             });
-            
-            conn.on('close', () => { alert("Bağlantı koptu!"); location.reload(); });
+            conn.on('close', () => { alert("Rakip kaçtı!"); location.reload(); });
         }
 
-        function startGame() {
-            role = 'host';
+        // --- OYUN MANTIĞI ---
+        function startGame(role) {
             document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'flex';
+            myRole = role;
+            newRound();
+        }
+
+        function newRound() {
+            myMove = null;
+            oppMove = null;
             
-            // Başlangıç Pozisyonları
-            game.p1.x = w/2 - 100; game.p1.y = h/2;
-            game.p2.x = w/2 + 100; game.p2.y = h/2;
-            game.p1.vx = 0; game.p1.vy = 0;
-            game.p2.vx = 0; game.p2.vy = 0;
-            game.arena.r = Math.min(w,h) * 0.45;
-            game.active = true;
+            // UI Sıfırla
+            document.querySelectorAll('.action-btn').forEach(b => {
+                b.classList.remove('selected');
+                b.disabled = false;
+            });
             
-            loop();
+            const char = document.getElementById('character');
+            char.innerHTML = "?";
+            char.className = ""; // Sınıfları temizle
+            char.style.transform = "scale(1)";
 
-            // Host Veri Gönderimi (Saniyede 30)
-            setInterval(() => {
-                if(game.active) {
-                    conn.send({
-                        type: 'state',
-                        p1: game.p1,
-                        p2: game.p2,
-                        arena: game.arena,
-                        winner: game.winner
-                    });
-                }
-            }, 33);
+            updateRoleUI();
         }
 
-        // --- OYUN FİZİĞİ (SADECE HOST) ---
-        function updatePhysics() {
-            if(!game.active || game.winner) return;
+        function updateRoleUI() {
+            const msg = document.getElementById('msg');
+            const char = document.getElementById('character');
+            const btns = document.querySelectorAll('.action-btn');
 
-            // Arena Daralması
-            if(game.arena.r > 100) game.arena.r -= 0.05;
-
-            // Oyuncuları Güncelle
-            updatePlayer(game.p1, role === 'host' ? isTouching : false); // Host kendi inputu
-            updatePlayer(game.p2, game.p2.boosting); // Client network inputu
-
-            // Çarpışma Kontrolü (Sumo Mantığı)
-            let dx = game.p2.x - game.p1.x;
-            let dy = game.p2.y - game.p1.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            let minDist = game.p1.r + game.p2.r;
-
-            if (dist < minDist) {
-                // ÇARPIŞMA!
-                let angle = Math.atan2(dy, dx);
-                let force = 8; // İtme gücü
-                
-                // Birbirlerini itekle
-                game.p1.vx -= Math.cos(angle) * force;
-                game.p1.vy -= Math.sin(angle) * force;
-                game.p2.vx += Math.cos(angle) * force;
-                game.p2.vy += Math.sin(angle) * force;
-                
-                // Efekt Gönder
-                let cx = (game.p1.x + game.p2.x)/2;
-                let cy = (game.p1.y + game.p2.y)/2;
-                createParticles(cx, cy, '#fff');
-                conn.send({type:'state', p1:game.p1, p2:game.p2, arena:game.arena, boom:{x:cx,y:cy,c:'#fff'}});
-            }
-
-            // Arena Dışına Çıkma (Ölüm)
-            checkBounds(game.p1, 'p1');
-            checkBounds(game.p2, 'p2');
-        }
-
-        function updatePlayer(p, isPressing) {
-            // Sürekli Dönme
-            p.angle += 0.1;
-
-            // Sürtünme (Yavaşlama)
-            p.vx *= 0.95;
-            p.vy *= 0.95;
-
-            // Basıyorsa İleri Git (Boost)
-            if (isPressing) {
-                // Dönme açısına göre kuvvet uygula
-                p.vx += Math.cos(p.angle) * 0.8;
-                p.vy += Math.sin(p.angle) * 0.8;
-                // Dönerken açıyı kilitleme (Strateji için dönmeye devam etsin mi? Evet, sumo stili)
-            }
-
-            p.x += p.vx;
-            p.y += p.vy;
-        }
-
-        function checkBounds(p, pid) {
-            let dx = p.x - w/2;
-            let dy = p.y - h/2;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-
-            // Eğer merkezden uzaklık > arena yarıçapı ise DÜŞTÜ
-            if (dist > game.arena.r + p.r) {
-                game.winner = pid === 'p1' ? 'p2' : 'p1'; // Diğeri kazandı
-                game.active = false;
-                showWin(role === 'host' ? (game.winner === 'p1') : (game.winner === 'p2'));
-            }
-        }
-
-        function showWin(iWon) {
-            const ui = document.getElementById('win-ui');
-            const txt = document.getElementById('win-text');
-            ui.style.display = 'flex';
-            if(iWon) {
-                txt.innerText = "KAZANDIN! 👑";
-                txt.style.color = "#0f0";
+            if(myRole === 'shooter') {
+                msg.innerText = "SALDIRI SIRASI SENDE!";
+                msg.style.color = "#ff0055";
+                char.classList.add('gun');
+                btns.forEach(b => { b.style.borderColor = "#ff0055"; b.style.color = "#ff0055"; });
             } else {
-                txt.innerText = "ELENDİN 💀";
-                txt.style.color = "#f00";
+                msg.innerText = "SAVUNMA SIRASI SENDE!";
+                msg.style.color = "#00f2ff";
+                char.classList.add('shield');
+                btns.forEach(b => { b.style.borderColor = "#00f2ff"; b.style.color = "#00f2ff"; });
             }
-            setTimeout(() => location.reload(), 3000);
         }
 
-        // --- ÇİZİM ---
-        function draw() {
-            // Temizle
-            ctx.fillStyle = '#111'; ctx.fillRect(0,0,w,h);
-
-            // ARENA
-            ctx.strokeStyle = '#fff'; 
-            ctx.lineWidth = 5;
-            ctx.setLineDash([20, 20]);
-            ctx.beginPath(); ctx.arc(w/2, h/2, game.arena.r, 0, Math.PI*2); ctx.stroke();
-            ctx.setLineDash([]);
-
-            // Oyuncuları Çiz
-            drawPlayerObj(game.p1);
-            drawPlayerObj(game.p2);
-
-            // Efektler
-            for(let i=game.particles.length-1; i>=0; i--) {
-                let pt = game.particles[i];
-                pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.05;
-                ctx.globalAlpha = pt.life; ctx.fillStyle = pt.c;
-                ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI*2); ctx.fill();
-                if(pt.life<=0) game.particles.splice(i,1);
-            }
-            ctx.globalAlpha = 1;
-        }
-
-        function drawPlayerObj(p) {
-            ctx.save();
-            ctx.translate(p.x, p.y);
+        function makeMove(move) {
+            if(myMove) return; // Zaten seçtiysen engelle
             
-            // Parlama
-            ctx.shadowBlur = 20; ctx.shadowColor = p.color;
+            myMove = move;
             
-            // Gövde
-            ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI*2); ctx.fill();
+            // Butonu seçili yap
+            const btns = document.querySelectorAll('.action-btn');
+            btns.forEach(b => b.disabled = true); // Diğerlerine basmayı engelle
             
-            // Yön Göstergesi (Göz)
-            ctx.rotate(p.angle);
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(p.r-5, 0, 8, 0, Math.PI*2); ctx.fill();
-            
-            // Boost Efekti
-            if(p.boosting || (role==='host' && p===game.p1 && isTouching) || (role==='client' && p===game.p2 && isTouching)) {
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.arc(0, 0, p.r+5, 0, Math.PI*2); ctx.stroke();
-            }
+            // Seçilen butonu boya
+            if(move === 'L') btns[0].classList.add('selected');
+            if(move === 'M') btns[1].classList.add('selected');
+            if(move === 'R') btns[2].classList.add('selected');
 
-            ctx.restore();
+            document.getElementById('msg').innerText = "RAKİP BEKLENİYOR...";
+            
+            // Rakibe gönder
+            conn.send({ type: 'move', val: move });
+            
+            checkResult();
         }
 
-        function createParticles(x, y, c) {
-            for(let i=0; i<15; i++) {
-                game.particles.push({
-                    x:x, y:y, c:c, life:1,
-                    vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10
-                });
+        function checkResult() {
+            // İki taraf da seçtiyse sonucu göster
+            if(myMove && oppMove) {
+                const char = document.getElementById('character');
+                const msg = document.getElementById('msg');
+                
+                let iWonRound = false;
+
+                if(myRole === 'shooter') {
+                    // Ben saldırıyordum
+                    if(myMove !== oppMove) {
+                        // Farklı yerler -> GOL!
+                        iWonRound = true;
+                        msg.innerText = "VURDUN! 💥";
+                        scores.me++;
+                        char.style.background = "#ff0055";
+                        char.innerHTML = "💥";
+                    } else {
+                        // Aynı yer -> KURTARDI
+                        iWonRound = false;
+                        msg.innerText = "KURTARILDI! 🛡️";
+                        char.style.background = "#00f2ff";
+                        char.innerHTML = "🛡️";
+                    }
+                } else {
+                    // Ben savunuyordum
+                    if(myMove === oppMove) {
+                        // Aynı yer -> KURTARDIM
+                        iWonRound = true;
+                        msg.innerText = "TUTTUN! 🛡️";
+                        scores.me++;
+                        char.style.background = "#00f2ff";
+                        char.innerHTML = "🛡️";
+                    } else {
+                        // Farklı yer -> YEDİM
+                        iWonRound = false;
+                        msg.innerText = "YEDİN! 💥";
+                        char.style.background = "#ff0055";
+                        char.innerHTML = "💥";
+                    }
+                }
+
+                // Skorları güncelle
+                document.getElementById('s-me').innerText = scores.me;
+                document.getElementById('s-opp').innerText = scores.opp;
+
+                // Animasyon
+                char.style.transform = "scale(1.5)";
+
+                // Rolleri Değiş
+                setTimeout(() => {
+                    myRole = (myRole === 'shooter') ? 'keeper' : 'shooter';
+                    newRound();
+                }, 2000);
             }
         }
-
-        // --- DÖNGÜ ---
-        function loop() {
-            requestAnimationFrame(loop);
-            if(role === 'host') updatePhysics();
-            else {
-                // Client sürekli input gönderir
-                conn.send({ type: 'input', boosting: isTouching });
-            }
-            draw();
-        }
-
-        // --- KONTROLLER ---
-        // Sadece basılı tutma var
-        window.addEventListener('touchstart', (e) => { e.preventDefault(); isTouching = true; }, {passive:false});
-        window.addEventListener('touchend', (e) => { e.preventDefault(); isTouching = false; });
-        window.addEventListener('mousedown', () => isTouching = true);
-        window.addEventListener('mouseup', () => isTouching = false);
-
     </script>
 </body>
 </html>
