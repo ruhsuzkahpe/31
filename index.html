@@ -3,264 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON ARENA: ONLINE</title>
+    <title>NEON DUEL: ONLINE</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #050505; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; user-select: none; color: white; }
+        body { margin: 0; background: #050505; overflow: hidden; touch-action: none; font-family: 'Segoe UI', sans-serif; color: white; user-select: none; }
         canvas { display: block; }
-        
-        /* Arayüz */
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; padding: 20px; box-sizing: border-box; }
-        #top-hud { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; text-shadow: 0 0 5px #fff; }
-        
-        /* Dash Butonu */
-        #dash-btn { position: absolute; bottom: 40px; right: 30px; width: 90px; height: 90px; border-radius: 50%; border: 3px solid #00f2ff; background: rgba(0,242,255,0.15); display: flex; justify-content: center; align-items: center; pointer-events: auto; color: #00f2ff; font-weight: bold; box-shadow: 0 0 20px #00f2ff; transition: 0.1s; cursor: pointer; font-size: 14px; }
-        #dash-btn:active { transform: scale(0.9); background: rgba(0,242,255,0.4); }
-        
-        /* Menüler */
-        #screens { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,5,5,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; pointer-events: auto; backdrop-filter: blur(5px); }
-        
-        h1 { font-size: 40px; color: #fff; text-shadow: 0 0 20px #bd00ff; margin-bottom: 20px; letter-spacing: 2px; text-align: center;}
-        
-        input { background: transparent; border: 2px solid #bd00ff; border-radius: 8px; color: white; font-size: 20px; text-align: center; margin-bottom: 20px; padding: 10px; outline: none; width: 220px; box-shadow: 0 0 10px rgba(189,0,255,0.3); }
-        
-        button { padding: 15px 50px; background: #bd00ff; border: none; color: white; font-size: 18px; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 0 20px #bd00ff; transition: 0.2s; text-transform: uppercase; }
-        button:hover { transform: scale(1.05); box-shadow: 0 0 40px #bd00ff; }
 
-        /* Liderlik Tablosu */
-        #leaderboard-container {
-            width: 85%; max-width: 350px;
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid #00f2ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            max-height: 250px;
-            overflow-y: auto;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+        /* Arayüz */
+        #menu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10;
         }
-        .lb-title { text-align: center; color: #00f2ff; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-        .lb-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 16px; }
-        .lb-rank { color: #bd00ff; font-weight: bold; width: 25px; }
-        .lb-name { flex-grow: 1; text-align: left; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;}
-        .lb-score { color: #00f2ff; font-weight: bold; }
-        .loading { text-align: center; color: #aaa; padding: 20px; font-size: 14px; }
+        h1 { font-size: 40px; color: #fff; text-shadow: 0 0 20px #00f2ff; margin-bottom: 10px; letter-spacing: 2px; text-align: center; }
+        p { color: #aaa; margin-bottom: 30px; text-align: center; max-width: 300px; }
+
+        .btn {
+            padding: 15px 40px; margin: 10px; font-size: 20px; font-weight: bold;
+            border: none; border-radius: 30px; cursor: pointer; width: 250px;
+            text-transform: uppercase; transition: 0.2s;
+        }
+        .btn-host { background: #ff0055; color: white; box-shadow: 0 0 20px #ff0055; }
+        .btn-join { background: #00f2ff; color: black; box-shadow: 0 0 20px #00f2ff; }
+        .btn:active { transform: scale(0.95); }
+
+        input {
+            padding: 15px; font-size: 20px; border-radius: 10px; border: 2px solid #00f2ff;
+            background: transparent; color: white; text-align: center; margin-bottom: 10px; width: 220px; outline: none;
+        }
+
+        #status-msg { margin-top: 20px; font-size: 16px; color: #ffd700; height: 30px; }
+        
+        /* Oyun İçi UI */
+        #game-ui { position: absolute; top: 10px; left: 10px; pointer-events: none; display: none; }
+        .role-badge { padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <div id="ui-layer" style="display:none;">
-        <div id="top-hud">
-            <span>SKOR: <span id="scoreVal">0</span></span>
-            <span id="displayNick" style="color:#bd00ff">OYUNCU</span>
-        </div>
-        <div id="dash-btn">DASH!</div>
+    <div id="game-ui">
+        <div id="role-disp" class="role-badge">YÜKLENİYOR...</div>
+        <div style="margin-top:5px;">CAN: <span id="hp-val">100</span></div>
     </div>
 
-    <div id="screens">
-        <h1>NEON ARENA<br><span style="font-size:20px; color:#00f2ff; text-shadow:none;">ONLINE</span></h1>
+    <div id="menu">
+        <h1>NEON DUEL</h1>
+        <p>Bir kişi "ODA KUR" desin, diğeri verilen kodu girip "KATIL" desin.</p>
         
-        <div id="login-view" style="display:flex; flex-direction:column; align-items:center;">
-            <input type="text" id="nickInput" placeholder="Takma Adın" maxlength="10">
-            <button onclick="startGame()">ARENAYA GİR</button>
-            
-            <div id="leaderboard-container">
-                <div class="lb-title">🌍 GLOBAL SIRALAMA</div>
-                <div id="lb-list-start" class="loading">Sunucuya bağlanıyor...</div>
-            </div>
+        <div id="initial-btns">
+            <button class="btn btn-host" onclick="createRoom()">ODA KUR (SALDIRAN)</button>
+            <br>
+            <button class="btn btn-join" onclick="showJoinInput()">KATIL (SAVUNAN)</button>
         </div>
 
-        <div id="end-view" style="display:none; flex-direction:column; align-items:center; width:100%;">
-            <h2 style="color:#ff0055; font-size: 36px; margin: 0; text-shadow: 0 0 20px red;">ELENDİN</h2>
-            <p style="font-size: 24px; margin: 10px;">SKORUN: <span id="finalScore">0</span></p>
-            
-            <div id="leaderboard-container">
-                <div class="lb-title">🏆 EN İYİ OYUNCULAR</div>
-                <div id="lb-list-end" class="loading">Skor kaydediliyor...</div>
-            </div>
-            
-            <button style="margin-top:20px; background:#00f2ff; color:#000; box-shadow: 0 0 20px #00f2ff;" onclick="location.reload()">TEKRAR DENE</button>
+        <div id="join-area" style="display:none; flex-direction:column; align-items:center;">
+            <input type="text" id="room-code-input" placeholder="ODA KODUNU GİR" maxlength="6">
+            <button class="btn btn-join" onclick="joinRoom()">BAĞLAN</button>
+            <button class="btn" style="background:transparent; color:#aaa; margin-top:10px;" onclick="backToMenu()">GERİ</button>
+        </div>
+
+        <div id="status-msg"></div>
+        <div id="room-code-display" style="display:none; margin-top:20px; font-size:30px; color:#00f2ff; border:2px dashed #00f2ff; padding:10px;">
+            KOD: <span id="code-val">...</span>
         </div>
     </div>
 
     <canvas id="c"></canvas>
 
     <script>
-        // SENİN VERDİĞİN KODLAR EKLENDİ ✅
-        const PUBLIC_CODE  = "5fa8af5feb371a09c4c51d17";
-        const PRIVATE_CODE = "cgpr101Ep0yMn0IZPhMAqwVghoK20BG06c_rPh-i1Npg";
-        // ---------------------------------------------------
-
         const c = document.getElementById('c');
         const ctx = c.getContext('2d');
         let w, h;
+        
+        // --- OYUN DEĞİŞKENLERİ ---
+        let peer = null;
+        let conn = null;
+        let myRole = null; // 'host' (Saldıran) veya 'client' (Savunan)
         let gameActive = false;
-        let score = 0;
-        let nickname = "Misafir";
         
-        // --- SUNUCU İŞLEMLERİ (DREAMLO) ---
-        
-        async function sendScore(name, score) {
-            // Türkçe karakter ve boşluk temizliği
-            const cleanName = name.replace(/[^a-zA-Z0-9]/g, ""); 
-            const url = `https://www.dreamlo.com/lb/${PRIVATE_CODE}/add/${cleanName}/${score}`;
-            try {
-                await fetch(url);
-                getScores('end'); // Kaydettikten sonra listeyi güncelle
-            } catch (e) { console.log("Hata:", e); }
-        }
+        // Durumlar (Senkronize edilecek)
+        let gameState = {
+            p1: 0.5, // Host konumu (0.0 - 1.0 arası, ekran yüzdesi)
+            p2: 0.5, // Client konumu
+            bullets: [],
+            hp: 100,
+            winner: null
+        };
 
-        async function getScores(target) {
-            const url = `https://www.dreamlo.com/lb/${PUBLIC_CODE}/json`;
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                let list = [];
-
-                if(data.dreamlo.leaderboard === null) {
-                    list = [];
-                } else if (Array.isArray(data.dreamlo.leaderboard.entry)) {
-                    list = data.dreamlo.leaderboard.entry;
-                } else {
-                    list = [data.dreamlo.leaderboard.entry];
-                }
-                
-                updateUI(list, target);
-            } catch (e) { 
-                console.log("Veri çekme hatası:", e); 
-                document.getElementById(target === 'start' ? 'lb-list-start' : 'lb-list-end').innerText = "Henüz kimse oynamadı.";
-            }
-        }
-
-        function updateUI(list, target) {
-            const el = document.getElementById(target === 'start' ? 'lb-list-start' : 'lb-list-end');
-            el.innerHTML = "";
-            
-            list.slice(0, 10).forEach((item, index) => {
-                let color = '#fff';
-                if(index === 0) color = '#ffd700'; 
-                if(index === 1) color = '#c0c0c0'; 
-                if(index === 2) color = '#cd7f32'; 
-                
-                el.innerHTML += `
-                    <div class="lb-row" style="color:${color}">
-                        <span class="lb-rank">#${index+1}</span>
-                        <span class="lb-name">${item.name}</span>
-                        <span class="lb-score">${item.score}</span>
-                    </div>
-                `;
-            });
-        }
-
-        // --- OYUN MOTORU ---
-        
-        const player = {x:0, y:0, trail:[], dashing:false};
-        let enemies=[], orbs=[], particles=[];
+        // Kendi konumumuzu tutalım (Fare/Parmak)
+        let myPos = 0.5;
 
         function resize(){ w=c.width=window.innerWidth; h=c.height=window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        function startGame() {
-            const val = document.getElementById('nickInput').value;
-            if(!val) return alert("Lütfen bir isim yaz!");
-            nickname = val;
-            document.getElementById('displayNick').innerText = nickname.toUpperCase();
+        // --- PEERJS (BAĞLANTI) ---
 
-            document.getElementById('screens').style.display = 'none';
-            document.getElementById('end-view').style.display = 'none';
-            document.getElementById('ui-layer').style.display = 'block';
-            
-            gameActive = true; score = 0; player.x=w/2; player.y=h/2;
-            enemies=[]; orbs=[]; player.trail=[];
-            loop();
+        // Rastgele 4 haneli kod üret
+        function generateID() {
+            return Math.floor(1000 + Math.random() * 9000).toString();
         }
 
-        function triggerDash() {
-            if(!gameActive) return;
-            player.dashing = true;
-            for(let i=0; i<10; i++) particles.push({x:player.x, y:player.y, vx:(Math.random()-0.5)*15, vy:(Math.random()-0.5)*15, life:1, color:'#00f2ff'});
-            setTimeout(() => player.dashing = false, 250);
+        function createRoom() {
+            document.getElementById('initial-btns').style.display = 'none';
+            document.getElementById('status-msg').innerText = "Sunucu oluşturuluyor...";
+            
+            const code = generateID();
+            // Peer nesnesi oluştur
+            peer = new Peer(code);
+
+            peer.on('open', (id) => {
+                document.getElementById('status-msg').innerText = "Oda hazır! Arkadaşına bu kodu söyle:";
+                document.getElementById('room-code-display').style.display = 'block';
+                document.getElementById('code-val').innerText = id;
+                myRole = 'host';
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupConnection();
+                document.getElementById('menu').style.display = 'none';
+                startGame('host');
+            });
+            
+            peer.on('error', (err) => {
+                alert("Hata oluştu: " + err);
+                location.reload();
+            });
+        }
+
+        function showJoinInput() {
+            document.getElementById('initial-btns').style.display = 'none';
+            document.getElementById('join-area').style.display = 'flex';
         }
         
-        const dashBtn = document.getElementById('dash-btn');
-        dashBtn.addEventListener('touchstart', (e)=>{e.preventDefault(); triggerDash();});
-        dashBtn.addEventListener('mousedown', (e)=>{e.preventDefault(); triggerDash();});
-
-        function gameOver() {
-            gameActive = false;
-            document.getElementById('ui-layer').style.display = 'none';
-            document.getElementById('screens').style.display = 'flex';
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('end-view').style.display = 'flex';
-            document.getElementById('finalScore').innerText = score;
-            
-            document.getElementById('lb-list-end').innerHTML = '<div class="loading">Skor gönderiliyor...</div>';
-            sendScore(nickname, score);
+        function backToMenu() {
+            document.getElementById('join-area').style.display = 'none';
+            document.getElementById('initial-btns').style.display = 'block';
         }
+
+        function joinRoom() {
+            const code = document.getElementById('room-code-input').value;
+            if(!code) return alert("Lütfen kodu gir!");
+            
+            document.getElementById('status-msg').innerText = "Bağlanıyor...";
+            
+            peer = new Peer(); // ID otomatik olsun
+            peer.on('open', () => {
+                conn = peer.connect(code);
+                
+                conn.on('open', () => {
+                    myRole = 'client';
+                    setupConnection();
+                    document.getElementById('menu').style.display = 'none';
+                    startGame('client');
+                });
+                
+                // Bağlantı hatası olursa 2 saniye sonra
+                setTimeout(() => {
+                    if(!gameActive) document.getElementById('status-msg').innerText = "Bağlanamadı. Kodu kontrol et.";
+                }, 3000);
+            });
+        }
+
+        function setupConnection() {
+            // Veri geldiğinde ne yapacağımız
+            conn.on('data', (data) => {
+                if(myRole === 'client') {
+                    // Eğer Savunansak, Host'tan gelen oyun durumunu alırız
+                    if(data.type === 'state') {
+                        gameState = data.state;
+                    }
+                } else if(myRole === 'host') {
+                    // Eğer Saldıransak, Client'ın sadece pozisyonunu alırız
+                    if(data.type === 'input') {
+                        gameState.p2 = data.pos;
+                    }
+                }
+            });
+
+            conn.on('close', () => {
+                alert("Bağlantı koptu!");
+                location.reload();
+            });
+        }
+
+        // --- OYUN MANTIĞI ---
+
+        function startGame(role) {
+            gameActive = true;
+            document.getElementById('game-ui').style.display = 'block';
+            const badge = document.getElementById('role-disp');
+            
+            if(role === 'host') {
+                badge.innerText = "🔴 SEN: SALDIRAN (ÜST)";
+                badge.style.background = "#ff0055";
+                badge.style.color = "white";
+            } else {
+                badge.innerText = "🔵 SEN: SAVUNAN (ALT)";
+                badge.style.background = "#00f2ff";
+                badge.style.color = "black";
+            }
+            
+            loop();
+            
+            // Host ise düzenli olarak veri göndersin
+            if(role === 'host') {
+                setInterval(serverTick, 30); // Saniyede ~30 güncelleme
+                setInterval(autoShoot, 500); // Yarım saniyede bir ateş
+            } else {
+                setInterval(clientTick, 30);
+            }
+        }
+
+        // HOST MANTIĞI (Oyunun beyni burası)
+        function serverTick() {
+            if(!gameActive || !conn) return;
+
+            // 1. Kendi pozisyonunu güncelle
+            gameState.p1 = myPos;
+
+            // 2. Mermileri hareket ettir
+            for (let i = gameState.bullets.length - 1; i >= 0; i--) {
+                let b = gameState.bullets[i];
+                b.y += 1.5; // Mermi hızı (yüzde olarak)
+
+                // Çarpışma Kontrolü (Client ile)
+                // Client (p2) altta (y=90%), genişliği %15
+                if (b.y > 90 && b.y < 95) {
+                    if (Math.abs(b.x - gameState.p2) < 0.15/2) { // Kalkan genişliği
+                        // BLOKE EDİLDİ
+                        gameState.bullets.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                // Ekrandan çıkarsa (VURULDU!)
+                if (b.y > 100) {
+                    gameState.hp -= 10;
+                    gameState.bullets.splice(i, 1);
+                }
+            }
+
+            // 3. Oyun Bitti mi?
+            if(gameState.hp <= 0) {
+                gameState.winner = 'host';
+                endGame();
+            }
+
+            // 4. Veriyi Client'a gönder
+            conn.send({ type: 'state', state: gameState });
+        }
+        
+        function autoShoot() {
+            // Mermi ekle (x: 0-1 arası, y: 0-100 arası)
+            gameState.bullets.push({ x: gameState.p1, y: 10 });
+        }
+
+        // CLIENT MANTIĞI
+        function clientTick() {
+            if(!gameActive || !conn) return;
+            // Sadece kendi pozisyonumuzu gönderiyoruz
+            conn.send({ type: 'input', pos: myPos });
+            
+            // HP kontrolü (Sadece görsel güncelleme için)
+            document.getElementById('hp-val').innerText = gameState.hp;
+            if(gameState.hp <= 0) endGame();
+        }
+
+        function endGame() {
+            gameActive = false;
+            setTimeout(() => {
+                if(gameState.hp <= 0) alert("SALDIRAN KAZANDI! 🔴");
+                location.reload();
+            }, 100);
+        }
+
+        // --- ÇİZİM ---
 
         function loop() {
             if(!gameActive) return;
             requestAnimationFrame(loop);
-            
-            ctx.fillStyle = 'rgba(5,5,8,0.25)'; ctx.fillRect(0,0,w,h);
-            
-            // Grid
-            ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth=1; ctx.beginPath();
-            for(let i=0; i<w; i+=50) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
-            for(let i=0; i<h; i+=50) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
-            ctx.stroke();
 
-            // Oyuncu Hareketi
-            player.x += (targetX - player.x) * 0.15;
-            player.y += (targetY - player.y) * 0.15;
+            // Arkaplan
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, w, h);
             
-            player.trail.push({x:player.x, y:player.y});
-            if(player.trail.length > 15) player.trail.shift();
-
-            // Oyuncu Çizim
+            // Çizgiler (Grid)
+            ctx.strokeStyle = '#222';
             ctx.beginPath();
-            ctx.strokeStyle = player.dashing ? '#fff' : '#00f2ff';
-            ctx.lineWidth = player.dashing ? 8 : 4;
-            ctx.lineCap = 'round';
-            if(player.trail.length) { ctx.moveTo(player.trail[0].x, player.trail[0].y); for(let p of player.trail) ctx.lineTo(p.x, p.y); }
+            ctx.moveTo(0, h*0.9); ctx.lineTo(w, h*0.9); // Savunma hattı
             ctx.stroke();
+
+            // --- OYUNCULARI ÇİZ (Koordinatları %'den Pixel'e çevir) ---
             
-            ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(player.x, player.y, 8, 0, Math.PI*2); ctx.fill();
+            // 1. SALDIRAN (HOST) - ÜSTTE
+            const x1 = gameState.p1 * w;
+            const y1 = h * 0.1;
+            ctx.fillStyle = '#ff0055';
+            ctx.shadowBlur = 20; ctx.shadowColor = '#ff0055';
+            // Üçgen Gemi
+            ctx.beginPath();
+            ctx.moveTo(x1, y1 + 20);
+            ctx.lineTo(x1 - 20, y1 - 20);
+            ctx.lineTo(x1 + 20, y1 - 20);
+            ctx.fill();
+            ctx.shadowBlur = 0;
 
-            // Puanlar
-            if(Math.random()<0.05) orbs.push({x:Math.random()*w, y:Math.random()*h});
-            orbs.forEach((o,i) => {
-                ctx.fillStyle='#0f0'; ctx.shadowBlur=10; ctx.shadowColor='#0f0';
-                ctx.beginPath(); ctx.arc(o.x, o.y, 6, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
-                if(Math.hypot(player.x-o.x, player.y-o.y)<25) {
-                    score += 10; document.getElementById('scoreVal').innerText = score; orbs.splice(i,1);
-                }
-            });
+            // 2. SAVUNAN (CLIENT) - ALTTA
+            const x2 = gameState.p2 * w;
+            const y2 = h * 0.9;
+            ctx.fillStyle = '#00f2ff';
+            ctx.shadowBlur = 20; ctx.shadowColor = '#00f2ff';
+            // Dikdörtgen Kalkan
+            const shieldW = w * 0.15; // %15 genişlik
+            ctx.fillRect(x2 - shieldW/2, y2 - 10, shieldW, 20);
+            ctx.shadowBlur = 0;
 
-            // Düşmanlar
-            if(Math.random()<0.04) enemies.push({x:Math.random()*w, y:-30, vx:(Math.random()-0.5)*3, vy:Math.random()*4+3});
-            enemies.forEach((e,i) => {
-                e.x += e.vx; e.y += e.vy;
-                ctx.fillStyle='#ff0055'; ctx.shadowBlur=15; ctx.shadowColor='#ff0055'; 
-                ctx.beginPath(); ctx.arc(e.x, e.y, 12, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+            // 3. MERMİLER
+            ctx.fillStyle = '#fff';
+            for(let b of gameState.bullets) {
+                // Mermi koordinatlarını yüzdeden piksele çevir
+                let bx = b.x * w;
+                let by = (b.y / 100) * h;
                 
-                if(!player.dashing && Math.hypot(player.x-e.x, player.y-e.y)<20) gameOver();
-                if(e.y > h) enemies.splice(i,1);
-            });
-            
-            // Parçacıklar (Efektler)
-            particles.forEach((p,i) => {
-                p.x+=p.vx; p.y+=p.vy; p.life-=0.05;
-                ctx.fillStyle=p.color; ctx.globalAlpha=p.life; ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
-                if(p.life<=0) particles.splice(i,1);
-            });
+                ctx.beginPath();
+                ctx.arc(bx, by, 5, 0, Math.PI*2);
+                ctx.fill();
+            }
         }
 
-        let targetX=w/2, targetY=h/2;
-        window.addEventListener('touchmove', e=>{e.preventDefault(); targetX=e.touches[0].clientX; targetY=e.touches[0].clientY;}, {passive:false});
-        window.addEventListener('mousemove', e=>{targetX=e.clientX; targetY=e.clientY;});
+        // --- KONTROLLER ---
+        function handleInput(e) {
+            e.preventDefault();
+            let cx = e.touches ? e.touches[0].clientX : e.clientX;
+            // 0 ile 1 arasında bir değer yap (Ekran yüzdesi)
+            myPos = cx / w;
+            if(myPos < 0) myPos = 0;
+            if(myPos > 1) myPos = 1;
+        }
 
-        // Başlangıçta listeyi yükle
-        getScores('start');
+        window.addEventListener('mousemove', handleInput);
+        window.addEventListener('touchmove', handleInput, {passive:false});
 
     </script>
 </body>
