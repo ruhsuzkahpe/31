@@ -2,186 +2,251 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>NEON TITANS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NEON MOBILE</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Courier New', sans-serif; }
+        * { user-select: none; -webkit-user-select: none; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        canvas { display: block; }
+        
+        /* ARAYÜZ */
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         
-        /* Sınıf Seçimi */
         #class-select {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 99; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 15px; pointer-events: auto;
+        }
+        .btn {
+            padding: 20px 40px; font-size: 20px; color: white; border: 2px solid white;
+            background: rgba(255,255,255,0.1); border-radius: 10px; width: 60%; text-align: center;
+        }
+
+        #hud { position: absolute; top: 10px; left: 10px; color: white; text-shadow: 1px 1px 2px black; }
+        #hp-bar-container { width: 150px; height: 15px; background: #333; border: 1px solid #fff; margin-top: 5px; }
+        #hp-bar { width: 100%; height: 100%; background: lime; transition: width 0.2s; }
+
+        /* JOYSTICK GÖRSELLERİ */
+        .joystick-zone {
+            position: absolute; bottom: 50px; width: 150px; height: 150px;
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.1);
+            pointer-events: none; /* Dokunmatiği JS ile yöneteceğiz */
+        }
+        #stick-left { left: 40px; }
+        #stick-right { right: 40px; }
+        
+        .knob {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9); padding: 20px; border: 2px solid #00ff00;
-            display: flex; gap: 20px; pointer-events: auto; text-align: center;
+            width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.3);
         }
-        .c-btn { 
-            padding: 20px; cursor: pointer; border: 1px solid #555; color: white; transition: 0.3s; 
-            width: 100px;
-        }
-        .c-btn:hover { background: #222; border-color: #fff; }
-        .c-title { font-weight: bold; display: block; margin-bottom: 10px; font-size: 18px; }
-        
-        /* HUD */
-        #hud { position: absolute; bottom: 20px; left: 20px; color: white; }
-        #hp-bar { width: 200px; height: 20px; background: #333; border: 1px solid #fff; margin-top: 5px; }
-        #hp-fill { width: 100%; height: 100%; background: #0f0; transition: width 0.2s; }
-        
-        /* Skor Tablosu */
-        #leaderboard { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.8); text-align: right; }
     </style>
 </head>
 <body>
 
     <canvas id="gameCanvas"></canvas>
-    
+
+    <div id="stick-left" class="joystick-zone"><div class="knob" id="knob-left"></div></div>
+    <div id="stick-right" class="joystick-zone"><div class="knob" id="knob-right"></div></div>
+
     <div id="ui-layer">
-        <div id="leaderboard">Liderlik Yükleniyor...</div>
         <div id="hud">
-            <div id="info">Sınıf: -- | Skor: 0</div>
-            <div id="hp-bar"><div id="hp-fill"></div></div>
-            <small>WASD: Hareket | SHIFT: Dash | TIK: Ateş</small>
+            <div id="score">SKOR: 0</div>
+            <div id="hp-bar-container"><div id="hp-bar"></div></div>
         </div>
-        
+
         <div id="class-select">
-            <div class="c-btn" onclick="selectClass('tank')">
-                <span class="c-title" style="color:#0099ff">TANK</span>
-                Yüksek Can<br>Hızlı Ateş
-            </div>
-            <div class="c-btn" onclick="selectClass('sniper')">
-                <span class="c-title" style="color:#00ff00">SNIPER</span>
-                Uzun Menzil<br>Tek Atış
-            </div>
-            <div class="c-btn" onclick="selectClass('shotgun')">
-                <span class="c-title" style="color:#ff0055">SHOTGUN</span>
-                Yakın Mesafe<br>Saçılma
-            </div>
+            <h2 style="color:white">SINIF SEÇ</h2>
+            <div class="btn" style="border-color:#ff3333" onclick="selectClass('assault')">ASSAULT (Dengeli)</div>
+            <div class="btn" style="border-color:#00ff00" onclick="selectClass('sniper')">SNIPER (Uzun Menzil)</div>
+            <div class="btn" style="border-color:#3399ff" onclick="selectClass('tank')">TANK (Sağlam)</div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // --- SENİN İSTEDİĞİN BAĞLANTI LİNKİ BURADA KULLANILIYOR ---
         const socket = io('https://oyun-75fx.onrender.com');
-
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
-        // Ekranı tam boyut yap
+
+        // EKRAN BOYUTU
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        
-        // Değişkenler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // OYUN DURUMU
         let me = null;
         let players = {};
         let bullets = [];
-        let particles = [];
         let camX = 0, camY = 0;
-        let shake = 0;
 
-        // Girdiler
-        const keys = { w:false, a:false, s:false, d:false, shift:false };
-        const mouse = { x:0, y:0, down:false };
+        // JOYSTICK KONTROL VERİLERİ
+        const controls = {
+            move: { x: 0, y: 0, active: false, id: null, startX: 0, startY: 0 },
+            shoot: { x: 0, y: 0, active: false, id: null, startX: 0, startY: 0, angle: 0 }
+        };
 
-        // Event Listeners
-        window.addEventListener('keydown', e => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; });
-        window.addEventListener('keyup', e => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
-        window.addEventListener('mousedown', () => mouse.down = true);
-        window.addEventListener('mouseup', () => mouse.down = false);
-        window.addEventListener('mousemove', e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
+        // ELEMENTLER
+        const stickLeft = document.getElementById('stick-left');
+        const knobLeft = document.getElementById('knob-left');
+        const stickRight = document.getElementById('stick-right');
+        const knobRight = document.getElementById('knob-right');
 
-        // Sınıf Seçimi
-        function selectClass(type) {
+        // SINIF SEÇİMİ
+        window.selectClass = (type) => {
             socket.emit('selectClass', type);
             document.getElementById('class-select').style.display = 'none';
+            // Tam ekran yap (Android için)
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        };
+
+        // --- DOKUNMATİK (TOUCH) MANTIĞI ---
+        // Ekranın solu hareket, sağı ateş
+        window.addEventListener('touchstart', handleTouch);
+        window.addEventListener('touchmove', handleTouch);
+        window.addEventListener('touchend', handleTouchEnd);
+
+        function handleTouch(e) {
+            e.preventDefault();
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const t = e.changedTouches[i];
+                const halfWidth = window.innerWidth / 2;
+
+                // SOL TARAF (Hareket)
+                if (t.clientX < halfWidth) {
+                    if (e.type === 'touchstart' && !controls.move.active) {
+                        controls.move.id = t.identifier;
+                        controls.move.active = true;
+                        controls.move.startX = t.clientX;
+                        controls.move.startY = t.clientY;
+                        // Joystick görselini parmağın olduğu yere taşı
+                        stickLeft.style.left = (t.clientX - 75) + 'px';
+                        stickLeft.style.top = (t.clientY - 75) + 'px';
+                        stickLeft.style.bottom = 'auto';
+                    }
+                    if (controls.move.id === t.identifier) {
+                        const dx = t.clientX - controls.move.startX;
+                        const dy = t.clientY - controls.move.startY;
+                        const dist = Math.min(50, Math.hypot(dx, dy)); // Max mesafe
+                        const angle = Math.atan2(dy, dx);
+                        
+                        controls.move.x = (dist / 50) * Math.cos(angle);
+                        controls.move.y = (dist / 50) * Math.sin(angle);
+
+                        // Görsel güncelleme
+                        knobLeft.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
+                    }
+                }
+                // SAĞ TARAF (Ateş)
+                else {
+                    if (e.type === 'touchstart' && !controls.shoot.active) {
+                        controls.shoot.id = t.identifier;
+                        controls.shoot.active = true;
+                        controls.shoot.startX = t.clientX;
+                        controls.shoot.startY = t.clientY;
+                        stickRight.style.left = (t.clientX - 75) + 'px';
+                        stickRight.style.top = (t.clientY - 75) + 'px';
+                        stickRight.style.bottom = 'auto';
+                        stickRight.style.right = 'auto';
+                    }
+                    if (controls.shoot.id === t.identifier) {
+                        const dx = t.clientX - controls.shoot.startX;
+                        const dy = t.clientY - controls.shoot.startY;
+                        const dist = Math.min(50, Math.hypot(dx, dy));
+                        controls.shoot.angle = Math.atan2(dy, dx);
+                        
+                        // Görsel
+                        knobRight.style.transform = `translate(calc(-50% + ${Math.cos(controls.shoot.angle)*dist}px), calc(-50% + ${Math.sin(controls.shoot.angle)*dist}px))`;
+                    }
+                }
+            }
         }
 
-        // Sunucu Dinleyicileri
-        socket.on('state', (state) => {
-            players = state.players;
-            bullets = state.bullets;
-            me = players[socket.id];
-            updateHUD();
-        });
-
-        socket.on('hitEffect', (data) => {
-            createExplosion(data.x, data.y, data.color);
-            if(me) {
-                const dist = Math.hypot(data.x - me.x, data.y - me.y);
-                if(dist < 400) shake = 10; // Yakında patlama olursa ekran sallar
+        function handleTouchEnd(e) {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const t = e.changedTouches[i];
+                if (t.identifier === controls.move.id) {
+                    controls.move.active = false;
+                    controls.move.x = 0; 
+                    controls.move.y = 0;
+                    knobLeft.style.transform = `translate(-50%, -50%)`;
+                    stickLeft.style.bottom = '50px'; stickLeft.style.left = '40px'; stickLeft.style.top = 'auto'; // Reset pozisyon
+                }
+                if (t.identifier === controls.shoot.id) {
+                    controls.shoot.active = false;
+                    knobRight.style.transform = `translate(-50%, -50%)`;
+                    stickRight.style.bottom = '50px'; stickRight.style.right = '40px'; stickRight.style.left = 'auto'; stickRight.style.top = 'auto';
+                }
             }
-        });
+        }
 
-        // Input Döngüsü
+        // VERİ GÖNDERİMİ (60 FPS)
         setInterval(() => {
-            if(!me) return;
-            // Mouse açısını kameraya göre hesapla
-            const angle = Math.atan2(mouse.y - (me.y - camY), mouse.x - (me.x - camX));
-            socket.emit('input', { keys, mouse: { down: mouse.down }, angle });
+            socket.emit('mobileInput', {
+                move: { active: controls.move.active, x: controls.move.x, y: controls.move.y },
+                shoot: { active: controls.shoot.active, angle: controls.shoot.angle }
+            });
         }, 1000/60);
 
-        // --- GÖRSEL MOTOR ---
+        // SOCKET DİNLEYİCİLERİ
+        socket.on('state', (data) => {
+            players = data.players;
+            bullets = data.bullets;
+            me = players[socket.id];
+            if(me) updateHUD();
+        });
+
+        function updateHUD() {
+            document.getElementById('score').innerText = "SKOR: " + me.score;
+            const maxHp = (me.classType === 'tank') ? 200 : (me.classType === 'sniper' ? 90 : 120);
+            const pct = Math.max(0, (me.hp / maxHp) * 100);
+            document.getElementById('hp-bar').style.width = pct + '%';
+        }
+
+        // ÇİZİM MOTORU
         function draw() {
-            // Arkaplan Temizle
-            ctx.fillStyle = '#050505';
+            ctx.fillStyle = '#111';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            if(me) {
-                // Kamerayı oyuncuya odakla (Smooth lerp)
-                let targetCamX = me.x - canvas.width / 2;
-                let targetCamY = me.y - canvas.height / 2;
-                camX += (targetCamX - camX) * 0.1;
-                camY += (targetCamY - camY) * 0.1;
-            }
-
-            // Ekran Sarsıntısı
-            let shakeX = 0, shakeY = 0;
-            if(shake > 0) {
-                shakeX = (Math.random() - 0.5) * shake;
-                shakeY = (Math.random() - 0.5) * shake;
-                shake *= 0.9;
+            if (me) {
+                // Kamera takibi
+                let targetX = me.x - canvas.width / 2;
+                let targetY = me.y - canvas.height / 2;
+                camX += (targetX - camX) * 0.1;
+                camY += (targetY - camY) * 0.1;
             }
 
             ctx.save();
-            ctx.translate(-camX + shakeX, -camY + shakeY);
+            ctx.translate(-camX, -camY);
 
-            // Izgara (Grid) Çizimi
-            drawGrid();
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 2;
+            for(let x=0; x<=1500; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,1500); ctx.stroke(); }
+            for(let y=0; y<=1500; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(1500,y); ctx.stroke(); }
 
             // Oyuncular
-            for(let id in players) {
+            for (let id in players) {
                 let p = players[id];
                 if(p.isDead) continue;
-
-                // Gövde
+                
                 ctx.save();
                 ctx.translate(p.x, p.y);
                 
-                // Neon Efekti
+                // Oyuncu Rengi
+                ctx.fillStyle = p.color;
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = p.color;
-                ctx.fillStyle = '#000';
-                ctx.strokeStyle = p.color;
-                ctx.lineWidth = 4;
-
-                ctx.beginPath();
-                ctx.arc(0, 0, 20, 0, Math.PI*2);
-                ctx.fill();
-                ctx.stroke();
-
+                ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI*2); ctx.fill();
+                
                 // İsim
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px Arial';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(p.classType.toUpperCase(), 0, -30);
-
-                // Can Barı (Oyuncu üstü)
-                ctx.fillStyle = 'red';
-                ctx.fillRect(-15, -25, 30, 4);
-                ctx.fillStyle = '#0f0';
-                ctx.fillRect(-15, -25, 30 * (p.hp / 100), 4); // Basit oran
+                ctx.shadowBlur = 0;
+                ctx.fillText(p.classType.toUpperCase(), 0, -35);
 
                 ctx.restore();
             }
@@ -189,80 +254,12 @@
             // Mermiler
             bullets.forEach(b => {
                 ctx.fillStyle = '#fff';
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#fff';
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, 5, 0, Math.PI*2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(b.x, b.y, 6, 0, Math.PI*2); ctx.fill();
             });
-
-            // Parçacıklar
-            updateAndDrawParticles();
 
             ctx.restore();
             requestAnimationFrame(draw);
         }
-
-        function drawGrid() {
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-            ctx.lineWidth = 2;
-            for(let x=0; x<1200; x+=50) {
-                ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,900); ctx.stroke();
-            }
-            for(let y=0; y<900; y+=50) {
-                ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(1200,y); ctx.stroke();
-            }
-            // Harita Sınırı
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 5;
-            ctx.strokeRect(0,0,1200,900);
-        }
-
-        function createExplosion(x, y, color) {
-            for(let i=0; i<15; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: (Math.random() - 0.5) * 10,
-                    life: 1.0,
-                    color: color
-                });
-            }
-        }
-
-        function updateAndDrawParticles() {
-            for(let i=particles.length-1; i>=0; i--) {
-                let p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= 0.05;
-                
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, Math.random()*3, 0, Math.PI*2);
-                ctx.fill();
-                
-                if(p.life <= 0) particles.splice(i,1);
-            }
-            ctx.globalAlpha = 1;
-        }
-
-        function updateHUD() {
-            if(!me) return;
-            document.getElementById('info').innerText = `Sınıf: ${me.classType.toUpperCase()} | Skor: ${me.score}`;
-            const hpPct = Math.max(0, (me.hp / (me.classType === 'tank' ? 150 : me.classType === 'sniper' ? 80 : 110)) * 100);
-            document.getElementById('hp-fill').style.width = hpPct + '%';
-            
-            // Liderlik Tablosu
-            let scores = Object.values(players).sort((a,b) => b.score - a.score).slice(0,5);
-            let html = '<h3>Liderler</h3>';
-            scores.forEach(p => {
-                html += `<div>${p.classType}: ${p.score}</div>`;
-            });
-            document.getElementById('leaderboard').innerHTML = html;
-        }
-
         draw();
     </script>
 </body>
