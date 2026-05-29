@@ -3,136 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Civarda</title>
-    <!-- Modern Tasarım Kütüphanesi (Tailwind CSS) -->
+    <title>Civarda - Yerel Akış</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Profesyonel Tipografi (Inter Font) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- İkon Paketi (FontAwesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #e5e7eb; 
-        }
-        /* Cam efekti (Header için) */
-        .glass-effect { 
-            background: rgba(255, 255, 255, 0.90); 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-        }
-        /* Gizli Scrollbar */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
     </style>
 </head>
-<body class="flex justify-center min-h-screen text-gray-900">
+<body class="flex justify-center min-h-screen">
 
-    <!-- Mobil Uygulama Çerçevesi -->
-    <div class="w-full max-w-md bg-white shadow-2xl relative pb-16">
-        
-        <!-- Üst Bar (Header) -->
+    <div class="w-full max-w-md bg-white shadow-xl min-h-screen pb-20">
+        <!-- Header -->
         <header class="glass-effect sticky top-0 z-50 px-5 py-4 border-b border-gray-200 flex justify-between items-center">
             <h1 class="text-2xl font-bold tracking-tight text-gray-900">Civarda</h1>
-            <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition duration-200">
-                <i class="fa-solid fa-location-dot text-blue-600"></i> Kayseri
-            </button>
+            <span class="text-xs font-semibold bg-blue-100 text-blue-600 px-3 py-1 rounded-full">Kayseri / Merkez</span>
         </header>
 
-        <!-- Gönderi Paylaşma Alanı -->
+        <!-- Input Area -->
         <div class="p-5 border-b-8 border-gray-100">
-            <div class="flex gap-3">
-                <!-- Profil Fotoğrafı Alanı -->
-                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0"></div>
-                <div class="flex-1">
-                    <textarea class="w-full bg-transparent outline-none resize-none text-lg placeholder-gray-400 mt-2" rows="2" placeholder="Civarda neler oluyor?"></textarea>
-                </div>
-            </div>
-            
-            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-                <div class="flex gap-4 text-gray-400 text-xl">
-                    <button class="hover:text-blue-500 transition"><i class="fa-solid fa-image"></i></button>
-                    <button class="hover:text-red-500 transition"><i class="fa-solid fa-location-crosshairs"></i></button>
-                </div>
-                <div class="flex gap-2">
-                    <select class="bg-gray-100 text-sm font-medium rounded-full px-4 py-2 outline-none border-none cursor-pointer">
-                        <option>Kategori</option>
-                        <option>Acil</option>
-                        <option>Bilgi</option>
-                    </select>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition shadow-sm">Paylaş</button>
-                </div>
+            <textarea id="postContent" class="w-full bg-gray-50 p-4 rounded-xl outline-none border border-gray-200 focus:border-blue-500 transition" rows="3" placeholder="Civarda ne oluyor?"></textarea>
+            <div class="flex justify-between items-center mt-3">
+                <select id="postCategory" class="text-sm border-none bg-gray-100 rounded-lg px-3 py-2">
+                    <option>🚨 Acil Durum</option>
+                    <option>🎁 Fırsat / Bedava</option>
+                    <option>📢 Genel Duyuru</option>
+                </select>
+                <button onclick="createNewPost()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">Paylaş</button>
             </div>
         </div>
 
-        <!-- Akış (Feed) -->
-        <div class="divide-y divide-gray-100">
-            
-            <!-- Gönderi 1 -->
-            <article class="p-5 hover:bg-gray-50 transition duration-150 cursor-pointer">
-                <div class="flex gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-lg">A</div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="font-bold text-gray-900">Ahmet Y.</span>
-                            <span class="text-sm text-gray-500">· 2dk</span>
-                            <span class="ml-auto bg-red-100 text-red-700 text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide">Acil</span>
-                        </div>
-                        <p class="text-gray-800 leading-relaxed text-[16px] mt-1">Sivas Caddesi yönünde trafik ışıklarında arıza var, trafik tamamen durma noktasına geldi. Sürücülerin alternatif güzergahları kullanması tavsiye edilir.</p>
-                        
-                        <div class="flex items-center justify-between mt-4 text-gray-500 max-w-xs">
-                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-thumbs-up text-lg"></i> 12</button>
-                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-comment text-lg"></i> 3</button>
-                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-solid fa-share-nodes text-lg"></i></button>
-                        </div>
-                    </div>
+        <!-- Feed Container -->
+        <div id="feed" class="divide-y divide-gray-100">
+            <!-- Örnek Başlangıç Gönderisi -->
+            <article class="p-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="font-bold text-gray-800">Sistem</span>
+                    <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Güvenli</span>
                 </div>
-            </article>
-            
-            <!-- Gönderi 2 -->
-            <article class="p-5 hover:bg-gray-50 transition duration-150 cursor-pointer">
-                <div class="flex gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-lg">M</div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="font-bold text-gray-900">Meydan Fırını</span>
-                            <span class="text-xs text-blue-500" title="Onaylı Hesap"><i class="fa-solid fa-circle-check"></i></span>
-                            <span class="text-sm text-gray-500">· 15dk</span>
-                            <span class="ml-auto bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide">Fırsat</span>
-                        </div>
-                        <p class="text-gray-800 leading-relaxed text-[16px] mt-1">İhtiyaç sahipleri için askıda taze ekmek ve poğaça bıraktık. Çevrenizde ihtiyacı olanlara haber verebilirsiniz.</p>
-                        
-                        <div class="flex items-center justify-between mt-4 text-gray-500 max-w-xs">
-                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-thumbs-up text-lg"></i> 34</button>
-                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-comment text-lg"></i> 1</button>
-                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-solid fa-share-nodes text-lg"></i></button>
-                        </div>
-                    </div>
+                <p class="text-gray-700">Civarda uygulamasına hoş geldiniz! İlk paylaşımınızı yaparak mahallenizle etkileşime başlayın.</p>
+                <div class="flex gap-4 mt-4 text-gray-500">
+                    <button onclick="vote(this, 1)" class="hover:text-green-600 transition"><i class="fa-solid fa-thumbs-up"></i> <span class="count">0</span></button>
+                    <button onclick="vote(this, -1)" class="hover:text-red-600 transition"><i class="fa-solid fa-thumbs-down"></i> <span class="count">0</span></button>
                 </div>
             </article>
         </div>
-
-        <!-- Alt Navigasyon Barı (Sadece Mobilde Gerçek App Hissi İçin) -->
-        <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 flex justify-around items-center pt-3 pb-6 px-2 z-50">
-            <button class="flex flex-col items-center gap-1.5 text-blue-600">
-                <i class="fa-solid fa-house text-xl"></i>
-                <span class="text-[11px] font-semibold">Akış</span>
-            </button>
-            <button class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-gray-900 transition">
-                <i class="fa-solid fa-magnifying-glass text-xl"></i>
-                <span class="text-[11px] font-semibold">Keşfet</span>
-            </button>
-            <button class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-gray-900 transition">
-                <i class="fa-regular fa-bell text-xl"></i>
-                <span class="text-[11px] font-semibold">Bildirim</span>
-            </button>
-            <button class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-gray-900 transition">
-                <i class="fa-regular fa-user text-xl"></i>
-                <span class="text-[11px] font-semibold">Profil</span>
-            </button>
-        </nav>
-
     </div>
 
+    <script>
+        function createNewPost() {
+            const content = document.getElementById('postContent').value;
+            const category = document.getElementById('postCategory').value;
+            if (!content) return alert("Lütfen bir şeyler yazın.");
+
+            const feed = document.getElementById('feed');
+            const post = document.createElement('article');
+            post.className = "p-5 animate-fadeIn";
+            post.innerHTML = `
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="font-bold text-gray-800">Sen</span>
+                    <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">${category}</span>
+                </div>
+                <p class="text-gray-700">${content}</p>
+                <div class="flex gap-4 mt-4 text-gray-500">
+                    <button onclick="vote(this, 1)" class="hover:text-green-600 transition"><i class="fa-solid fa-thumbs-up"></i> <span class="count">0</span></button>
+                    <button onclick="vote(this, -1)" class="hover:text-red-600 transition"><i class="fa-solid fa-thumbs-down"></i> <span class="count">0</span></button>
+                </div>
+            `;
+            feed.prepend(post);
+            document.getElementById('postContent').value = '';
+        }
+
+        function vote(btn, direction) {
+            const countSpan = btn.querySelector('.count');
+            let count = parseInt(countSpan.innerText);
+            count += direction;
+            countSpan.innerText = count;
+            
+            // Görsel geri bildirim
+            btn.classList.add('scale-125', 'text-blue-600');
+            setTimeout(() => btn.classList.remove('scale-125', 'text-blue-600'), 200);
+        }
+    </script>
 </body>
 </html>
