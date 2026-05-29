@@ -3,186 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Civarda - Yerel Akış Ağınız</title>
+    <title>Civarda</title>
+    <!-- Modern Tasarım Kütüphanesi (Tailwind CSS) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Profesyonel Tipografi (Inter Font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- İkon Paketi (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f3f4f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #e5e7eb; 
         }
-        .container {
-            width: 100%;
-            max-width: 540px;
-            background-color: #ffffff;
-            min-height: 100vh;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        /* Cam efekti (Header için) */
+        .glass-effect { 
+            background: rgba(255, 255, 255, 0.90); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
         }
-        .header {
-            background-color: #111827;
-            color: #ffffff;
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        .location-badge {
-            background-color: #374151;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        .compose-section {
-            padding: 24px;
-            border-bottom: 8px solid #f3f4f6;
-        }
-        .compose-input {
-            width: 100%;
-            border: 1px solid #e5e7eb;
-            background-color: #f9fafb;
-            border-radius: 8px;
-            padding: 16px;
-            box-sizing: border-box;
-            font-size: 16px;
-            color: #1f2937;
-            outline: none;
-            resize: none;
-            transition: border-color 0.2s;
-        }
-        .compose-input:focus {
-            border-color: #3b82f6;
-            background-color: #ffffff;
-        }
-        .compose-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 12px;
-            align-items: center;
-        }
-        .category-select {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #4b5563;
-            background-color: #ffffff;
-            outline: none;
-        }
-        .btn-publish {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .btn-publish:hover {
-            background-color: #1d4ed8;
-        }
-        .feed {
-            padding: 0;
-        }
-        .post {
-            padding: 24px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .post-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .tag {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .tag-alert { background-color: #fee2e2; color: #991b1b; }
-        .tag-info { background-color: #e0e7ff; color: #3730a3; }
-        .post-time { color: #6b7280; font-size: 13px; }
-        .post-body { font-size: 16px; color: #1f2937; line-height: 1.5; }
-        .post-footer {
-            margin-top: 16px;
-            display: flex;
-            gap: 16px;
-            color: #6b7280;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .action-item { cursor: pointer; }
-        .action-item:hover { color: #111827; }
+        /* Gizli Scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body>
+<body class="flex justify-center min-h-screen text-gray-900">
 
-<div class="container">
-    <div class="header">
-        <div class="brand">Civarda</div>
-        <div class="location-badge">📍 Kayseri</div>
-    </div>
+    <!-- Mobil Uygulama Çerçevesi -->
+    <div class="w-full max-w-md bg-white shadow-2xl relative pb-16">
+        
+        <!-- Üst Bar (Header) -->
+        <header class="glass-effect sticky top-0 z-50 px-5 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">Civarda</h1>
+            <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition duration-200">
+                <i class="fa-solid fa-location-dot text-blue-600"></i> Kayseri
+            </button>
+        </header>
 
-    <div class="compose-section">
-        <textarea class="compose-input" rows="3" placeholder="Civarda şu an ne oluyor?"></textarea>
-        <div class="compose-actions">
-            <select class="category-select">
-                <option>Kategori Seçin</option>
-                <option>Acil / Uyarı</option>
-                <option>Fırsat / Dağıtım</option>
-                <option>Genel Bilgi</option>
-            </select>
-            <button class="btn-publish">Yayınla</button>
-        </div>
-    </div>
-
-    <div class="feed">
-        <!-- Gönderi 1 -->
-        <div class="post">
-            <div class="post-meta">
-                <span class="tag tag-alert">Acil / Uyarı</span>
-                <span class="post-time">Şimdi</span>
+        <!-- Gönderi Paylaşma Alanı -->
+        <div class="p-5 border-b-8 border-gray-100">
+            <div class="flex gap-3">
+                <!-- Profil Fotoğrafı Alanı -->
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0"></div>
+                <div class="flex-1">
+                    <textarea class="w-full bg-transparent outline-none resize-none text-lg placeholder-gray-400 mt-2" rows="2" placeholder="Civarda neler oluyor?"></textarea>
+                </div>
             </div>
-            <div class="post-body">
-                Sivas Caddesi yönünde trafik ışıklarında arıza var, trafik tamamen durma noktasına geldi. Sürücülerin alternatif güzergahları kullanması tavsiye edilir.
-            </div>
-            <div class="post-footer">
-                <span class="action-item">👍 Doğrula (12)</span>
-                <span class="action-item">💬 Yanıtla</span>
-            </div>
-        </div>
-
-        <!-- Gönderi 2 -->
-        <div class="post">
-            <div class="post-meta">
-                <span class="tag tag-info">Fırsat / Dağıtım</span>
-                <span class="post-time">15 dk önce</span>
-            </div>
-            <div class="post-body">
-                Meydandaki fırının önünde ihtiyaç sahipleri için askıda taze ekmek ve poğaça bırakıldı. Çevrenizde ihtiyacı olanlara haber verebilirsiniz.
-            </div>
-            <div class="post-footer">
-                <span class="action-item">👍 Doğrula (34)</span>
-                <span class="action-item">💬 Yanıtla</span>
+            
+            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                <div class="flex gap-4 text-gray-400 text-xl">
+                    <button class="hover:text-blue-500 transition"><i class="fa-solid fa-image"></i></button>
+                    <button class="hover:text-red-500 transition"><i class="fa-solid fa-location-crosshairs"></i></button>
+                </div>
+                <div class="flex gap-2">
+                    <select class="bg-gray-100 text-sm font-medium rounded-full px-4 py-2 outline-none border-none cursor-pointer">
+                        <option>Kategori</option>
+                        <option>Acil</option>
+                        <option>Bilgi</option>
+                    </select>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition shadow-sm">Paylaş</button>
+                </div>
             </div>
         </div>
+
+        <!-- Akış (Feed) -->
+        <div class="divide-y divide-gray-100">
+            
+            <!-- Gönderi 1 -->
+            <article class="p-5 hover:bg-gray-50 transition duration-150 cursor-pointer">
+                <div class="flex gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-lg">A</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-gray-900">Ahmet Y.</span>
+                            <span class="text-sm text-gray-500">· 2dk</span>
+                            <span class="ml-auto bg-red-100 text-red-700 text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide">Acil</span>
+                        </div>
+                        <p class="text-gray-800 leading-relaxed text-[16px] mt-1">Sivas Caddesi yönünde trafik ışıklarında arıza var, trafik tamamen durma noktasına geldi. Sürücülerin alternatif güzergahları kullanması tavsiye edilir.</p>
+                        
+                        <div class="flex items-center justify-between mt-4 text-gray-500 max-w-xs">
+                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-thumbs-up text-lg"></i> 12</button>
+                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-comment text-lg"></i> 3</button>
+                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-solid fa-share-nodes text-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            
+            <!-- Gönderi 2 -->
+            <article class="p-5 hover:bg-gray-50 transition duration-150 cursor-pointer">
+                <div class="flex gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 flex-shrink-0 text-lg">M</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-gray-900">Meydan Fırını</span>
+                            <span class="text-xs text-blue-500" title="Onaylı Hesap"><i class="fa-solid fa-circle-check"></i></span>
+                            <span class="text-sm text-gray-500">· 15dk</span>
+                            <span class="ml-auto bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide">Fırsat</span>
+                        </div>
+                        <p class="text-gray-800 leading-relaxed text-[16px] mt-1">İhtiyaç sahipleri için askıda taze ekmek ve poğaça bıraktık. Çevrenizde ihtiyacı olanlara haber verebilirsiniz.</p>
+                        
+                        <div class="flex items-center justify-between mt-4 text-gray-500 max-w-xs">
+                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-thumbs-up text-lg"></i> 34</button>
+                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-regular fa-comment text-lg"></i> 1</button>
+                            <button class="flex items-center gap-2 hover:text-blue-600 transition text-sm font-medium"><i class="fa-solid fa-share-nodes text-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Alt Navigasyon Barı (Sadece Mobilde Gerçek App Hissi İçin) -->
+        <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 flex justify-around items-center pt-3 pb-6 px-2 z-50">
+            <button class="flex flex-col items-center gap-1.5 text-blue-600">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-[11px] font-semibold">Akış</span>
+            </button>
+            <button class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-gray-900 transition">
+                <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                <span class="text-[11px] font-semibold">Keşfet</span>
+            </button>
+            <button class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-gray-900 transition">
+                <i class="fa-regular fa-bell text-xl"></i>
+                <span class="text-[11px] font-semibold">Bildirim</span>
+            </button>
+            <button class="flex flex-col items-center gap-1.5 text-gray-400 hover:text-gray-900 transition">
+                <i class="fa-regular fa-user text-xl"></i>
+                <span class="text-[11px] font-semibold">Profil</span>
+            </button>
+        </nav>
+
     </div>
-</div>
 
 </body>
 </html>
