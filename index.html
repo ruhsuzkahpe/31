@@ -1,232 +1,579 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Civarda | Kayseri</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { primary: '#0f172a', accent: '#3b82f6' }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Animasyonlar */
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-slideUp { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civarda</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #070e1a;
+    --surface: rgba(15,23,42,0.85);
+    --border: rgba(51,65,85,0.6);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --subtle: #475569;
+    --cat-kaza: #f97316;
+    --cat-yemek: #22c55e;
+    --cat-etkinlik: #a78bfa;
+    --cat-guvenlik: #ef4444;
+    --cat-diger: #94a3b8;
+    --accent: #3b82f6;
+  }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,130,246,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 80% 80%, rgba(99,102,241,0.07) 0%, transparent 60%);
+    font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(7,14,26,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(30,41,59,0.8);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #f1f5f9 30%, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 0.65rem;
+    color: var(--subtle);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .btn-share {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.3);
+    transition: opacity 0.15s;
+  }
+  .btn-share:hover { opacity: 0.88; }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .filter-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1.5px solid #1e293b;
+    background: rgba(15,23,42,0.5);
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s ease;
+  }
+  .filter-btn:hover { border-color: rgba(100,116,139,0.5); }
+  .filter-btn.active[data-cat="all"]      { border-color: var(--text);          color: var(--text);          background: rgba(226,232,240,0.08); }
+  .filter-btn.active[data-cat="kaza"]     { border-color: var(--cat-kaza);      color: var(--cat-kaza);      background: rgba(249,115,22,0.1); }
+  .filter-btn.active[data-cat="yemek"]    { border-color: var(--cat-yemek);     color: var(--cat-yemek);     background: rgba(34,197,94,0.1); }
+  .filter-btn.active[data-cat="etkinlik"] { border-color: var(--cat-etkinlik);  color: var(--cat-etkinlik);  background: rgba(167,139,250,0.1); }
+  .filter-btn.active[data-cat="guvenlik"] { border-color: var(--cat-guvenlik);  color: var(--cat-guvenlik);  background: rgba(239,68,68,0.1); }
+  .filter-btn.active[data-cat="diger"]    { border-color: var(--cat-diger);     color: var(--cat-diger);     background: rgba(148,163,184,0.1); }
+
+  /* LIVE INDICATOR */
+  .live-bar {
+    padding: 0 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.2);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+    50%       { box-shadow: 0 0 0 7px rgba(239,68,68,0.04); }
+  }
+
+  .live-text {
+    font-size: 0.72rem;
+    color: var(--subtle);
+    letter-spacing: 0.06em;
+  }
+
+  /* FEED */
+  .feed {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  /* POST CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.4s ease forwards;
+  }
+  .card:hover {
+    border-color: rgba(100,116,139,0.55);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card[data-cat="kaza"]     { border-left: 3px solid var(--cat-kaza); }
+  .card[data-cat="yemek"]    { border-left: 3px solid var(--cat-yemek); }
+  .card[data-cat="etkinlik"] { border-left: 3px solid var(--cat-etkinlik); }
+  .card[data-cat="guvenlik"] { border-left: 3px solid var(--cat-guvenlik); }
+  .card[data-cat="diger"]    { border-left: 3px solid var(--cat-diger); }
+
+  .card-live-badge {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 100px;
+    text-transform: uppercase;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cat-icon {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .cat-icon[data-cat="kaza"]     { color: var(--cat-kaza);     background: rgba(249,115,22,0.12); }
+  .cat-icon[data-cat="yemek"]    { color: var(--cat-yemek);    background: rgba(34,197,94,0.12); }
+  .cat-icon[data-cat="etkinlik"] { color: var(--cat-etkinlik); background: rgba(167,139,250,0.12); }
+  .cat-icon[data-cat="guvenlik"] { color: var(--cat-guvenlik); background: rgba(239,68,68,0.12); }
+  .cat-icon[data-cat="diger"]    { color: var(--cat-diger);    background: rgba(148,163,184,0.12); }
+
+  .cat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .cat-label[data-cat="kaza"]     { color: var(--cat-kaza); }
+  .cat-label[data-cat="yemek"]    { color: var(--cat-yemek); }
+  .cat-label[data-cat="etkinlik"] { color: var(--cat-etkinlik); }
+  .cat-label[data-cat="guvenlik"] { color: var(--cat-guvenlik); }
+  .cat-label[data-cat="diger"]    { color: var(--cat-diger); }
+
+  .card-time { margin-left: auto; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+
+  .card-title { font-weight: 700; font-size: 0.98rem; color: #f1f5f9; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .card-desc  { font-size: 0.82rem; color: #94a3b8; line-height: 1.55; }
+
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+
+  .card-loc {
+    font-size: 0.72rem;
+    color: var(--subtle);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 55%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .confirm-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1.5px solid #334155;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .confirm-btn:hover { border-color: #22c55e; color: #22c55e; }
+  .confirm-btn.confirmed {
+    border-color: #22c55e;
+    background: rgba(34,197,94,0.08);
+    color: #22c55e;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    color: #334155;
+    padding: 60px 20px;
+    font-size: 0.9rem;
+    line-height: 2;
+  }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    animation: fadeIn 0.2s ease forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .modal {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transform: translateY(20px);
+    animation: slideUp 0.25s ease forwards;
+  }
+  @keyframes slideUp { to { transform: translateY(0); } }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .modal-title { font-size: 1.1rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.02em; }
+  .modal-close {
+    background: none; border: none;
+    color: var(--muted); font-size: 1.4rem;
+    cursor: pointer; line-height: 1;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .cat-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cat-pick-btn {
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1.5px solid #334155;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.15s;
+  }
+  .cat-pick-btn.active[data-cat="kaza"]     { border-color: var(--cat-kaza);     color: var(--cat-kaza);     background: rgba(249,115,22,0.1); }
+  .cat-pick-btn.active[data-cat="yemek"]    { border-color: var(--cat-yemek);    color: var(--cat-yemek);    background: rgba(34,197,94,0.1); }
+  .cat-pick-btn.active[data-cat="etkinlik"] { border-color: var(--cat-etkinlik); color: var(--cat-etkinlik); background: rgba(167,139,250,0.1); }
+  .cat-pick-btn.active[data-cat="guvenlik"] { border-color: var(--cat-guvenlik); color: var(--cat-guvenlik); background: rgba(239,68,68,0.1); }
+  .cat-pick-btn.active[data-cat="diger"]    { border-color: var(--cat-diger);    color: var(--cat-diger);    background: rgba(148,163,184,0.1); }
+
+  .form-input, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(15,23,42,0.9);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-textarea:focus { border-color: #3b82f6; }
+  .form-input::placeholder, .form-textarea::placeholder { color: #475569; }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  .btn-submit {
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+    transition: opacity 0.15s;
+  }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
 </head>
-<body class="text-slate-800 antialiased flex justify-center">
+<body>
 
-    <!-- Ana Konteyner -->
-    <main class="w-full max-w-lg bg-white min-h-screen shadow-2xl relative pb-24 flex flex-col">
-        
-        <!-- Header -->
-        <header class="glass sticky top-0 z-40 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-primary">Civarda</h1>
-                <p class="text-xs font-medium text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-accent mr-1"></i> Kayseri</p>
-            </div>
-            <button class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition">
-                <i class="fa-solid fa-magnifying-glass text-slate-600"></i>
-            </button>
-        </header>
+<!-- HEADER -->
+<header class="header">
+  <div>
+    <div class="logo">civarda</div>
+    <div class="logo-sub">Yakınındaki anlara bak</div>
+  </div>
+  <button class="btn-share" onclick="openModal()">
+    <span style="font-size:1rem">+</span> Paylaş
+  </button>
+</header>
 
-        <!-- Kategori Filtreleri (Yatay Kaydırılabilir) -->
-        <div class="flex gap-3 px-5 py-3 overflow-x-auto hide-scroll border-b border-slate-100 bg-white">
-            <button class="whitespace-nowrap px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-full">Hepsi</button>
-            <button class="whitespace-nowrap px-4 py-1.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-full hover:bg-slate-200">🚨 Acil</button>
-            <button class="whitespace-nowrap px-4 py-1.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-full hover:bg-slate-200">🎁 Fırsat</button>
-            <button class="whitespace-nowrap px-4 py-1.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-full hover:bg-slate-200">🚧 Trafik</button>
-        </div>
+<!-- FILTERS -->
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-cat="all"      onclick="setFilter('all')">◎ Tümü</button>
+  <button class="filter-btn"        data-cat="kaza"     onclick="setFilter('kaza')">⚠ Kaza</button>
+  <button class="filter-btn"        data-cat="yemek"    onclick="setFilter('yemek')">◈ Yemek</button>
+  <button class="filter-btn"        data-cat="etkinlik" onclick="setFilter('etkinlik')">◆ Etkinlik</button>
+  <button class="filter-btn"        data-cat="guvenlik" onclick="setFilter('guvenlik')">◉ Güvenlik</button>
+  <button class="filter-btn"        data-cat="diger"    onclick="setFilter('diger')">◇ Diğer</button>
+</div>
 
-        <!-- Akış (Feed) -->
-        <div id="feedContainer" class="flex-1 divide-y divide-slate-100">
-            <!-- Gönderiler JS ile buraya yüklenecek -->
-        </div>
+<!-- LIVE BAR -->
+<div class="live-bar">
+  <div class="live-dot"></div>
+  <span class="live-text" id="live-count">5 gönderi · CANLI AKIŞ</span>
+</div>
 
-        <!-- Yüzen Ekle Butonu (FAB) -->
-        <button onclick="toggleModal(true)" class="fixed bottom-24 right-5 sm:absolute sm:bottom-24 sm:right-5 w-14 h-14 bg-accent text-white rounded-full shadow-lg shadow-blue-500/30 flex items-center justify-center text-xl hover:scale-105 active:scale-95 transition-transform z-30">
-            <i class="fa-solid fa-pen"></i>
-        </button>
+<!-- FEED -->
+<div class="feed" id="feed"></div>
 
-        <!-- Alt Navigasyon -->
-        <nav class="glass fixed bottom-0 w-full max-w-lg border-t border-slate-200 flex justify-between px-8 py-3 pb-6 sm:pb-3 z-40">
-            <button class="flex flex-col items-center text-primary gap-1"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px] font-bold">Akış</span></button>
-            <button class="flex flex-col items-center text-slate-400 hover:text-primary transition gap-1"><i class="fa-solid fa-map text-xl"></i><span class="text-[10px] font-bold">Harita</span></button>
-            <button class="flex flex-col items-center text-slate-400 hover:text-primary transition gap-1"><i class="fa-regular fa-bell text-xl"></i><span class="text-[10px] font-bold">Bildirim</span></button>
-            <button class="flex flex-col items-center text-slate-400 hover:text-primary transition gap-1"><i class="fa-regular fa-user text-xl"></i><span class="text-[10px] font-bold">Profil</span></button>
-        </nav>
-    </main>
-
-    <!-- Yeni Gönderi Modalı (Açılır Pencere) -->
-    <div id="postModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center opacity-0 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-5 transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="modalContent">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-primary">Yeni Bildirim</h2>
-                <button onclick="toggleModal(false)" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <textarea id="postInput" class="w-full h-32 bg-slate-50 rounded-xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none" placeholder="Şu an ne görüyorsun?"></textarea>
-            
-            <div class="flex justify-between items-center mt-4">
-                <select id="categoryInput" class="bg-slate-100 text-slate-700 font-semibold text-sm px-3 py-2 rounded-lg outline-none cursor-pointer">
-                    <option value="genel">Genel</option>
-                    <option value="acil">🚨 Acil Durum</option>
-                    <option value="firsat">🎁 Fırsat</option>
-                </select>
-                <button onclick="submitPost()" class="bg-primary text-white font-bold py-2.5 px-6 rounded-xl shadow-md hover:bg-slate-800 active:scale-95 transition-all">Yayınla</button>
-            </div>
-        </div>
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Yeni Paylaşım</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
     </div>
-
-    <!-- Toast Bildirim (Sistem Mesajları İçin) -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl font-medium text-sm flex items-center gap-2 z-[60] transition-all duration-300 transform -translate-y-20 opacity-0">
-        <i class="fa-solid fa-circle-check text-green-400"></i> <span id="toastMsg">İşlem başarılı</span>
+    <div class="cat-picker" id="cat-picker">
+      <button class="cat-pick-btn active" data-cat="diger"    onclick="pickCat('diger')">◇ Diğer</button>
+      <button class="cat-pick-btn"        data-cat="kaza"     onclick="pickCat('kaza')">⚠ Kaza</button>
+      <button class="cat-pick-btn"        data-cat="yemek"    onclick="pickCat('yemek')">◈ Yemek</button>
+      <button class="cat-pick-btn"        data-cat="etkinlik" onclick="pickCat('etkinlik')">◆ Etkinlik</button>
+      <button class="cat-pick-btn"        data-cat="guvenlik" onclick="pickCat('guvenlik')">◉ Güvenlik</button>
     </div>
+    <input  class="form-input"    id="f-title"    placeholder="Başlık (örn: Su kesintisi)" />
+    <textarea class="form-textarea" id="f-desc"   placeholder="Ne oldu? Kısaca açıkla..."></textarea>
+    <input  class="form-input"    id="f-location" placeholder="Konum (Mahalle, Cadde...)" />
+    <button class="btn-submit"    id="submit-btn" onclick="submitPost()">Paylaş</button>
+  </div>
+</div>
 
-    <!-- JavaScript Mantığı -->
-    <script>
-        // Veritabanı simülasyonu (Veriler backend'den geliyormuş gibi)
-        let posts = [
-            { id: 1, author: "Meydan Fırını", isVerified: true, time: "10 dk önce", category: "Fırsat", content: "Askıda 20 adet taze ekmek bıraktık, ihtiyacı olanlar alabilir.", upvotes: 45, isUpvoted: false },
-            { id: 2, author: "Sistem", isVerified: false, time: "1 saat önce", category: "Genel", content: "Civarda uygulamasına hoş geldiniz. Etrafınızdaki olayları anlık olarak paylaşmaya başlayın.", upvotes: 12, isUpvoted: false }
-        ];
+<script>
+  const CATS = {
+    all:      { label: 'Tümü',     icon: '◎' },
+    kaza:     { label: 'Kaza',     icon: '⚠' },
+    yemek:    { label: 'Yemek',    icon: '◈' },
+    etkinlik: { label: 'Etkinlik', icon: '◆' },
+    guvenlik: { label: 'Güvenlik', icon: '◉' },
+    diger:    { label: 'Diğer',    icon: '◇' },
+  };
 
-        const feedContainer = document.getElementById('feedContainer');
+  let posts = [
+    { id:1, cat:'kaza',     title:'Trafik kazası',          desc:'Bağcılar D100 üzerinde 2 araç çarpışması. Yol sağ şerit kapalı, yavaş geçin.', loc:'Bağcılar, D100 Karayolu', time:'3 dk önce',  confirms:12, confirmed:false, isNew:true  },
+    { id:2, cat:'yemek',    title:'Bedava poğaça dağıtımı', desc:'Yeni açılan fırın tanıtım için sokakta poğaça dağıtıyor. Stok azalıyor.',       loc:'Kadıköy, Moda Caddesi',  time:'11 dk önce', confirms:34, confirmed:false, isNew:false },
+    { id:3, cat:'guvenlik', title:'Şüpheli araç',           desc:'Sokakta uzun süredir park eden plakasız araç var. Herkes dikkatli olsun.',       loc:'Beşiktaş, Sinanpaşa',    time:'28 dk önce', confirms:7,  confirmed:false, isNew:false },
+    { id:4, cat:'etkinlik', title:'Açık hava konseri',      desc:'Belediye organizasyonu. Akustik performans, ücretsiz giriş, aile dostu.',        loc:'Üsküdar Meydanı',        time:'45 dk önce', confirms:89, confirmed:false, isNew:false },
+    { id:5, cat:'diger',    title:'Su kesintisi',           desc:'ISKI bildirimi: Bölgede 20:00-06:00 arası planlı su kesintisi uygulanacak.',     loc:'Maltepe, Merkez',        time:'1 sa önce',  confirms:23, confirmed:false, isNew:false },
+  ];
 
-        // Gönderileri Ekrana Çizme Fonksiyonu
-        function renderPosts() {
-            feedContainer.innerHTML = '';
-            posts.forEach(post => {
-                const tagColor = post.category === 'Acil' ? 'bg-red-100 text-red-700' : post.category === 'Fırsat' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600';
-                
-                const postHTML = `
-                    <article class="p-5 animate-slideUp bg-white">
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500">${post.author.charAt(0)}</div>
-                                <div>
-                                    <div class="flex items-center gap-1">
-                                        <span class="font-bold text-sm text-primary">${post.author}</span>
-                                        ${post.isVerified ? '<i class="fa-solid fa-circle-check text-accent text-xs"></i>' : ''}
-                                    </div>
-                                    <span class="text-xs text-slate-400">${post.time}</span>
-                                </div>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${tagColor}">${post.category}</span>
-                        </div>
-                        <p class="text-slate-700 mt-3 leading-relaxed text-[15px]">${post.content}</p>
-                        
-                        <div class="flex items-center gap-6 mt-4 pt-3 border-t border-slate-50">
-                            <button onclick="handleVote(${post.id})" class="flex items-center gap-1.5 text-sm font-semibold transition-colors ${post.isUpvoted ? 'text-accent' : 'text-slate-400 hover:text-slate-600'}">
-                                <i class="${post.isUpvoted ? 'fa-solid' : 'fa-regular'} fa-thumbs-up text-lg transition-transform ${post.isUpvoted ? 'scale-110' : ''}"></i> 
-                                <span>${post.upvotes}</span>
-                            </button>
-                            <button class="flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors">
-                                <i class="fa-regular fa-comment text-lg"></i> <span>Yanıtla</span>
-                            </button>
-                        </div>
-                    </article>
-                `;
-                feedContainer.insertAdjacentHTML('beforeend', postHTML);
-            });
-        }
+  let currentFilter = 'all';
+  let selectedCat   = 'diger';
 
-        // Oy Verme Mantığı
-        function handleVote(id) {
-            const post = posts.find(p => p.id === id);
-            if (post) {
-                post.isUpvoted ? post.upvotes-- : post.upvotes++;
-                post.isUpvoted = !post.isUpvoted;
-                renderPosts();
-            }
-        }
+  function timeAgo(ms) {
+    const s = Math.floor((Date.now() - ms) / 1000);
+    if (s < 60)   return 'Şimdi';
+    if (s < 3600) return Math.floor(s/60) + ' dk önce';
+    return Math.floor(s/3600) + ' sa önce';
+  }
 
-        // Modal (Açılır Pencere) Kontrolü
-        const modal = document.getElementById('postModal');
-        const modalContent = document.getElementById('modalContent');
-        
-        function toggleModal(show) {
-            if (show) {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    modalContent.classList.remove('translate-y-full');
-                }, 10);
-                document.getElementById('postInput').focus();
-            } else {
-                modal.classList.add('opacity-0');
-                modalContent.classList.add('translate-y-full');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-        }
+  function filtered() {
+    return currentFilter === 'all' ? posts : posts.filter(p => p.cat === currentFilter);
+  }
 
-        // Yeni Gönderi Ekleme
-        function submitPost() {
-            const input = document.getElementById('postInput');
-            const categorySelect = document.getElementById('categoryInput');
-            const content = input.value.trim();
-            
-            if (!content) {
-                showToast("Lütfen bir içerik yazın!", "error");
-                return;
-            }
+  function renderFeed() {
+    const feed = document.getElementById('feed');
+    const list = filtered();
+    document.getElementById('live-count').textContent = list.length + ' gönderi · CANLI AKIŞ';
 
-            const categoryText = categorySelect.options[categorySelect.selectedIndex].text.replace(/🚨 |🎁 /g, '');
+    if (!list.length) {
+      feed.innerHTML = '<div class="empty">Bu kategoride henüz paylaşım yok.<br><span style="color:#475569;font-size:0.8rem">İlk sen paylaş.</span></div>';
+      return;
+    }
 
-            const newPost = {
-                id: Date.now(),
-                author: "Sen",
-                isVerified: false,
-                time: "Şimdi",
-                category: categoryText,
-                content: content,
-                upvotes: 0,
-                isUpvoted: false
-            };
+    feed.innerHTML = list.map((p, i) => `
+      <div class="card" data-cat="${p.cat}" data-id="${p.id}" style="animation-delay:${i * 0.07}s">
+        ${p.isNew ? '<span class="card-live-badge">CANLI</span>' : ''}
+        <div class="card-top">
+          <div class="cat-icon" data-cat="${p.cat}">${CATS[p.cat].icon}</div>
+          <span class="cat-label" data-cat="${p.cat}">${CATS[p.cat].label}</span>
+          <span class="card-time">${p.time}</span>
+        </div>
+        <div>
+          <div class="card-title">${p.title}</div>
+          <div class="card-desc">${p.desc}</div>
+        </div>
+        <div class="card-bottom">
+          <span class="card-loc"><span style="opacity:0.5">◎</span> ${p.loc}</span>
+          <button class="confirm-btn ${p.confirmed ? 'confirmed' : ''}" onclick="confirm(${p.id})">
+            <span>${p.confirmed ? '✓' : '+'}</span>
+            <span>${p.confirms} doğrulama</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
 
-            posts.unshift(newPost); // Listeye en başa ekle
-            renderPosts(); // Ekranı güncelle
-            
-            input.value = '';
-            toggleModal(false);
-            showToast("Başarıyla paylaşıldı!");
-        }
+  function confirm(id) {
+    const p = posts.find(x => x.id === id);
+    if (!p) return;
+    p.confirmed = !p.confirmed;
+    p.confirms += p.confirmed ? 1 : -1;
+    renderFeed();
+  }
 
-        // Toast (Bildirim) Mesajı Gösterme
-        function showToast(message, type = "success") {
-            const toast = document.getElementById('toast');
-            const icon = toast.querySelector('i');
-            document.getElementById('toastMsg').innerText = message;
-            
-            icon.className = type === "success" ? "fa-solid fa-circle-check text-green-400" : "fa-solid fa-circle-exclamation text-red-400";
-            
-            toast.classList.remove('-translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('-translate-y-20', 'opacity-0'), 3000);
-        }
+  function setFilter(cat) {
+    currentFilter = cat;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.cat === cat);
+    });
+    renderFeed();
+  }
 
-        // Sayfa yüklendiğinde gönderileri çiz
-        window.onload = renderPosts;
-    </script>
+  /* MODAL */
+  function openModal() {
+    const m = document.getElementById('modal');
+    m.style.display = 'flex';
+    setTimeout(() => m.style.opacity = '', 0);
+    document.getElementById('f-title').value    = '';
+    document.getElementById('f-desc').value     = '';
+    document.getElementById('f-location').value = '';
+    pickCat('diger');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function overlayClick(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  function pickCat(cat) {
+    selectedCat = cat;
+    document.querySelectorAll('.cat-pick-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.cat === cat);
+    });
+  }
+
+  function submitPost() {
+    const title = document.getElementById('f-title').value.trim();
+    const desc  = document.getElementById('f-desc').value.trim();
+    const loc   = document.getElementById('f-location').value.trim();
+    if (!title) { document.getElementById('f-title').focus(); return; }
+
+    posts.unshift({
+      id: Date.now(),
+      cat: selectedCat,
+      title,
+      desc: desc || '—',
+      loc: loc || 'Konum belirtilmedi',
+      time: 'Şimdi',
+      confirms: 0,
+      confirmed: false,
+      isNew: true,
+    });
+
+    closeModal();
+    setFilter('all');
+  }
+
+  renderFeed();
+</script>
 </body>
 </html>
