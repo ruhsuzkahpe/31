@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#04070e">
+<title>Civarda — Mahallenin Nabzı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#04060d;--bg2:#060a14;
+  --s1:rgba(11,17,30,.92);--s2:rgba(15,23,40,.97);--s3:rgba(20,30,52,.95);
+  --b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);--b3:rgba(255,255,255,.18);
+  --t1:#eef2ff;--t2:#8492b0;--t3:#3b4d69;--t4:#2a3850;
+  --kaza:#ff5e2e;--kaza-d:#ff7a52;--yemek:#0ec874;--yemek-d:#2dd98e;
+  --etkinlik:#9d7ef5;--etkinlik-d:#b29bf8;--guvenlik:#ff2d55;--guvenlik-d:#ff5475;
+  --diger:#5b8def;--diger-d:#7da6f3;
+  --acc:#3d7ef5;--acc2:#6c3df5;--acc-glow:rgba(61,126,245,.4);
+  --gold:#f5c84b;
+  --radius:16px;--radius-sm:11px;--radius-lg:22px;
+  --shadow:0 8px 32px rgba(0,0,0,.45);--shadow-lg:0 16px 48px rgba(0,0,0,.6);
+  --ease:cubic-bezier(.34,1.2,.64,1);--ease-out:cubic-bezier(.16,1,.3,1);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--t1);min-height:100vh;min-height:100dvh;overflow-x:hidden;font-feature-settings:"ss01","cv01"}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ═══ AMBIENT BACKGROUND ═══ */
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.amb-blob{position:absolute;border-radius:50%;filter:blur(8px)}
+.amb-a{top:-25%;left:-12%;width:65vw;height:65vw;background:radial-gradient(circle,rgba(61,126,245,.08) 0%,transparent 62%);animation:drift1 20s ease-in-out infinite alternate}
+.amb-b{bottom:-22%;right:-12%;width:58vw;height:58vw;background:radial-gradient(circle,rgba(108,61,245,.06) 0%,transparent 62%);animation:drift2 26s ease-in-out infinite alternate}
+.amb-c{top:38%;left:28%;width:42vw;height:42vw;background:radial-gradient(circle,rgba(255,94,46,.035) 0%,transparent 62%);animation:drift1 16s ease-in-out infinite alternate-reverse}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(6%,9%) scale(1.08)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1)}to{transform:translate(-7%,-6%) scale(1.05)}}
+.amb-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000 0%,transparent 75%)}
+
+/* ═══ ONBOARDING ═══ */
+#onboard{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;overflow-y:auto}
+#onboard.hide{animation:obOut .5s var(--ease-out) forwards}
+@keyframes obOut{to{opacity:0;transform:scale(1.04);pointer-events:none}}
+.ob-inner{width:100%;max-width:410px;display:flex;flex-direction:column;align-items:center;animation:obIn .7s var(--ease-out)}
+@keyframes obIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.ob-logo{margin-bottom:30px;text-align:center}
+.ob-pin-ring{width:78px;height:78px;margin:0 auto 18px;position:relative;display:flex;align-items:center;justify-content:center}
+.ob-pin-ring::before,.ob-pin-ring::after{content:'';position:absolute;border-radius:50%;border:1.5px solid var(--acc)}
+.ob-pin-ring::before{inset:0;opacity:.3;animation:ring 2.8s ease infinite}
+.ob-pin-ring::after{inset:9px;opacity:.15;animation:ring 2.8s ease .7s infinite}
+@keyframes ring{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.05;transform:scale(1.18)}}
+.ob-pin-core{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 8px 28px var(--acc-glow);z-index:1}
+.ob-wordmark{font-family:'Syne',sans-serif;font-size:3.4rem;font-weight:900;letter-spacing:-.065em;line-height:.9;background:linear-gradient(160deg,#fff 10%,rgba(140,162,225,.65) 95%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.ob-tagline{font-size:.78rem;color:var(--t3);letter-spacing:.22em;text-transform:uppercase;font-weight:600}
+.ob-card{width:100%;background:linear-gradient(180deg,var(--s1),rgba(8,13,24,.95));border:1px solid var(--b1);border-radius:var(--radius-lg);padding:26px;display:flex;flex-direction:column;gap:20px;box-shadow:var(--shadow-lg)}
+.ob-title{font-family:'Syne',sans-serif;font-size:1.42rem;font-weight:800;letter-spacing:-.035em;line-height:1.25}
+.ob-sub{font-size:.85rem;color:var(--t2);line-height:1.65;margin-top:7px}
+.ob-steps{display:flex;flex-direction:column;gap:9px}
+.ob-step{display:flex;align-items:center;gap:12px;padding:11px 13px;background:rgba(255,255,255,.025);border:1px solid var(--b1);border-radius:var(--radius-sm);transition:transform .2s var(--ease)}
+.ob-step:hover{transform:translateX(3px)}
+.ob-step-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0}
+.ob-step-txt{font-size:.81rem;color:var(--t2);line-height:1.45}
+.ob-step-txt strong{color:var(--t1);font-weight:600}
+.ob-loc-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:9px}
+.ob-loc-btns{display:flex;gap:8px;margin-bottom:10px}
+.ob-loc-btn{flex:1;height:46px;border-radius:var(--radius-sm);border:1px solid var(--b2);background:transparent;color:var(--t2);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s var(--ease)}
+.ob-loc-btn:hover{background:rgba(255,255,255,.05);color:var(--t1);transform:translateY(-1px)}
+.ob-loc-btn.primary{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;box-shadow:0 6px 20px var(--acc-glow)}
+.ob-loc-btn.primary:hover{box-shadow:0 8px 26px var(--acc-glow)}
+.ob-loc-btn:disabled{opacity:.6;cursor:wait}
+.ob-district-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:184px;overflow-y:auto;padding:2px;margin-bottom:12px}
+.ob-district-btn{padding:10px 9px;border-radius:9px;border:1px solid var(--b1);background:transparent;color:var(--t2);font-family:inherit;font-size:.78rem;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:6px}
+.ob-district-btn:hover{background:rgba(255,255,255,.05);border-color:var(--b2);color:var(--t1)}
+.ob-district-btn.sel{border-color:var(--acc);background:rgba(61,126,245,.12);color:var(--acc-d,#7da6f3)}
+.ob-district-btn .dco{font-size:.6rem;color:var(--t3)}
+.ob-radius-box{margin-bottom:8px}
+.ob-radius-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ob-radius-label{font-size:.78rem;color:var(--t2)}
+.ob-radius-val{font-size:.86rem;font-weight:700;color:var(--acc);font-family:'JetBrains Mono',monospace}
+.ob-slider{width:100%;-webkit-appearance:none;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--acc) 0%,var(--acc) 20%,var(--b2) 20%);outline:none;cursor:pointer}
+.ob-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 10px var(--acc-glow),0 0 0 4px rgba(61,126,245,.2)}
+.ob-confirm{padding:11px 13px;background:rgba(14,200,116,.08);border:1px solid rgba(14,200,116,.22);border-radius:var(--radius-sm);font-size:.8rem;color:var(--yemek-d);line-height:1.4;display:none;animation:slideDown .3s var(--ease)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.ob-enter{height:50px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:inherit;font-weight:700;font-size:.96rem;cursor:pointer;box-shadow:0 8px 26px var(--acc-glow);transition:all .2s var(--ease);display:none;align-items:center;justify-content:center;gap:8px}
+.ob-enter.show{display:flex;animation:slideDown .4s var(--ease)}
+.ob-enter:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--acc-glow)}
+.ob-skip{text-align:center;font-size:.76rem;color:var(--t3);cursor:pointer;transition:color .15s;padding:4px}
+.ob-skip:hover{color:var(--t2)}
+
+/* ═══ MAIN APP ═══ */
+#app{display:none;flex-direction:column;min-height:100vh;position:relative;z-index:1}
+#app.show{display:flex}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:90;height:60px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;background:rgba(4,6,13,.82);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);border-bottom:1px solid var(--b1)}
+.hdr-logo{display:flex;align-items:center;gap:9px;cursor:pointer}
+.hdr-mark{width:31px;height:31px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.85rem;box-shadow:0 4px 14px var(--acc-glow);flex-shrink:0;position:relative;transition:transform .25s var(--ease)}
+.hdr-logo:hover .hdr-mark{transform:rotate(-8deg) scale(1.05)}
+.hdr-mark::after{content:'';position:absolute;inset:-2px;border-radius:11px;border:1px solid rgba(61,126,245,.22)}
+.hdr-wordmark{font-family:'Syne',sans-serif;font-weight:900;font-size:1.22rem;letter-spacing:-.055em;background:linear-gradient(135deg,#fff,rgba(140,162,225,.78));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-right{display:flex;align-items:center;gap:7px}
+.hdr-icon-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .15s;position:relative}
+.hdr-icon-btn:hover{background:var(--s2);color:var(--t1);border-color:var(--b2)}
+.hdr-icon-btn.has-badge::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--guvenlik);border:1.5px solid var(--bg);animation:pdot 1.8s ease infinite}
+.btn-new{height:34px;padding:0 13px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;box-shadow:0 3px 14px var(--acc-glow);display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
+.btn-new:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--acc-glow)}
+
+/* VIEW TOGGLE */
+.view-toggle{display:flex;background:var(--s1);border:1px solid var(--b1);border-radius:9px;padding:2px;gap:2px;margin:0 auto;position:absolute;left:50%;transform:translateX(-50%)}
+.vt-btn{padding:5px 13px;border-radius:7px;border:none;background:transparent;color:var(--t3);font-family:inherit;font-size:.73rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:4px}
+.vt-btn.active{background:linear-gradient(135deg,rgba(61,126,245,.2),rgba(108,61,245,.15));color:var(--acc);box-shadow:0 1px 6px rgba(61,126,245,.2)}
+@media(max-width:430px){.view-toggle{position:static;transform:none;margin:0}.hdr-wordmark{display:none}}
+
+/* TICKER */
+.ticker-wrap{overflow:hidden;border-bottom:1px solid var(--b1);background:linear-gradient(90deg,rgba(255,45,85,.04),rgba(61,126,245,.03));height:33px;display:flex;align-items:center}
+.ticker-lbl{flex-shrink:0;padding:0 12px;font-size:.6rem;font-weight:700;letter-spacing:.12em;color:var(--guvenlik-d);text-transform:uppercase;border-right:1px solid var(--b1);height:100%;display:flex;align-items:center;background:rgba(255,45,85,.05);gap:5px}
+.tld{width:5px;height:5px;border-radius:50%;background:var(--guvenlik);animation:pdot 1.6s ease infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+.ticker-scrl{overflow:hidden;flex:1}
+.ticker-track{display:flex;gap:42px;padding-left:20px;animation:tick 35s linear infinite;white-space:nowrap;will-change:transform}
+.ticker-track:hover{animation-play-state:paused}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tick-item{font-size:.72rem;color:var(--t2);display:flex;align-items:center;gap:5px;cursor:pointer}
+.tick-item:hover{color:var(--t1)}
+.tick-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+
+/* CONTROLS */
+.controls{padding:12px 13px 0;display:flex;flex-direction:column;gap:8px;position:relative;z-index:2}
+.search-wrap{position:relative;display:flex;align-items:center}
+.search-ico{position:absolute;left:12px;color:var(--t3);font-size:.88rem;pointer-events:none;transition:color .15s}
+.search-wrap:focus-within .search-ico{color:var(--acc)}
+.search-inp{width:100%;height:42px;padding:0 38px 0 35px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);color:var(--t1);font-size:.85rem;font-family:inherit;outline:none;transition:all .18s}
+.search-inp::placeholder{color:var(--t3)}
+.search-inp:focus{border-color:var(--acc);background:var(--s2);box-shadow:0 0 0 3px rgba(61,126,245,.1)}
+.search-clear{position:absolute;right:10px;width:22px;height:22px;border-radius:6px;border:none;background:var(--b1);color:var(--t2);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:.8rem;transition:all .15s}
+.search-clear:hover{background:var(--b2);color:var(--t1)}
+.search-clear.show{display:flex}
+.filters{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:1px}
+.filters::-webkit-scrollbar{display:none}
+.fbtn{flex-shrink:0;height:32px;padding:0 12px;border-radius:9px;border:1px solid var(--b1);background:var(--s1);color:var(--t3);font-size:.73rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:5px}
+.fbtn:hover{border-color:var(--b2);color:var(--t2);transform:translateY(-1px)}
+.fbtn.active{font-weight:700;transform:translateY(-1px)}
+.fbtn.active[data-cat=all]{background:rgba(238,242,255,.1);border-color:rgba(238,242,255,.22);color:var(--t1)}
+.fbtn.active[data-cat=kaza]{background:rgba(255,94,46,.13);border-color:rgba(255,94,46,.4);color:var(--kaza-d)}
+.fbtn.active[data-cat=yemek]{background:rgba(14,200,116,.1);border-color:rgba(14,200,116,.38);color:var(--yemek-d)}
+.fbtn.active[data-cat=etkinlik]{background:rgba(157,126,245,.1);border-color:rgba(157,126,245,.38);color:var(--etkinlik-d)}
+.fbtn.active[data-cat=guvenlik]{background:rgba(255,45,85,.1);border-color:rgba(255,45,85,.38);color:var(--guvenlik-d)}
+.fbtn.active[data-cat=diger]{background:rgba(91,141,239,.1);border-color:rgba(91,141,239,.38);color:var(--diger-d)}
+.fcnt{background:rgba(255,255,255,.08);border-radius:5px;padding:1px 5px;font-size:.6rem;font-weight:700;min-width:16px;text-align:center;font-family:'JetBrains Mono',monospace}
+
+/* ZONE BAR */
+.zone-bar{margin:10px 13px 0;padding:11px 14px;background:linear-gradient(135deg,var(--s1),rgba(13,20,36,.9));border:1px solid var(--b1);border-radius:var(--radius);display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:2;overflow:hidden}
+.zone-bar::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(var(--acc),var(--acc2))}
+.zone-info{display:flex;align-items:center;gap:10px}
+.zone-pulse{width:9px;height:9px;border-radius:50%;background:var(--yemek);box-shadow:0 0 0 3px rgba(14,200,116,.2);animation:zp 2.5s ease infinite;flex-shrink:0}
+@keyframes zp{0%,100%{box-shadow:0 0 0 3px rgba(14,200,116,.2)}50%{box-shadow:0 0 0 8px rgba(14,200,116,.03)}}
+.zone-txt strong{color:var(--t1);font-weight:700;display:block;font-size:.86rem;letter-spacing:-.01em}
+.zone-txt span{font-size:.71rem;color:var(--t3)}
+.zone-change{font-size:.72rem;color:var(--acc);font-weight:600;cursor:pointer;white-space:nowrap;padding:6px 12px;border-radius:8px;border:1px solid rgba(61,126,245,.25);background:rgba(61,126,245,.08);transition:all .15s;display:flex;align-items:center;gap:4px}
+.zone-change:hover{background:rgba(61,126,245,.15);transform:translateY(-1px)}
+
+/* STATS STRIP */
+.stats-strip{margin:8px 13px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;position:relative;z-index:2}
+.stat-box{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:10px 8px;text-align:center;transition:all .2s var(--ease)}
+.stat-box:hover{border-color:var(--b2);transform:translateY(-2px)}
+.stat-num{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;line-height:1;margin-bottom:3px;letter-spacing:-.02em}
+.stat-lbl{font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.stat-box.s-active .stat-num{color:var(--yemek-d)}
+.stat-box.s-posts .stat-num{color:var(--acc-d,#7da6f3)}
+.stat-box.s-conf .stat-num{color:var(--gold)}
+.stat-box.s-near .stat-num{color:var(--etkinlik-d)}
+
+/* TRENDING */
+.trending{margin:8px 13px 0;background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius);padding:11px 14px;position:relative;z-index:2}
+.trending-ttl{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.trending-list{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.trending-list::-webkit-scrollbar{display:none}
+.trend-chip{flex-shrink:0;padding:4px 11px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid var(--b1);font-size:.71rem;color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.trend-chip:hover{background:rgba(255,255,255,.08);border-color:var(--b2);color:var(--t1);transform:translateY(-1px)}
+.tcc{font-size:.58rem;font-weight:700;background:rgba(61,126,245,.15);color:var(--acc-d,#7da6f3);border-radius:4px;padding:1px 5px;font-family:'JetBrains Mono',monospace}
+
+/* LIVE BAR */
+.live-bar{padding:11px 14px 8px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+.live-left{display:flex;align-items:center;gap:8px}
+.live-pill{display:flex;align-items:center;gap:5px;background:rgba(255,45,85,.09);border:1px solid rgba(255,45,85,.22);border-radius:7px;padding:4px 9px;font-size:.6rem;font-weight:700;color:var(--guvenlik-d);letter-spacing:.08em;text-transform:uppercase}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--guvenlik);animation:pdot 1.8s ease infinite}
+.live-cnt{font-size:.74rem;color:var(--t3)}
+.live-cnt b{color:var(--t2);font-weight:700}
+.sort-btn{background:var(--s1);border:1px solid var(--b1);color:var(--t2);font-size:.72rem;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:8px;transition:all .15s}
+.sort-btn:hover{color:var(--t1);border-color:var(--b2)}
+
+/* FEED */
+.feed{display:flex;flex-direction:column;gap:8px;padding:0 11px 90px;position:relative;z-index:2}
+
+/* SKELETON */
+.skel{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius);padding:15px;overflow:hidden;position:relative}
+.skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);animation:shimmer 1.5s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.skel-line{height:11px;border-radius:5px;background:rgba(255,255,255,.05);margin-bottom:9px}
+
+/* CARD */
+.card{background:linear-gradient(180deg,var(--s1),rgba(10,15,28,.92));border:1px solid var(--b1);border-radius:var(--radius);overflow:hidden;position:relative;transition:transform .2s var(--ease),box-shadow .2s,border-color .2s;cursor:pointer;opacity:0;transform:translateY(12px);animation:cin .4s var(--ease-out) forwards}
+@keyframes cin{to{opacity:1;transform:translateY(0)}}
+.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;transition:width .2s}
+.card[data-cat=kaza]::before{background:linear-gradient(var(--kaza),var(--kaza-d))}
+.card[data-cat=yemek]::before{background:linear-gradient(var(--yemek),var(--yemek-d))}
+.card[data-cat=etkinlik]::before{background:linear-gradient(var(--etkinlik),var(--etkinlik-d))}
+.card[data-cat=guvenlik]::before{background:linear-gradient(var(--guvenlik),var(--guvenlik-d))}
+.card[data-cat=diger]::before{background:linear-gradient(var(--diger),var(--diger-d))}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--b2)}
+.card:hover::before{width:4px}
+.card:active{transform:translateY(-1px) scale(.995)}
+.card-photo{width:100%;height:150px;object-fit:cover;display:block;border-bottom:1px solid var(--b1)}
+.card-inner{padding:13px 14px 13px 17px}
+.card-top{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.cat-badge{display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:.63rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.cat-badge[data-cat=kaza]{background:rgba(255,94,46,.13);color:var(--kaza-d)}
+.cat-badge[data-cat=yemek]{background:rgba(14,200,116,.1);color:var(--yemek-d)}
+.cat-badge[data-cat=etkinlik]{background:rgba(157,126,245,.1);color:var(--etkinlik-d)}
+.cat-badge[data-cat=guvenlik]{background:rgba(255,45,85,.1);color:var(--guvenlik-d)}
+.cat-badge[data-cat=diger]{background:rgba(91,141,239,.1);color:var(--diger-d)}
+.new-badge{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:6px;font-size:.57rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,45,85,.13);color:var(--guvenlik-d);border:1px solid rgba(255,45,85,.22)}
+.nb-dot{width:4px;height:4px;border-radius:50%;background:var(--guvenlik);animation:pdot 1.6s ease infinite}
+.hot-badge{padding:3px 7px;border-radius:6px;font-size:.57rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(245,200,75,.13);color:var(--gold);border:1px solid rgba(245,200,75,.25)}
+.card-time{margin-left:auto;font-size:.66rem;color:var(--t3);white-space:nowrap;font-family:'JetBrains Mono',monospace}
+.card-title{font-weight:700;font-size:.94rem;color:var(--t1);letter-spacing:-.015em;margin-bottom:3px;line-height:1.3}
+.card-desc{font-size:.79rem;color:var(--t2);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:9px;border-top:1px solid var(--b1)}
+.card-loc{font-size:.68rem;color:var(--t3);display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0}
+.card-loc .cl-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-dist{font-size:.64rem;color:var(--acc-d,#7da6f3);font-weight:700;white-space:nowrap;background:rgba(61,126,245,.1);border-radius:5px;padding:2px 7px;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.card-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.conf-btn{display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:8px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-size:.72rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s;white-space:nowrap}
+.conf-btn:hover{border-color:rgba(14,200,116,.4);color:var(--yemek-d);background:rgba(14,200,116,.06)}
+.conf-btn.on{border-color:rgba(14,200,116,.45);background:rgba(14,200,116,.1);color:var(--yemek-d)}
+.conf-btn .cb-num{font-family:'JetBrains Mono',monospace}
+.shr-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--b2);background:transparent;color:var(--t3);font-size:.76rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.shr-btn:hover{color:var(--t2);background:rgba(255,255,255,.05)}
+
+/* MAP VIEW */
+#map-view{display:none;position:relative;z-index:2}
+#map-view.show{display:block}
+.fullmap-wrap{height:calc(100vh - 60px);height:calc(100dvh - 60px);position:relative}
+#fullmap{width:100%;height:100%}
+.fullmap-wrap .leaflet-container{background:var(--bg)}
+.map-legend{position:absolute;bottom:18px;left:14px;z-index:600;background:rgba(6,11,22,.92);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:11px 13px;backdrop-filter:blur(12px);box-shadow:var(--shadow)}
+.map-legend-ttl{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.map-legend-item{display:flex;align-items:center;gap:7px;font-size:.72rem;color:var(--t2);margin-bottom:5px}
+.map-legend-item:last-child{margin-bottom:0}
+.mli-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.map-recenter{position:absolute;top:14px;right:14px;z-index:600;width:42px;height:42px;border-radius:11px;background:rgba(6,11,22,.92);border:1px solid var(--b2);color:var(--acc);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);box-shadow:var(--shadow);transition:all .15s}
+.map-recenter:hover{background:rgba(61,126,245,.2)}
+
+/* EMPTY */
+.empty-st{text-align:center;padding:56px 20px;color:var(--t3)}
+.empty-ico{font-size:2.6rem;margin-bottom:14px;opacity:.25}
+.empty-ttl{font-size:.92rem;font-weight:600;color:var(--t2);margin-bottom:6px}
+.empty-sub{font-size:.78rem;line-height:1.7}
+.empty-sub strong{color:var(--t2)}
+
+/* FAB */
+.fab{position:fixed;bottom:22px;right:18px;z-index:80;width:56px;height:56px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 8px 28px var(--acc-glow);display:flex;align-items:center;justify-content:center;transition:all .25s var(--ease)}
+.fab:hover{transform:translateY(-3px) rotate(90deg);box-shadow:0 12px 34px var(--acc-glow)}
+.fab:active{transform:scale(.94)}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(40px);background:rgba(12,18,32,.98);border:1px solid var(--b2);border-radius:12px;padding:11px 20px;font-size:.82rem;color:var(--t1);font-weight:500;box-shadow:var(--shadow-lg);backdrop-filter:blur(16px);transition:all .35s var(--ease);opacity:0;z-index:9999;display:flex;align-items:center;gap:9px;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.76);backdrop-filter:blur(16px);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity .28s}
+.mbg.open{opacity:1;pointer-events:all}
+.modal{width:100%;max-width:500px;background:linear-gradient(180deg,#070d1a,#050a14);border:1px solid var(--b2);border-top:none;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:20px 20px 28px;display:flex;flex-direction:column;gap:12px;transform:translateY(100%);transition:transform .35s var(--ease-out);max-height:94vh;max-height:94dvh;overflow-y:auto}
+.mbg.open .modal{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;background:var(--b2);border-radius:2px;margin:0 auto 4px;cursor:grab}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between}
+.modal-ttl{font-family:'Syne',sans-serif;font-size:1.18rem;font-weight:800;letter-spacing:-.03em}
+.modal-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-x:hover{background:rgba(255,255,255,.07);color:var(--t1)}
+.flbl{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.flbl-opt{color:var(--t4);text-transform:none;letter-spacing:0;font-weight:500}
+
+.cat-grid{display:flex;gap:5px;flex-wrap:wrap}
+.cat-opt{flex:1;min-width:calc(33% - 5px);padding:9px 4px;border-radius:10px;border:1px solid var(--b1);background:transparent;font-family:inherit;font-size:.71rem;font-weight:600;color:var(--t3);cursor:pointer;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cat-opt .oi{font-size:1.05rem}
+.cat-opt:hover{border-color:var(--b2);color:var(--t2);background:rgba(255,255,255,.04);transform:translateY(-1px)}
+.cat-opt.sel[data-cat=kaza]{border-color:var(--kaza);color:var(--kaza-d);background:rgba(255,94,46,.1)}
+.cat-opt.sel[data-cat=yemek]{border-color:var(--yemek);color:var(--yemek-d);background:rgba(14,200,116,.08)}
+.cat-opt.sel[data-cat=etkinlik]{border-color:var(--etkinlik);color:var(--etkinlik-d);background:rgba(157,126,245,.1)}
+.cat-opt.sel[data-cat=guvenlik]{border-color:var(--guvenlik);color:var(--guvenlik-d);background:rgba(255,45,85,.1)}
+.cat-opt.sel[data-cat=diger]{border-color:var(--diger);color:var(--diger-d);background:rgba(91,141,239,.1)}
+
+.finp{width:100%;padding:11px 13px;background:rgba(255,255,255,.04);border:1px solid var(--b1);border-radius:10px;color:var(--t1);font-size:.85rem;font-family:inherit;outline:none;transition:all .15s}
+.finp::placeholder{color:var(--t3)}
+.finp:focus{border-color:var(--acc);background:rgba(255,255,255,.06);box-shadow:0 0 0 3px rgba(61,126,245,.1)}
+textarea.finp{resize:vertical;min-height:80px;line-height:1.55}
+.char-c{font-size:.62rem;color:var(--t3);text-align:right;margin-top:-6px;font-family:'JetBrains Mono',monospace}
+.char-c.warn{color:var(--guvenlik-d)}
+
+/* PHOTO UPLOAD */
+.photo-zone{border:1.5px dashed var(--b2);border-radius:11px;padding:18px;text-align:center;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.02)}
+.photo-zone:hover{border-color:var(--acc);background:rgba(61,126,245,.05)}
+.photo-zone-ico{font-size:1.6rem;margin-bottom:5px;opacity:.5}
+.photo-zone-txt{font-size:.78rem;color:var(--t3)}
+.photo-preview{position:relative;border-radius:11px;overflow:hidden;display:none}
+.photo-preview img{width:100%;max-height:170px;object-fit:cover;display:block}
+.photo-remove{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;border:none;background:rgba(0,0,0,.7);color:#fff;font-size:.9rem;cursor:pointer;backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center}
+
+.loc-btns{display:flex;gap:6px}
+.loc-btn{flex:1;height:40px;border-radius:10px;border:1px solid var(--b1);background:rgba(255,255,255,.03);color:var(--t2);font-size:.76rem;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.loc-btn:hover{border-color:var(--b2);color:var(--t1)}
+.loc-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(61,126,245,.08)}
+.loc-selected-box{display:none;align-items:center;gap:6px;padding:8px 11px;background:rgba(61,126,245,.08);border:1px solid rgba(61,126,245,.2);border-radius:9px;font-size:.76rem;color:var(--acc-d,#7da6f3);animation:slideDown .25s var(--ease)}
+.loc-selected-box span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.pick-map-container{height:200px;border-radius:11px;overflow:hidden;border:1px solid var(--b2);position:relative}
+.pick-map-hint{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(6,11,22,.9);border:1px solid var(--b2);border-radius:8px;padding:4px 11px;font-size:.7rem;color:var(--t2);z-index:500;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px)}
+
+.anon-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid var(--b1);border-radius:10px;cursor:pointer;transition:background .15s}
+.anon-row:hover{background:rgba(255,255,255,.05)}
+.tog-track{width:36px;height:20px;border-radius:10px;background:var(--t3);position:relative;transition:background .25s;flex-shrink:0}
+.tog-track.on{background:var(--acc)}
+.tog-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:8px;background:#fff;transition:transform .25s var(--ease);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tog-track.on .tog-thumb{transform:translateX(16px)}
+.anon-txt{font-size:.81rem;color:var(--t2);font-weight:500}
+.anon-sub{font-size:.67rem;color:var(--t3)}
+.btn-post{width:100%;height:48px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:inherit;font-weight:700;font-size:.92rem;cursor:pointer;box-shadow:0 6px 20px var(--acc-glow);transition:all .18s;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-post:hover{transform:translateY(-2px);box-shadow:0 10px 28px var(--acc-glow)}
+
+/* DETAIL MODAL */
+.dbg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(18px);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s}
+.dbg.open{opacity:1;pointer-events:all}
+.dmodal{width:100%;max-width:500px;background:linear-gradient(180deg,#070d1a,#050a14);border:1px solid var(--b2);border-radius:var(--radius-lg);overflow:hidden;transform:scale(.92) translateY(10px);transition:transform .3s var(--ease);max-height:90vh;max-height:90dvh;overflow-y:auto}
+.dbg.open .dmodal{transform:scale(1) translateY(0)}
+.detail-photo{width:100%;height:180px;object-fit:cover;display:block;border-bottom:1px solid var(--b1)}
+.detail-map-wrap{width:100%;height:185px;position:relative}
+.detail-map-wrap .leaflet-container{background:var(--bg)}
+.detail-map-overlay{position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,#070d1a);pointer-events:none;z-index:500}
+.detail-no-map{width:100%;height:90px;background:rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;color:var(--t3);font-size:.74rem;border-bottom:1px solid var(--b1)}
+.detail-body{padding:18px}
+.d-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.d-badges{display:flex;gap:6px;flex-wrap:wrap}
+.d-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:-.03em;color:var(--t1);margin-bottom:8px;line-height:1.3}
+.d-desc{font-size:.86rem;color:var(--t2);line-height:1.7;margin-bottom:14px}
+.d-meta{display:flex;flex-direction:column;gap:7px;padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid var(--b1);border-radius:11px;margin-bottom:13px}
+.d-meta-row{display:flex;align-items:center;gap:9px;font-size:.79rem;color:var(--t2)}
+.d-meta-row .dmi{color:var(--t3);flex-shrink:0;width:16px;text-align:center}
+.d-meta-row strong{color:var(--t1);font-weight:600}
+.d-confirm-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:2px}
+.d-confirm-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--yemek),var(--yemek-d));transition:width .6s var(--ease)}
+.d-actions{display:flex;gap:7px;margin-bottom:13px}
+.conf-big{flex:1;height:44px;border-radius:11px;border:1px solid rgba(14,200,116,.32);background:rgba(14,200,116,.07);color:var(--yemek-d);font-family:inherit;font-weight:700;font-size:.84rem;cursor:pointer;transition:all .18s}
+.conf-big:hover{background:rgba(14,200,116,.13)}
+.conf-big.on{background:rgba(14,200,116,.15);border-color:rgba(14,200,116,.48)}
+.maps-btn{height:44px;padding:0 14px;border-radius:11px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-family:inherit;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.maps-btn:hover{background:rgba(255,255,255,.06);color:var(--t1)}
+
+/* COMMENTS */
+.comments-section{border-top:1px solid var(--b1);padding-top:14px}
+.comments-ttl{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--t3);margin-bottom:11px;display:flex;align-items:center;gap:6px}
+.comment{display:flex;gap:9px;margin-bottom:11px}
+.comment-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--s3),var(--s2));border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.comment-body{flex:1;min-width:0}
+.comment-meta{display:flex;align-items:center;gap:7px;margin-bottom:2px}
+.comment-author{font-size:.76rem;font-weight:600;color:var(--t2)}
+.comment-time{font-size:.64rem;color:var(--t4);font-family:'JetBrains Mono',monospace}
+.comment-text{font-size:.8rem;color:var(--t1);line-height:1.5;word-break:break-word}
+.comment-empty{font-size:.76rem;color:var(--t3);text-align:center;padding:14px;font-style:italic}
+.comment-input-row{display:flex;gap:7px;margin-top:12px}
+.comment-input{flex:1;padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid var(--b1);border-radius:9px;color:var(--t1);font-size:.8rem;font-family:inherit;outline:none;transition:all .15s}
+.comment-input:focus{border-color:var(--acc);background:rgba(255,255,255,.06)}
+.comment-send{width:40px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1rem;cursor:pointer;flex-shrink:0;transition:all .15s}
+.comment-send:hover{transform:translateY(-1px)}
+
+/* LEAFLET DARK + CUSTOM PIN */
+.leaflet-tile-pane{filter:brightness(.62) saturate(.7) hue-rotate(195deg) contrast(1.05)}
+.leaflet-container{font-family:'DM Sans',sans-serif}
+.leaflet-popup-content-wrapper{background:#0a1425;border:1px solid var(--b2);border-radius:11px;box-shadow:var(--shadow);color:var(--t1);padding:0}
+.leaflet-popup-content{margin:0;font-size:.8rem;color:var(--t2);min-width:170px}
+.leaflet-popup-tip{background:#0a1425}
+.leaflet-popup-close-button{color:var(--t3)!important;font-size:1.1rem!important;padding:6px 7px 0 0!important}
+.leaflet-control-zoom a{background:#0a1425!important;color:var(--t2)!important;border-color:var(--b2)!important;border-radius:8px!important}
+.leaflet-control-zoom a:hover{background:#182840!important;color:var(--t1)!important}
+.leaflet-bar{border:none!important;box-shadow:var(--shadow)!important;gap:3px;display:flex;flex-direction:column}
+.leaflet-control-attribution{background:rgba(6,11,22,.8)!important;color:var(--t4)!important;font-size:.52rem!important;border-radius:6px 0 0 0!important}
+.leaflet-control-attribution a{color:var(--t4)!important}
+.pin-pulse{animation:pinPulse 2s ease infinite}
+@keyframes pinPulse{0%,100%{filter:drop-shadow(0 0 0 rgba(255,45,85,.5))}50%{filter:drop-shadow(0 0 8px rgba(255,45,85,.6))}}
+.map-popup{padding:12px 13px}
+.map-popup-cat{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.map-popup-title{font-size:.84rem;font-weight:700;color:var(--t1);margin-bottom:4px;line-height:1.3}
+.map-popup-loc{font-size:.68rem;color:var(--t3);margin-bottom:8px}
+.map-popup-btn{width:100%;padding:6px;border-radius:7px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
+::selection{background:rgba(61,126,245,.3);color:#fff}
+</style>
+</head>
+<body>
+<div class="amb">
+  <div class="amb-blob amb-a"></div>
+  <div class="amb-blob amb-b"></div>
+  <div class="amb-blob amb-c"></div>
+  <div class="amb-grid"></div>
+</div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="onboard">
+  <div class="ob-inner">
+    <div class="ob-logo">
+      <div class="ob-pin-ring"><div class="ob-pin-core">📍</div></div>
+      <div class="ob-wordmark">civarda</div>
+      <div class="ob-tagline">Mahallenin nabzı</div>
+    </div>
+    <div class="ob-card">
+      <div>
+        <div class="ob-title">Civarında ne oluyor?</div>
+        <div class="ob-sub">Çevrendeki anlık olayları mahalle sakinleriyle paylaş. Kaza, ücretsiz yemek, etkinlik, uyarı — sadece <strong style="color:var(--t1)">senin civarın</strong>, gerçek zamanlı.</div>
+      </div>
+      <div class="ob-steps">
+        <div class="ob-step"><div class="ob-step-ico" style="background:rgba(61,126,245,.12)">📍</div><div class="ob-step-txt"><strong>Bölgeni seç</strong> — yalnızca yakınındaki gönderileri görürsün</div></div>
+        <div class="ob-step"><div class="ob-step-ico" style="background:rgba(14,200,116,.1)">✅</div><div class="ob-step-txt"><strong>Doğrula</strong> — gördüğün olayları tek tıkla onayla, güveni artır</div></div>
+        <div class="ob-step"><div class="ob-step-ico" style="background:rgba(255,94,46,.1)">⚡</div><div class="ob-step-txt"><strong>Anlık akış</strong> — eski gönderiler solar, akış hep taze kalır</div></div>
+      </div>
+      <div>
+        <div class="ob-loc-label">📍 Neredesin?</div>
+        <div class="ob-loc-btns">
+          <button class="ob-loc-btn primary" id="ob-gps-btn" onclick="obGetGPS()">📡 GPS ile bul</button>
+          <button class="ob-loc-btn" onclick="obShowDistricts()">🏙 İlçe seç</button>
+        </div>
+        <div id="ob-district-wrap" style="display:none"><div class="ob-district-grid" id="ob-district-grid"></div></div>
+        <div class="ob-radius-box" id="ob-radius-box" style="display:none">
+          <div class="ob-radius-row"><span class="ob-radius-label">Görüş yarıçapı</span><span class="ob-radius-val" id="ob-radius-val">3 km</span></div>
+          <input type="range" class="ob-slider" id="ob-radius" min="1" max="20" value="3" oninput="obRadiusChange(this.value)">
+        </div>
+        <div class="ob-confirm" id="ob-confirm"></div>
+      </div>
+      <button class="ob-enter" id="ob-enter" onclick="enterApp()">Mahallenin akışına gir <span>→</span></button>
+      <div class="ob-skip" onclick="skipOnboard()">Konum vermeden tüm şehri gör</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app">
+  <header class="hdr">
+    <div class="hdr-logo" onclick="showOnboard()">
+      <div class="hdr-mark">📍</div>
+      <div class="hdr-wordmark">civarda</div>
+    </div>
+    <div class="view-toggle">
+      <button class="vt-btn active" id="vt-feed" onclick="setView('feed')">☰ Akış</button>
+      <button class="vt-btn" id="vt-map" onclick="setView('map')">🗺 Harita</button>
+    </div>
+    <div class="hdr-right">
+      <button class="hdr-icon-btn" id="notif-btn" onclick="toggleNotif()" title="Konum filtresi">📍</button>
+      <button class="btn-new" onclick="openModal()">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Paylaş
+      </button>
+    </div>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker-lbl"><div class="tld"></div>Canlı</div>
+    <div class="ticker-scrl"><div class="ticker-track" id="ticker"></div></div>
+  </div>
+
+  <!-- FEED VIEW -->
+  <div id="feed-view">
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="search-inp" id="search" placeholder="Ara: kaza, yemek, mahalle..." oninput="applyFilters()">
+        <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
+      </div>
+      <div class="filters">
+        <button class="fbtn active" data-cat="all"      onclick="setFilter('all')">◎ Tümü <span class="fcnt" id="cnt-all">0</span></button>
+        <button class="fbtn"        data-cat="kaza"     onclick="setFilter('kaza')">⚠ Kaza <span class="fcnt" id="cnt-kaza">0</span></button>
+        <button class="fbtn"        data-cat="yemek"    onclick="setFilter('yemek')">🍽 Yemek <span class="fcnt" id="cnt-yemek">0</span></button>
+        <button class="fbtn"        data-cat="etkinlik" onclick="setFilter('etkinlik')">◆ Etkinlik <span class="fcnt" id="cnt-etkinlik">0</span></button>
+        <button class="fbtn"        data-cat="guvenlik" onclick="setFilter('guvenlik')">🛡 Güvenlik <span class="fcnt" id="cnt-guvenlik">0</span></button>
+        <button class="fbtn"        data-cat="diger"    onclick="setFilter('diger')">◇ Diğer <span class="fcnt" id="cnt-diger">0</span></button>
+      </div>
+    </div>
+
+    <div class="zone-bar">
+      <div class="zone-info">
+        <div class="zone-pulse"></div>
+        <div class="zone-txt"><strong id="zone-name">Tüm Şehir</strong><span id="zone-sub">Konum filtrelenmedi</span></div>
+      </div>
+      <div class="zone-change" onclick="showOnboard()">⚙ Değiştir</div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-box s-posts"><div class="stat-num mono" id="sb-posts">0</div><div class="stat-lbl">Gönderi</div></div>
+      <div class="stat-box s-near"><div class="stat-num mono" id="sb-near">0</div><div class="stat-lbl">Civarında</div></div>
+      <div class="stat-box s-active"><div class="stat-num mono" id="sb-active">0</div><div class="stat-lbl">Canlı</div></div>
+      <div class="stat-box s-conf"><div class="stat-num mono" id="sb-conf">0</div><div class="stat-lbl">Doğrulama</div></div>
+    </div>
+
+    <div class="trending">
+      <div class="trending-ttl">🔥 Civarında Trend</div>
+      <div class="trending-list" id="trending"></div>
+    </div>
+
+    <div class="live-bar">
+      <div class="live-left">
+        <div class="live-pill"><div class="live-dot"></div>Canlı</div>
+        <span class="live-cnt"><b id="live-cnt">0</b> gönderi</span>
+      </div>
+      <button class="sort-btn" onclick="cycleSort()">
+        <span id="sort-ico">🕐</span> <span id="sort-lbl">Yeniye göre</span>
+      </button>
+    </div>
+
+    <div class="feed" id="feed"></div>
+  </div>
+
+  <!-- MAP VIEW -->
+  <div id="map-view">
+    <div class="fullmap-wrap">
+      <div id="fullmap"></div>
+      <button class="map-recenter" onclick="recenterMap()" title="Konumuma dön">🎯</button>
+      <div class="map-legend">
+        <div class="map-legend-ttl">Kategoriler</div>
+        <div class="map-legend-item"><div class="mli-dot" style="background:var(--kaza)"></div>Kaza</div>
+        <div class="map-legend-item"><div class="mli-dot" style="background:var(--yemek)"></div>Yemek</div>
+        <div class="map-legend-item"><div class="mli-dot" style="background:var(--etkinlik)"></div>Etkinlik</div>
+        <div class="map-legend-item"><div class="mli-dot" style="background:var(--guvenlik)"></div>Güvenlik</div>
+        <div class="map-legend-item"><div class="mli-dot" style="background:var(--diger)"></div>Diğer</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" onclick="openModal()">＋</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NEW POST MODAL -->
+<div class="mbg" id="mbg" onclick="bgClick(event,'mbg')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-ttl">Yeni Paylaşım</span>
+      <button class="modal-x" onclick="closeModal()">×</button>
+    </div>
+    <div>
+      <div class="flbl">Kategori</div>
+      <div class="cat-grid">
+        <button class="cat-opt sel" data-cat="kaza"     onclick="pickCat('kaza')"><span class="oi">⚠️</span>Kaza</button>
+        <button class="cat-opt"     data-cat="yemek"    onclick="pickCat('yemek')"><span class="oi">🍽️</span>Yemek</button>
+        <button class="cat-opt"     data-cat="etkinlik" onclick="pickCat('etkinlik')"><span class="oi">🎉</span>Etkinlik</button>
+        <button class="cat-opt"     data-cat="guvenlik" onclick="pickCat('guvenlik')"><span class="oi">🛡️</span>Güvenlik</button>
+        <button class="cat-opt"     data-cat="diger"    onclick="pickCat('diger')"><span class="oi">💬</span>Diğer</button>
+      </div>
+    </div>
+    <div>
+      <div class="flbl">Başlık</div>
+      <input class="finp" id="f-title" maxlength="80" placeholder="Kısa ve net bir başlık..." oninput="cc(this,'tc',80)">
+      <div class="char-c" id="tc">0 / 80</div>
+    </div>
+    <div>
+      <div class="flbl">Açıklama</div>
+      <textarea class="finp" id="f-desc" maxlength="280" placeholder="Ne görüyorsun? Detay ver..." oninput="cc(this,'dc',280)"></textarea>
+      <div class="char-c" id="dc">0 / 280</div>
+    </div>
+    <div>
+      <div class="flbl">Fotoğraf <span class="flbl-opt">opsiyonel</span></div>
+      <div class="photo-zone" id="photo-zone" onclick="document.getElementById('photo-input').click()">
+        <div class="photo-zone-ico">📷</div>
+        <div class="photo-zone-txt">Fotoğraf eklemek için dokun</div>
+      </div>
+      <div class="photo-preview" id="photo-preview">
+        <img id="photo-preview-img" alt="">
+        <button class="photo-remove" onclick="removePhoto()">×</button>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhoto(this)">
+    </div>
+    <div>
+      <div class="flbl">Konum</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="loc-btns">
+          <button class="loc-btn" id="gps-btn" onclick="getGPS()">📡 GPS</button>
+          <button class="loc-btn active" id="map-btn" onclick="switchLocMode('map')">🗺 Haritadan</button>
+          <button class="loc-btn" id="txt-btn" onclick="switchLocMode('text')">⌨️ Manuel</button>
+        </div>
+        <div class="loc-selected-box" id="loc-selected-box">📍 <span id="loc-selected-txt"></span></div>
+        <div class="pick-map-container" id="pick-map-wrap">
+          <div class="pick-map-hint">Haritaya dokunarak konum seç</div>
+          <div id="pick-map" style="width:100%;height:100%"></div>
+        </div>
+        <input class="finp" id="f-loc-txt" placeholder="Mahalle, cadde veya bölge..." style="display:none">
+      </div>
+    </div>
+    <div class="anon-row" onclick="toggleAnon()">
+      <div><div class="anon-txt">Anonim paylaş</div><div class="anon-sub">Kimliğin gizli kalır</div></div>
+      <div style="margin-left:auto"><div class="tog-track on" id="anon-tog"><div class="tog-thumb"></div></div></div>
+    </div>
+    <button class="btn-post" onclick="submitPost()">📍 Civarda'ya Paylaş</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="dbg" id="dbg" onclick="bgClick(event,'dbg')">
+  <div class="dmodal" id="dmodal"></div>
+</div>
+
+<script>
+'use strict';
+
+/* ════ CATEGORIES ════ */
+const CATS={
+  kaza:    {label:'Kaza',    sym:'⚠',  icon:'⚠️', color:'#ff5e2e'},
+  yemek:   {label:'Yemek',   sym:'🍽', icon:'🍽️',color:'#0ec874'},
+  etkinlik:{label:'Etkinlik',sym:'◆',  icon:'🎉', color:'#9d7ef5'},
+  guvenlik:{label:'Güvenlik',sym:'🛡', icon:'🛡️',color:'#ff2d55'},
+  diger:   {label:'Diğer',   sym:'◇',  icon:'💬', color:'#5b8def'},
+};
+
+/* ════ İSTANBUL İLÇELERİ ════ */
+const DISTRICTS=[
+  {name:'Adalar',lat:40.876,lng:29.108},{name:'Arnavutköy',lat:41.185,lng:28.740},
+  {name:'Ataşehir',lat:40.983,lng:29.127},{name:'Avcılar',lat:40.979,lng:28.721},
+  {name:'Bağcılar',lat:41.039,lng:28.856},{name:'Bahçelievler',lat:41.000,lng:28.862},
+  {name:'Bakırköy',lat:40.982,lng:28.877},{name:'Başakşehir',lat:41.092,lng:28.801},
+  {name:'Bayrampaşa',lat:41.045,lng:28.914},{name:'Beşiktaş',lat:41.044,lng:29.006},
+  {name:'Beykoz',lat:41.127,lng:29.097},{name:'Beylikdüzü',lat:41.003,lng:28.640},
+  {name:'Beyoğlu',lat:41.034,lng:28.976},{name:'Büyükçekmece',lat:41.019,lng:28.578},
+  {name:'Çatalca',lat:41.143,lng:28.461},{name:'Çekmeköy',lat:41.038,lng:29.182},
+  {name:'Esenler',lat:41.044,lng:28.876},{name:'Esenyurt',lat:41.029,lng:28.675},
+  {name:'Eyüpsultan',lat:41.056,lng:28.923},{name:'Fatih',lat:41.019,lng:28.952},
+  {name:'Gaziosmanpaşa',lat:41.068,lng:28.914},{name:'Güngören',lat:41.020,lng:28.874},
+  {name:'Kadıköy',lat:40.987,lng:29.029},{name:'Kağıthane',lat:41.082,lng:28.971},
+  {name:'Kartal',lat:40.892,lng:29.187},{name:'Küçükçekmece',lat:41.003,lng:28.778},
+  {name:'Maltepe',lat:40.933,lng:29.131},{name:'Pendik',lat:40.872,lng:29.255},
+  {name:'Sancaktepe',lat:40.996,lng:29.229},{name:'Sarıyer',lat:41.167,lng:29.052},
+  {name:'Silivri',lat:41.074,lng:28.247},{name:'Sultanbeyli',lat:40.963,lng:29.266},
+  {name:'Sultangazi',lat:41.105,lng:28.872},{name:'Şile',lat:41.175,lng:29.611},
+  {name:'Şişli',lat:41.061,lng:28.987},{name:'Tuzla',lat:40.815,lng:29.297},
+  {name:'Ümraniye',lat:41.015,lng:29.115},{name:'Üsküdar',lat:41.023,lng:29.015},
+  {name:'Zeytinburnu',lat:41.003,lng:28.907}
+];
+
+/* ════ SEED DATA ════ */
+const SEED=[
+  {id:1,cat:'kaza',    title:'Trafik kazası — 2 araç',    desc:'D100 üzerinde 2 araç çarpışması. Yol sağ şerit kapalı. Ekipler yolda, yavaş geçin.',                          loc:'Bağcılar, D100',      lat:41.039,lng:28.856,ts:Date.now()-3*6e4,  confirms:12,confirmed:false,anon:true, photo:null,comments:[{a:'Civarda üyesi',t:'Ben de gördüm, trafik kilit.',ts:Date.now()-2*6e4}]},
+  {id:2,cat:'yemek',   title:'Bedava poğaça dağıtımı',    desc:'Yeni açılan fırın tanıtım için sokakta sıcak poğaça dağıtıyor. Stok azalıyor, acele edin!',                    loc:'Kadıköy, Moda Caddesi',lat:40.987,lng:29.029,ts:Date.now()-11*6e4, confirms:34,confirmed:false,anon:false,photo:null,comments:[]},
+  {id:3,cat:'guvenlik',title:'Şüpheli plakasız araç',     desc:'Sinanpaşa Sokak\'ta saatlerdir park eden koyu gri plakasız araç var. Dikkatli olun.',                          loc:'Beşiktaş, Sinanpaşa', lat:41.044,lng:29.006,ts:Date.now()-28*6e4, confirms:7, confirmed:false,anon:true, photo:null,comments:[]},
+  {id:4,cat:'etkinlik',title:'Ücretsiz açık hava konseri',desc:'Belediye organizasyonu, akustik performans. Aile dostu, ücretsiz giriş. Sahne 19:00\'da başlıyor.',             loc:'Üsküdar Meydanı',     lat:41.023,lng:29.015,ts:Date.now()-45*6e4, confirms:89,confirmed:false,anon:false,photo:null,comments:[{a:'Anonim',t:'Geçen yıl harikaydı, kaçırmayın!',ts:Date.now()-40*6e4}]},
+  {id:5,cat:'diger',   title:'ISKI planlı su kesintisi',  desc:'Bu gece 20:00 ile sabah 06:00 arası planlı bakım nedeniyle su kesintisi uygulanacak. Hazırlık yapın.',         loc:'Maltepe, Merkez',     lat:40.933,lng:29.131,ts:Date.now()-60*6e4, confirms:23,confirmed:false,anon:true, photo:null,comments:[]},
+  {id:6,cat:'kaza',    title:'Yolda büyük çukur',         desc:'Bağdat Caddesi\'nde aniden oluşan çukur var, araçlar zarar görebilir. Belediyeye bildirildi.',                 loc:'Kadıköy, Bağdat Cad.',lat:40.978,lng:29.062,ts:Date.now()-90*6e4, confirms:15,confirmed:false,anon:true, photo:null,comments:[]},
+  {id:7,cat:'etkinlik',title:'Mahalle pazarı kuruldu',    desc:'Salı pazarı bugün erken açıldı. Taze sebze-meyve, organik ürünler. Öğlene kadar açık.',                        loc:'Şişli, Bomonti',      lat:41.061,lng:28.987,ts:Date.now()-120*6e4,confirms:41,confirmed:false,anon:false,photo:null,comments:[]},
+];
+
+/* ════ STATE ════ */
+let posts=[];
+let userLat=null, userLng=null, userLocName='Tüm Şehir', userRadius=3;
+let curFilter='all', curSearch='', sortMode='new';
+let selCat='kaza', anonMode=true;
+let pickedLat=null, pickedLng=null, pickedLocName='', pickedPhoto=null;
+let locMode='map', pickMap=null, pickMarker=null, detailMap=null, fullMap=null, fullMapMarkers=[], userCircle=null;
+let curView='feed', firstLoad=true;
+
+/* ════ STORAGE ════ */
+const STORE_KEY='civarda_v5';
+function save(){
+  try{
+    const data={posts:posts.map(p=>({...p,photo:p.photo&&p.photo.length<200000?p.photo:null})),userLat,userLng,userLocName,userRadius};
+    localStorage.setItem(STORE_KEY,JSON.stringify(data));
+  }catch(e){}
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      if(d.posts&&d.posts.length)posts=d.posts;
+      else posts=JSON.parse(JSON.stringify(SEED));
+      if(d.userLat){userLat=d.userLat;userLng=d.userLng;userLocName=d.userLocName;userRadius=d.userRadius||3;}
+      return d.userLat?true:false;
+    }
+  }catch(e){}
+  posts=JSON.parse(JSON.stringify(SEED));
+  return false;
+}
+
+/* ════ HELPERS ════ */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function timeAgo(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<5)return'şimdi';if(s<60)return s+'sn';
+  if(s<3600)return Math.floor(s/60)+'dk';
+  if(s<86400)return Math.floor(s/3600)+'sa';
+  return Math.floor(s/86400)+'g';
+}
+function toast(msg,ico='✓'){
+  const el=document.getElementById('toast');
+  el.innerHTML=`<span>${ico}</span> ${msg}`;
+  el.classList.add('show');clearTimeout(toast._t);
+  toast._t=setTimeout(()=>el.classList.remove('show'),2600);
+}
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function distLabel(km){return km<1?Math.round(km*1000)+' m':km.toFixed(1)+' km'}
+function isHot(p){return p.confirms>=30||p.comments.length>=2}
+function isNew(p){return Date.now()-p.ts<10*6e4}
+
+/* ════ ONBOARDING ════ */
+function obRadiusChange(v){
+  userRadius=parseInt(v);
+  document.getElementById('ob-radius-val').textContent=v+' km';
+  const pct=((v-1)/19)*100;
+  document.getElementById('ob-radius').style.background=`linear-gradient(90deg,var(--acc) 0%,var(--acc) ${pct}%,var(--b2) ${pct}%)`;
+  if(userLat)updateObConfirm();
+}
+function updateObConfirm(){
+  const el=document.getElementById('ob-confirm');
+  el.style.display='block';
+  el.innerHTML=`✅ <strong>${esc(userLocName)}</strong> — ${userRadius} km yarıçapındaki gönderiler gösterilecek`;
+  document.getElementById('ob-radius-box').style.display='block';
+  document.getElementById('ob-enter').classList.add('show');
+}
+function obShowDistricts(){
+  const wrap=document.getElementById('ob-district-wrap');
+  const grid=document.getElementById('ob-district-grid');
+  wrap.style.display='block';
+  grid.innerHTML=DISTRICTS.map(d=>{
+    const c=posts.filter(p=>p.lat&&haversine(d.lat,d.lng,p.lat,p.lng)<=5).length;
+    return `<button class="ob-district-btn" onclick="obPickDistrict(this,'${esc(d.name)}',${d.lat},${d.lng})">${esc(d.name)}${c?`<span class="dco">${c}</span>`:''}</button>`;
+  }).join('');
+}
+function obPickDistrict(el,name,lat,lng){
+  document.querySelectorAll('.ob-district-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  userLat=lat;userLng=lng;userLocName=name;
+  updateObConfirm();
+}
+function obGetGPS(){
+  const btn=document.getElementById('ob-gps-btn');
+  btn.textContent='⏳ Konum alınıyor...';btn.disabled=true;
+  if(!navigator.geolocation){toast('Tarayıcın konumu desteklemiyor','⚠️');btn.textContent='📡 GPS ile bul';btn.disabled=false;return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat=pos.coords.latitude;userLng=pos.coords.longitude;
+    reverseGeo(userLat,userLng,name=>{
+      userLocName=name;updateObConfirm();
+      btn.textContent='✅ Konumum alındı';btn.disabled=false;
+    });
+  },()=>{toast('Konum alınamadı. İzin verdin mi?','⚠️');btn.textContent='📡 GPS ile bul';btn.disabled=false;});
+}
+function reverseGeo(lat,lng,cb){
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=tr`)
+    .then(r=>r.json()).then(d=>{const a=d.address||{};cb([a.neighbourhood||a.suburb||a.quarter||a.district||a.city_district,a.city||a.town].filter(Boolean).join(', ')||'Konumum');})
+    .catch(()=>cb('Konumum'));
+}
+function enterApp(){
+  const ob=document.getElementById('onboard');
+  ob.classList.add('hide');
+  setTimeout(()=>{ob.style.display='none';ob.classList.remove('hide');},500);
+  document.getElementById('app').classList.add('show');
+  updateZoneUI();save();
+  if(firstLoad){firstLoad=false;showSkeletons();setTimeout(renderFeed,600);}
+  else renderFeed();
+}
+function skipOnboard(){userLat=null;userLng=null;userLocName='Tüm Şehir';enterApp();}
+function showOnboard(){
+  document.getElementById('onboard').style.display='flex';
+  document.getElementById('app').classList.remove('show');
+  // reset onboard
+  document.getElementById('ob-confirm').style.display='none';
+  document.getElementById('ob-enter').classList.add('show'); // allow re-enter
+  document.getElementById('ob-district-wrap').style.display=userLat?'block':'none';
+  if(userLat){
+    document.getElementById('ob-radius-box').style.display='block';
+    updateObConfirm();
+  }
+}
+function updateZoneUI(){
+  document.getElementById('zone-name').textContent=userLocName;
+  document.getElementById('zone-sub').textContent=userLat?`${userRadius} km yarıçapında · canlı`:'Tüm gönderiler gösteriliyor';
+  document.getElementById('notif-btn').classList.toggle('has-badge',!!userLat);
+}
+
+/* ════ FILTER & SORT ════ */
+function getList(){
+  let l=[...posts];
+  if(userLat&&userLng){l=l.filter(p=>!p.lat||!p.lng?true:haversine(userLat,userLng,p.lat,p.lng)<=userRadius);}
+  if(curFilter!=='all')l=l.filter(p=>p.cat===curFilter);
+  if(curSearch){const q=curSearch.toLowerCase();l=l.filter(p=>p.title.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||p.loc.toLowerCase().includes(q));}
+  if(sortMode==='new')l.sort((a,b)=>b.ts-a.ts);
+  else if(sortMode==='confirms')l.sort((a,b)=>b.confirms-a.confirms);
+  else if(sortMode==='near'&&userLat)l.sort((a,b)=>{const da=a.lat?haversine(userLat,userLng,a.lat,a.lng):9999;const db=b.lat?haversine(userLat,userLng,b.lat,b.lng):9999;return da-db;});
+  return l;
+}
+function nearCount(){if(!userLat)return posts.length;return posts.filter(p=>p.lat&&haversine(userLat,userLng,p.lat,p.lng)<=userRadius).length;}
+
+/* ════ ICONS ════ */
+function makeIcon(cat,pulse){
+  const c=CATS[cat]||CATS.diger;
+  return L.divIcon({className:'',
+    html:`<div class="${pulse?'pin-pulse':''}" style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:${c.color};border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:.9rem;transform:rotate(-45deg);box-shadow:0 4px 14px rgba(0,0,0,.5)"><span style="transform:rotate(45deg)">${c.icon}</span></div>`,
+    iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-36]});
+}
+
+/* ════ SKELETON ════ */
+function showSkeletons(){
+  const feed=document.getElementById('feed');
+  feed.innerHTML=Array(4).fill(0).map(()=>`<div class="skel"><div class="skel-line" style="width:35%"></div><div class="skel-line" style="width:75%;height:14px"></div><div class="skel-line" style="width:90%"></div><div class="skel-line" style="width:50%;margin-bottom:0"></div></div>`).join('');
+}
+
+/* ════ RENDER FEED ════ */
+function renderFeed(){
+  const feed=document.getElementById('feed');
+  const list=getList();
+
+  document.getElementById('live-cnt').textContent=list.length;
+  document.getElementById('sb-posts').textContent=posts.length;
+  document.getElementById('sb-near').textContent=nearCount();
+  document.getElementById('sb-active').textContent=posts.filter(isNew).length||posts.filter(p=>Date.now()-p.ts<60*6e4).length;
+  document.getElementById('sb-conf').textContent=posts.reduce((a,p)=>a+p.confirms,0);
+
+  ['all','kaza','yemek','etkinlik','guvenlik','diger'].forEach(c=>{
+    const el=document.getElementById('cnt-'+c);
+    let base=userLat?posts.filter(p=>!p.lat||haversine(userLat,userLng,p.lat,p.lng)<=userRadius):posts;
+    if(el)el.textContent=c==='all'?base.length:base.filter(p=>p.cat===c).length;
+  });
+
+  renderTrending();renderTicker();
+  if(fullMap&&curView==='map')renderMapMarkers();
+
+  if(!list.length){
+    feed.innerHTML=`<div class="empty-st"><div class="empty-ico">🔍</div><div class="empty-ttl">${curSearch?'Sonuç bulunamadı':'Bu civarda henüz paylaşım yok'}</div><div class="empty-sub">${userLat?`<strong>${esc(userLocName)}</strong> çevresinde ${userRadius} km içinde gönderi yok.<br>`:''}İlk sen paylaş! 📍</div></div>`;
+    return;
+  }
+
+  feed.innerHTML=list.map((p,i)=>{
+    const dist=userLat&&p.lat?haversine(userLat,userLng,p.lat,p.lng):null;
+    const distBadge=dist!==null?`<span class="card-dist">${distLabel(dist)}</span>`:'';
+    const badges=[];
+    if(isNew(p))badges.push('<div class="new-badge"><div class="nb-dot"></div>Canlı</div>');
+    if(isHot(p))badges.push('<div class="hot-badge">🔥 Popüler</div>');
+    return `
+    <div class="card" data-cat="${p.cat}" style="animation-delay:${Math.min(i,9)*.05}s" onclick="openDetail(${p.id})">
+      ${p.photo?`<img class="card-photo" src="${p.photo}" alt="" loading="lazy">`:''}
+      <div class="card-inner">
+        <div class="card-top">
+          <div class="cat-badge" data-cat="${p.cat}">${CATS[p.cat].sym} ${CATS[p.cat].label}</div>
+          ${badges.join('')}
+          <span class="card-time">${timeAgo(p.ts)}</span>
+        </div>
+        <div class="card-title">${esc(p.title)}</div>
+        <div class="card-desc">${esc(p.desc)}</div>
+        <div class="card-bottom">
+          <div class="card-loc"><span>📍</span><span class="cl-name">${esc(p.loc)}</span>${distBadge}</div>
+          <div class="card-actions">
+            <button class="conf-btn${p.confirmed?' on':''}" onclick="event.stopPropagation();toggleConf(${p.id})">
+              ${p.confirmed?'✓':'+'} <span class="cb-num">${p.confirms}</span>
+            </button>
+            <button class="shr-btn" onclick="event.stopPropagation();copyLink(${p.id})">⬆</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTrending(){
+  const STOP=new Set(['için','olan','oldu','gibi','daha','sokak','sokağı','caddesi','mahallesi','arası']);
+  const counts={};
+  let base=userLat?posts.filter(p=>!p.lat||haversine(userLat,userLng,p.lat,p.lng)<=userRadius):posts;
+  base.forEach(p=>{(p.title+' '+p.loc).split(/\s+/).forEach(w=>{const lw=w.toLowerCase().replace(/[^a-zçğıöşü0-9]/gi,'');if(lw.length>3&&!STOP.has(lw)&&!/^\d+$/.test(lw))counts[w]=(counts[w]||0)+1;});});
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const el=document.getElementById('trending');
+  if(!top.length){el.innerHTML='<span style="font-size:.74rem;color:var(--t3)">Henüz trend yok</span>';return;}
+  el.innerHTML=top.map(([w,c])=>`<div class="trend-chip" onclick="searchFor('${esc(w)}')">${esc(w)}<span class="tcc">${c}</span></div>`).join('');
+}
+
+function renderTicker(){
+  let base=userLat?posts.filter(p=>!p.lat||haversine(userLat,userLng,p.lat,p.lng)<=userRadius):posts;
+  base=[...base].sort((a,b)=>b.ts-a.ts).slice(0,6);
+  if(!base.length){document.getElementById('ticker').innerHTML='<div class="tick-item">Civarında henüz olay yok — ilk paylaşımı sen yap!</div>';return;}
+  const html=base.map(p=>`<div class="tick-item" onclick="openDetail(${p.id})"><div class="tick-dot" style="background:${CATS[p.cat].color}"></div>${esc(p.title)} — ${esc(p.loc)}</div>`).join('');
+  document.getElementById('ticker').innerHTML=html+html;
+}
+
+/* ════ ACTIONS ════ */
+function toggleConf(id){
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  p.confirmed=!p.confirmed;p.confirms+=p.confirmed?1:-1;
+  save();renderFeed();
+  toast(p.confirmed?'Doğruladın! Teşekkürler':'Doğrulama geri alındı',p.confirmed?'✅':'↩');
+  if(document.getElementById('dbg').classList.contains('open'))openDetail(id);
+}
+function copyLink(id){
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  navigator.clipboard.writeText(`📍 Civarda: ${p.title}\n📌 ${p.loc}\n\n${p.desc}`).then(()=>toast('Panoya kopyalandı','📋')).catch(()=>toast('Kopyalanamadı','⚠️'));
+}
+function setFilter(cat){curFilter=cat;document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));renderFeed();}
+function applyFilters(){curSearch=document.getElementById('search').value;document.getElementById('search-clear').classList.toggle('show',!!curSearch);renderFeed();}
+function clearSearch(){document.getElementById('search').value='';curSearch='';document.getElementById('search-clear').classList.remove('show');renderFeed();}
+function cycleSort(){
+  const modes=['new','confirms','near'];
+  const labels={new:'Yeniye göre',confirms:'Doğrulamaya göre',near:'Yakınlığa göre'};
+  const icos={new:'🕐',confirms:'✅',near:'📏'};
+  let i=modes.indexOf(sortMode);
+  do{i=(i+1)%modes.length;}while(modes[i]==='near'&&!userLat);
+  sortMode=modes[i];
+  document.getElementById('sort-ico').textContent=icos[sortMode];
+  document.getElementById('sort-lbl').textContent=labels[sortMode];
+  renderFeed();
+}
+function searchFor(q){document.getElementById('search').value=q;curSearch=q;document.getElementById('search-clear').classList.add('show');renderFeed();if(curView==='map')setView('feed');}
+function toggleNotif(){
+  if(userLat){
+    userLat=null;userLng=null;userLocName='Tüm Şehir';
+    updateZoneUI();save();renderFeed();
+    toast('Konum filtresi kapatıldı — tüm şehir','🌐');
+  }else{showOnboard();}
+}
+
+/* ════ VIEW SWITCH ════ */
+function setView(v){
+  curView=v;
+  document.getElementById('vt-feed').classList.toggle('active',v==='feed');
+  document.getElementById('vt-map').classList.toggle('active',v==='map');
+  document.getElementById('feed-view').style.display=v==='feed'?'block':'none';
+  document.getElementById('map-view').classList.toggle('show',v==='map');
+  document.querySelector('.fab').style.display=v==='map'?'none':'flex';
+  if(v==='map')setTimeout(initFullMap,50);
+}
+
+/* ════ FULL MAP ════ */
+function initFullMap(){
+  if(!fullMap){
+    const center=userLat?[userLat,userLng]:[41.015,28.979];
+    const zoom=userLat?13:11;
+    fullMap=L.map('fullmap',{zoomControl:true,attributionControl:true}).setView(center,zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(fullMap);
+  }
+  fullMap.invalidateSize();
+  renderMapMarkers();
+}
+function renderMapMarkers(){
+  if(!fullMap)return;
+  fullMapMarkers.forEach(m=>fullMap.removeLayer(m));
+  fullMapMarkers=[];
+  if(userCircle){fullMap.removeLayer(userCircle);userCircle=null;}
+  // user location + radius circle
+  if(userLat){
+    userCircle=L.circle([userLat,userLng],{radius:userRadius*1000,color:'#3d7ef5',fillColor:'#3d7ef5',fillOpacity:.05,weight:1.5,dashArray:'6 6'}).addTo(fullMap);
+    fullMapMarkers.push(userCircle);
+    const um=L.circleMarker([userLat,userLng],{radius:8,fillColor:'#3d7ef5',color:'#fff',weight:2.5,fillOpacity:1}).addTo(fullMap).bindPopup('<div style="padding:8px 10px;font-weight:600;color:#eef2ff">📍 Senin konumun</div>');
+    fullMapMarkers.push(um);
+  }
+  const list=getList();
+  list.forEach(p=>{
+    if(!p.lat||!p.lng)return;
+    const c=CATS[p.cat];
+    const dist=userLat?haversine(userLat,userLng,p.lat,p.lng):null;
+    const m=L.marker([p.lat,p.lng],{icon:makeIcon(p.cat,isNew(p))}).addTo(fullMap);
+    m.bindPopup(`<div class="map-popup"><div class="map-popup-cat" style="color:${c.color}">${c.sym} ${c.label}</div><div class="map-popup-title">${esc(p.title)}</div><div class="map-popup-loc">📍 ${esc(p.loc)}${dist!==null?` · ${distLabel(dist)}`:''}</div><button class="map-popup-btn" onclick="openDetail(${p.id})">Detayı gör</button></div>`);
+    fullMapMarkers.push(m);
+  });
+}
+function recenterMap(){
+  if(!fullMap)return;
+  if(userLat)fullMap.setView([userLat,userLng],14);
+  else fullMap.setView([41.015,28.979],11);
+}
+
+/* ════ DETAIL MODAL ════ */
+function openDetail(id){
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  const hasLoc=p.lat&&p.lng;
+  const dist=userLat&&hasLoc?haversine(userLat,userLng,p.lat,p.lng):null;
+  const confPct=Math.min(100,(p.confirms/50)*100);
+  let media='';
+  if(p.photo)media=`<img class="detail-photo" src="${p.photo}" alt="">`;
+  if(hasLoc)media+=`<div class="detail-map-wrap"><div id="dmap" style="width:100%;height:100%"></div><div class="detail-map-overlay"></div></div>`;
+  if(!media)media=`<div class="detail-no-map"><span style="font-size:1.8rem;opacity:.2">🗺</span><span>Konum belirtilmemiş</span></div>`;
+
+  const commentsHtml=p.comments.length
+    ? p.comments.map(c=>`<div class="comment"><div class="comment-av">${c.a==='Anonim'?'🥷':'👤'}</div><div class="comment-body"><div class="comment-meta"><span class="comment-author">${esc(c.a)}</span><span class="comment-time">${timeAgo(c.ts)}</span></div><div class="comment-text">${esc(c.t)}</div></div></div>`).join('')
+    : '<div class="comment-empty">Henüz yorum yok — ilk yorumu sen yaz.</div>';
+
+  document.getElementById('dmodal').innerHTML=`
+    ${media}
+    <div class="detail-body">
+      <div class="d-hdr">
+        <div class="d-badges">
+          <div class="cat-badge" data-cat="${p.cat}">${CATS[p.cat].sym} ${CATS[p.cat].label}</div>
+          ${isNew(p)?'<div class="new-badge"><div class="nb-dot"></div>Canlı</div>':''}
+          ${isHot(p)?'<div class="hot-badge">🔥 Popüler</div>':''}
+        </div>
+        <button class="modal-x" onclick="closeDetail()">×</button>
+      </div>
+      <div class="d-title">${esc(p.title)}</div>
+      <div class="d-desc">${esc(p.desc)}</div>
+      <div class="d-meta">
+        <div class="d-meta-row"><span class="dmi">📍</span><span>${esc(p.loc)}</span></div>
+        ${dist!==null?`<div class="d-meta-row"><span class="dmi">📏</span><span>Sana <strong>${distLabel(dist)}</strong> uzaklıkta</span></div>`:''}
+        <div class="d-meta-row"><span class="dmi">🕐</span><span>${new Date(p.ts).toLocaleString('tr-TR',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})}</span></div>
+        <div class="d-meta-row"><span class="dmi">👤</span><span>${p.anon?'Anonim kullanıcı':'Civarda üyesi'}</span></div>
+        <div class="d-meta-row"><span class="dmi">✅</span><span><strong>${p.confirms}</strong> kişi doğruladı</span></div>
+        <div class="d-confirm-bar"><div class="d-confirm-fill" style="width:${confPct}%"></div></div>
+      </div>
+      <div class="d-actions">
+        <button class="conf-big${p.confirmed?' on':''}" onclick="toggleConf(${p.id})">${p.confirmed?'✓ Doğruladın — Geri al':'+ Ben de gördüm'}</button>
+        ${hasLoc?`<button class="maps-btn" onclick="openMaps(${p.lat},${p.lng})">🧭 Yol Tarifi</button>`:''}
+      </div>
+      <div class="comments-section">
+        <div class="comments-ttl">💬 Yorumlar <span style="color:var(--t4)">(${p.comments.length})</span></div>
+        <div id="comments-list">${commentsHtml}</div>
+        <div class="comment-input-row">
+          <input class="comment-input" id="comment-input" placeholder="Bir yorum ekle..." onkeydown="if(event.key==='Enter')addComment(${p.id})">
+          <button class="comment-send" onclick="addComment(${p.id})">➤</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('dbg').classList.add('open');
+  if(hasLoc){
+    setTimeout(()=>{
+      if(detailMap){detailMap.remove();detailMap=null;}
+      detailMap=L.map('dmap',{zoomControl:false,scrollWheelZoom:false,dragging:false,doubleClickZoom:false,keyboard:false,attributionControl:false}).setView([p.lat,p.lng],15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(detailMap);
+      L.marker([p.lat,p.lng],{icon:makeIcon(p.cat,isNew(p))}).addTo(detailMap);
+      if(userLat){
+        L.circleMarker([userLat,userLng],{radius:7,fillColor:'#3d7ef5',color:'#fff',weight:2,fillOpacity:1}).addTo(detailMap);
+        const bounds=L.latLngBounds([[p.lat,p.lng],[userLat,userLng]]);
+        if(haversine(userLat,userLng,p.lat,p.lng)<10)detailMap.fitBounds(bounds,{padding:[40,40],maxZoom:15});
+      }
+      detailMap.invalidateSize();
+    },130);
+  }
+}
+function closeDetail(){document.getElementById('dbg').classList.remove('open');if(detailMap){detailMap.remove();detailMap=null;}}
+function openMaps(lat,lng){window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,'_blank');}
+
+function addComment(id){
+  const inp=document.getElementById('comment-input');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  p.comments.push({a:anonMode?'Anonim':'Civarda üyesi',t:txt,ts:Date.now()});
+  save();openDetail(id);renderFeed();
+  setTimeout(()=>{const ni=document.getElementById('comment-input');if(ni)ni.focus();},100);
+  toast('Yorumun eklendi','💬');
+}
+
+/* ════ NEW POST MODAL ════ */
+function openModal(){
+  ['f-title','f-desc','f-loc-txt'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tc').textContent='0 / 80';
+  document.getElementById('dc').textContent='0 / 280';
+  pickedLat=null;pickedLng=null;pickedLocName='';pickedPhoto=null;
+  document.getElementById('loc-selected-box').style.display='none';
+  removePhoto();
+  pickCat('kaza');switchLocMode('map');
+  document.getElementById('mbg').classList.add('open');
+  setTimeout(()=>{initPickMap();},320);
+}
+function closeModal(){document.getElementById('mbg').classList.remove('open');}
+function bgClick(e,id){if(e.target===document.getElementById(id)){id==='dbg'?closeDetail():closeModal();}}
+function pickCat(cat){selCat=cat;document.querySelectorAll('.cat-opt').forEach(b=>b.classList.toggle('sel',b.dataset.cat===cat));if(pickMarker)pickMarker.setIcon(makeIcon(cat));}
+function toggleAnon(){anonMode=!anonMode;document.getElementById('anon-tog').classList.toggle('on',anonMode);}
+function cc(el,cid,max){const n=el.value.length;const c=document.getElementById(cid);c.textContent=n+' / '+max;c.classList.toggle('warn',n>max*.85);}
+
+/* PHOTO */
+function handlePhoto(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){toast('Fotoğraf çok büyük (max 5MB)','⚠️');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    pickedPhoto=e.target.result;
+    document.getElementById('photo-preview-img').src=pickedPhoto;
+    document.getElementById('photo-preview').style.display='block';
+    document.getElementById('photo-zone').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+function removePhoto(){
+  pickedPhoto=null;
+  document.getElementById('photo-preview').style.display='none';
+  document.getElementById('photo-zone').style.display='block';
+  document.getElementById('photo-input').value='';
+}
+
+/* LOCATION */
+function switchLocMode(mode){
+  locMode=mode;
+  document.querySelectorAll('.loc-btn').forEach(b=>b.classList.remove('active'));
+  const mapWrap=document.getElementById('pick-map-wrap');
+  const txtInp=document.getElementById('f-loc-txt');
+  if(mode==='map'){
+    document.getElementById('map-btn').classList.add('active');
+    mapWrap.style.display='block';txtInp.style.display='none';
+    setTimeout(initPickMap,50);
+  }else{
+    document.getElementById('txt-btn').classList.add('active');
+    mapWrap.style.display='none';txtInp.style.display='block';txtInp.focus();
+  }
+}
+function initPickMap(){
+  if(pickMap){pickMap.invalidateSize();return;}
+  const center=userLat?[userLat,userLng]:[41.015,28.979];
+  const zoom=userLat?14:11;
+  pickMap=L.map('pick-map',{zoomControl:true,attributionControl:false}).setView(center,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(pickMap);
+  if(userLat)L.circleMarker([userLat,userLng],{radius:7,fillColor:'#3d7ef5',color:'#fff',weight:2,fillOpacity:1}).addTo(pickMap).bindPopup('Senin konumun');
+  pickMap.on('click',e=>{
+    pickedLat=e.latlng.lat;pickedLng=e.latlng.lng;
+    if(pickMarker)pickMarker.setLatLng(e.latlng);
+    else{pickMarker=L.marker(e.latlng,{icon:makeIcon(selCat),draggable:true}).addTo(pickMap);
+      pickMarker.on('dragend',ev=>{pickedLat=ev.target.getLatLng().lat;pickedLng=ev.target.getLatLng().lng;reverseGeoPick(pickedLat,pickedLng);});}
+    reverseGeoPick(pickedLat,pickedLng);
+  });
+}
+function reverseGeoPick(lat,lng){
+  showLocSel('📍 Konum işaretlendi...');
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=tr`)
+    .then(r=>r.json()).then(d=>{const a=d.address||{};pickedLocName=[a.neighbourhood||a.suburb||a.quarter,a.district||a.city_district,a.city||a.town].filter(Boolean).join(', ')||d.display_name.split(',').slice(0,2).join(',');showLocSel(pickedLocName);})
+    .catch(()=>{pickedLocName=lat.toFixed(4)+', '+lng.toFixed(4);showLocSel(pickedLocName);});
+}
+function showLocSel(name){const box=document.getElementById('loc-selected-box');document.getElementById('loc-selected-txt').textContent=name;box.style.display='flex';}
+function getGPS(){
+  const btn=document.getElementById('gps-btn');
+  btn.textContent='⏳...';btn.classList.add('active');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    pickedLat=pos.coords.latitude;pickedLng=pos.coords.longitude;
+    btn.textContent='✓ GPS';switchLocMode('map');
+    setTimeout(()=>{
+      if(pickMap){pickMap.setView([pickedLat,pickedLng],16);
+        if(pickMarker)pickMarker.setLatLng([pickedLat,pickedLng]);
+        else pickMarker=L.marker([pickedLat,pickedLng],{icon:makeIcon(selCat),draggable:true}).addTo(pickMap);}
+      reverseGeoPick(pickedLat,pickedLng);toast('GPS konumun alındı!','📍');
+    },200);
+  },()=>{toast('Konum alınamadı','⚠️');btn.textContent='📡 GPS';btn.classList.remove('active');});
+}
+
+function submitPost(){
+  const title=document.getElementById('f-title').value.trim();
+  const desc=document.getElementById('f-desc').value.trim();
+  const locTxt=document.getElementById('f-loc-txt').value.trim();
+  if(!title){const inp=document.getElementById('f-title');inp.style.borderColor='var(--guvenlik)';inp.focus();setTimeout(()=>inp.style.borderColor='',2000);toast('Lütfen bir başlık gir','⚠️');return;}
+  const locName=pickedLocName||locTxt||'Konum belirtilmedi';
+  posts.unshift({id:Date.now(),cat:selCat,title,desc:desc||'Açıklama girilmedi.',loc:locName,lat:pickedLat,lng:pickedLng,ts:Date.now(),confirms:0,confirmed:false,anon:anonMode,photo:pickedPhoto,comments:[]});
+  save();closeModal();setFilter('all');
+  document.getElementById('search').value='';curSearch='';document.getElementById('search-clear').classList.remove('show');
+  pickMap=null;pickMarker=null;
+  renderFeed();
+  if(curView==='map'&&fullMap)renderMapMarkers();
+  toast('Paylaşıldı! Mahallen haberdar oldu 🎉','📍');
+}
+
+/* ════ LIFECYCLE ════ */
+function autoExpire(){
+  const before=posts.length;
+  posts=posts.filter(p=>Date.now()-p.ts<6*3600*1000);
+  if(posts.length<before){save();renderFeed();}
+}
+setInterval(autoExpire,60000);
+setInterval(()=>{if(curView==='feed')renderFeed();},30000);
+
+
+
+/* ════ EXPOSE TO GLOBAL SCOPE (for inline onclick handlers) ════ */
+Object.assign(window, {
+  addComment,
+  applyFilters,
+  bgClick,
+  cc,
+  clearSearch,
+  closeDetail,
+  closeModal,
+  copyLink,
+  cycleSort,
+  enterApp,
+  getGPS,
+  handlePhoto,
+  obGetGPS,
+  obPickDistrict,
+  obRadiusChange,
+  obShowDistricts,
+  openDetail,
+  openMaps,
+  openModal,
+  pickCat,
+  recenterMap,
+  removePhoto,
+  searchFor,
+  setFilter,
+  setView,
+  showOnboard,
+  skipOnboard,
+  submitPost,
+  switchLocMode,
+  toggleAnon,
+  toggleConf,
+  toggleNotif
+});
+
+/* ════ INIT ════ */
+const hadLoc=load();
+if(hadLoc){
+  // skip onboarding, go straight in
+  document.getElementById('onboard').style.display='none';
+  document.getElementById('app').classList.add('show');
+  updateZoneUI();showSkeletons();
+  setTimeout(()=>{firstLoad=false;renderFeed();},500);
+}else{
+  obRadiusChange(3);
+}
+
+</script>
+</body>
+</html>
