@@ -1009,7 +1009,7 @@ function openDetail(id){
         <div class="d-meta-row"><span class="dmi">📍</span><span>${esc(p.loc)}</span></div>
         ${dist!==null?`<div class="d-meta-row"><span class="dmi">📏</span><span>Sana <strong>${distLabel(dist)}</strong> uzaklıkta</span></div>`:''}
         <div class="d-meta-row"><span class="dmi">🕐</span><span>${new Date(p.ts).toLocaleString('tr-TR',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})}</span></div>
-        <div class="d-meta-row"><span class="dmi">👤</span><span>${p.anon?'Anonim kullanıcı':'Civarda üyesi'}</span></div>
+        <div class="d-meta-row"><span class="dmi">👤</span><span>${p.anon?'Anonim kullanıcı':'Civarda uyesi'}</span></div>
         <div class="d-meta-row"><span class="dmi">✅</span><span><strong>${p.confirms}</strong> kişi doğruladı</span></div>
         <div class="d-confirm-bar"><div class="d-confirm-fill" style="width:${confPct}%"></div></div>
       </div>
